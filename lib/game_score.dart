@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:darts_101/database/player.dart';
 import 'package:darts_101/database/team.dart';
 import 'package:darts_101/database/game.dart';
@@ -26,7 +27,10 @@ class GameScoreScreen extends StatefulWidget {
   State<GameScoreScreen> createState() => _GameScoreScreenState();
 }
 
-class _GameScoreScreenState extends State<GameScoreScreen> {
+class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _slashController;
+
   // 1. Game Configuration
   final List<int> targets = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
   final List<String> targetLabels = ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "BULL"];
@@ -47,6 +51,22 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
     scoreBox = Hive.box<GameScore>('gamescoresBox');
     playersBox = Hive.box<Player>('playersBox');
     teamsBox = Hive.box<Team>('teamsBox');
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true); // This keeps it moving forever
+
+    _slashController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300), // Fast like a sword
+  );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose(); // Always clean up
+    super.dispose();
   }
 
   Color _getTeamColor(int? idTeam) {
@@ -72,14 +92,16 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
     bool isTeamMode = widget.game.gameMode == 2;
 
     if (isTeamMode) {
-      for (int tId in widget.game.teamsIDs!) {
-        final player1 = playersBox.get(teamsBox.get(tId)?.idPlayer1)?.nickName ?? "Player 1";
-        final player2 = playersBox.get(teamsBox.get(tId)?.idPlayer2)?.nickName ?? "Player 2";
+      for (int i = 0; i < widget.game.teamsIDs!.length; i++) {
+        int tId = widget.game.teamsIDs![i];
+        final team = teamsBox.get(tId);
+        final player1 = playersBox.get(team?.idPlayer1)?.nickName ?? "Player 1";
+        final player2 = playersBox.get(team?.idPlayer2)?.nickName ?? "Player 2";
         rankings.add({
           'name': "$player1, $player2",
-          'team_name': teamsBox.get(tId)?.surName ?? "Team",
+          'team_name': team?.surName ?? "Team",
           'score': _getLatestTeamScore(tId),
-          'color': _getTeamColor(tId),
+          'color': _getTeamColor(i),
           'id': tId,
         });
       }
@@ -243,6 +265,10 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
       newTeamTotal = prevTeamTotal + (targetValue *hits);
     } else {
       wasHalved = true;
+
+      _slashController.forward(from: 0.0).then((_) {
+        Future.delayed(const Duration(milliseconds: 200), () => _slashController.reverse());
+      });
       
       // if in playerMode
       if (!isTeamMode) {
@@ -554,108 +580,170 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Header: Current Target & Player Info
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Column(
+            children: [
+              // Header: Current Target & Player Info
+              Container(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("CURRENT TARGET", style: TextStyle(fontSize: 12, color: Colors.black)),
-                    Text(targetLabels[currentTargetIndex], style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.deepOrange.shade400)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(activePlayer?.nickName ?? "", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    Text("Is Throwing...", style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.deepOrange.shade400)),
-                  ],
-                )
-              ],
-            ),
-          ),
-
-          Expanded(
-            child: Stack(
-              children: [
-                // LEFT SIDE: The Scoreboard Table
-                Positioned.fill(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(4),
-                    child: _buildTable(),
-                  ),
-                ),
-                
-                // LAYER 2: The Floating Ranking (Slides over the table)
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOutCubic,
-                  top: 0,
-                  bottom: 0,
-                  right: _showRankings ? 0 : -310, // Slides from off-screen (-10 diff with width) to on-screen (0)
-                  child: Container(
-                    width: 300,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          offset: const Offset(-5, 0),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("CURRENT TARGET", style: TextStyle(fontSize: 16, color: Colors.black)),
+                        ScaleTransition(
+                          scale: Tween(begin: 1.0, end: 1.2).animate(
+                            CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              border: Border.all(color: Colors.deepOrange.shade400, width: 3),
+                              color: Colors.white,
+                            ),
+                            child: Text(
+                              targetLabels[currentTargetIndex],
+                              style: TextStyle(
+                                height: 1.0,
+                                fontSize: 52,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepOrange.shade400,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    child: _buildLiveRankings(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        ScaleTransition(
+                          scale: Tween(begin: 1.0, end: 1.1).animate(
+                            CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              border: Border.all(width: 3),
+                              color: Colors.white,
+                            ),
+                            child: Text(
+                              activePlayer?.nickName ?? "",
+                              style: TextStyle(
+                                height: 1.1,
+                                fontSize: 42,
+                                fontWeight: FontWeight.bold,                            
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text("Is Throwing...", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic, color: Colors.deepOrange.shade400)),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: Stack(
+                  children: [
+                    // LEFT SIDE: The Scoreboard Table
+                    Positioned.fill(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(4),
+                        child: _buildTable(),
+                      ),
+                    ),
+                    
+                    // LAYER 2: The Floating Ranking (Slides over the table)
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOutCubic,
+                      top: 0,
+                      bottom: 0,
+                      right: _showRankings ? 0 : -310, // Slides from off-screen (-10 diff with width) to on-screen (0)
+                      child: Container(
+                        width: 300,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 10,
+                              offset: const Offset(-5, 0),
+                            ),
+                          ],
+                        ),
+                        child: _buildLiveRankings(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Bottom Input Pad
+              Container(
+                color: Colors.blueGrey.shade900,
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(
+                        "Number of Hits:",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,                    
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,    // Horizontal space
+                            runSpacing: 8, // Vertical space if they wrap
+                            children: List.generate(10, (i) {
+                              return SizedBox(
+                                // On a tablet, make buttons wider; on a phone, make them smaller
+                                width: constraints.maxWidth > 600 ? 90 : 75, 
+                                height: 80,
+                                child: _buildInputButton(i),
+                              );
+                            }),
+                          ),
+                        );
+                      }),
+                    ]
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
-          // Bottom Input Pad
-          Container(
-            color: Colors.blueGrey.shade900,
-            child: SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  Text(
-                    "Number of Hits:",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,                    
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,    // Horizontal space
-                        runSpacing: 8, // Vertical space if they wrap
-                        children: List.generate(10, (i) {
-                          return SizedBox(
-                            // On a tablet, make buttons wider; on a phone, make them smaller
-                            width: constraints.maxWidth > 600 ? 70 : 55, 
-                            height: 60,
-                            child: _buildInputButton(i),
-                          );
-                        }),
-                      ),
-                    );
-                  }),
-                ]
-              ),
+          // LAYER 2: THE SAMURAI SLASH OVERLAY
+          // IgnorePointer ensures the animation doesn't "block" the buttons
+          IgnorePointer(
+            child: AnimatedBuilder(
+              animation: _slashController,
+              builder: (context, _) {
+                return CustomPaint(
+                  size: Size.infinite,
+                  painter: SamuraiSlashPainter(_slashController.value),
+                );
+              },
             ),
           ),
         ],
@@ -724,13 +812,14 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
                     final String trend = (item['trend'] ?? 'stable').toString();
 
                     return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
                       decoration: BoxDecoration(
                         color: isFirst ? Colors.orange.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                        visualDensity: const VisualDensity(vertical: -4),
                         leading: SizedBox(
                           width: 50,
                           child: Align(
@@ -740,7 +829,7 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
                           ),
                         ),
                         title: Container(                        
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                           decoration: BoxDecoration(
                             color: item['color'],
                             borderRadius: BorderRadius.circular(4),                              
@@ -817,7 +906,7 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
       child: Text(
         "$value", 
         style: TextStyle(
-          fontSize: 28,
+          fontSize: 42,
           color: isDisabled ? Colors.white38 : Colors.white,
         )
       ),
@@ -848,13 +937,14 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
               final player = playersBox.get(pId);
               String teamName = "";
               int teamID = -1; // Store the ID for the color function
+              int teamIndex = 0;
               final int currentSeat = seatCounter++;
 
               if (widget.game.gameMode == 2 && widget.game.teamsIDs != null) {
                 final int totalTeams = widget.game.teamsIDs!.length;
       
                 // The seat dictates the team rotation
-                int teamIndex = currentSeat % totalTeams;
+                teamIndex = currentSeat % totalTeams;
                 teamID = widget.game.teamsIDs![teamIndex];
                 
                 final team = teamsBox.get(teamID);
@@ -869,9 +959,9 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
                     if (teamName.isNotEmpty)                      
                       // THE DECORATION BOX (The Background)
                       Container(                        
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                         decoration: BoxDecoration(
-                          color: _getTeamColor(teamID),
+                          color: _getTeamColor(teamIndex),
                           borderRadius: BorderRadius.circular(4),                              
                         ),
                         child: Text(
@@ -900,10 +990,15 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
             decoration: BoxDecoration(color: rIdx == currentTargetIndex ? Colors.orange.shade50 : Colors.white),
             children: [
               Padding(                
-                padding: const EdgeInsets.all(4), 
+                padding: const EdgeInsets.all(2), 
                 child: Text(
                   targetLabels[rIdx], 
-                  textAlign: TextAlign.center
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    // White text if penalized, otherwise black
+                    fontWeight: FontWeight.normal,
+                    fontSize: 18,
+                  ),
                 )
               ),
               // rest of the scoreboard
@@ -935,7 +1030,7 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
     final bool isPenalized = entry?.halfIt ?? false;
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(border: isActive ? Border.all(color: Colors.deepOrange.shade400, width: 2) : null),
       child: Center(
         child: Container(
@@ -955,11 +1050,45 @@ class _GameScoreScreenState extends State<GameScoreScreen> {
               // White text if penalized, otherwise black
               color: isPenalized ? Colors.white : Colors.black,
               fontWeight: FontWeight.normal,
-              fontSize: 15,
+              fontSize: 18,
             ),
           ),
         ),
       ),
     );
   }
+}
+
+class SamuraiSlashPainter extends CustomPainter {
+  final double progress;
+  SamuraiSlashPainter(this.progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0) return;
+
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 3); // Glow effect
+
+    // Diagonal from Top-Right to Bottom-Left
+    final start = Offset(size.width * 1.2, -size.height * 0.2);
+    final end = Offset(-size.width * 0.2, size.height * 1.2);
+
+    // Calculate current tip of the sword based on animation progress
+    final currentEnd = Offset(
+      start.dx + (end.dx - start.dx) * progress,
+      start.dy + (end.dy - start.dy) * progress,
+    );
+
+    canvas.drawLine(start, currentEnd, paint);
+    
+    // Add a secondary sharper "blade" line
+    canvas.drawLine(start, currentEnd, Paint()..color = Colors.cyanAccent.withOpacity(0.5)..strokeWidth = 1.0);
+  }
+
+  @override
+  bool shouldRepaint(SamuraiSlashPainter oldDelegate) => oldDelegate.progress != progress;
 }
