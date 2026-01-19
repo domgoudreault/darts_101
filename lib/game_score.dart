@@ -36,6 +36,7 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
   final List<String> targetLabels = ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "BULL"];
 
   bool _showRankings = false;
+  bool _showSlash = false;
   Timer? _rankTimer;
   int currentPlayerIndex = 0; // Index in widget.game.playersIDs
   int currentTeamIndex = 0; // Index in widget.game.teamsIDs
@@ -67,7 +68,7 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
   void dispose() {
     _pulseController.dispose(); // Always clean up
     super.dispose();
-  }
+  }  
 
   Color _getTeamColor(int? idTeam) {
   if (idTeam == null || idTeam == -1) return Colors.transparent;
@@ -266,9 +267,15 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
     } else {
       wasHalved = true;
 
-      _slashController.forward(from: 0.0).then((_) {
-        Future.delayed(const Duration(milliseconds: 200), () => _slashController.reverse());
+      // --- TRIGGER THE ANIMATION HERE ---
+      setState(() => _showSlash = true);
+      
+      // Reset and play
+      _slashController.reset(); 
+      _slashController.forward().then((_) {
+        if (mounted) setState(() => _showSlash = false);
       });
+      // ----------------------------------
       
       // if in playerMode
       if (!isTeamMode) {
@@ -735,17 +742,22 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
 
           // LAYER 2: THE SAMURAI SLASH OVERLAY
           // IgnorePointer ensures the animation doesn't "block" the buttons
-          IgnorePointer(
-            child: AnimatedBuilder(
-              animation: _slashController,
-              builder: (context, _) {
-                return CustomPaint(
-                  size: Size.infinite,
-                  painter: SamuraiSlashPainter(_slashController.value),
-                );
-              },
+          if (_showSlash) 
+            IgnorePointer(
+              child: Center(
+                child: Lottie.asset(
+                  'assets/lottie/magic-sword.json',                 
+                  controller: _slashController,
+                  // Make sure the width/height is large enough to be seen
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  onLoaded: (composition) {
+                    // Ensure the controller duration matches the file duration
+                    _slashController.duration = composition.duration;
+                  },
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -1057,38 +1069,4 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
       ),
     );
   }
-}
-
-class SamuraiSlashPainter extends CustomPainter {
-  final double progress;
-  SamuraiSlashPainter(this.progress);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress <= 0) return;
-
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 4.0
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 3); // Glow effect
-
-    // Diagonal from Top-Right to Bottom-Left
-    final start = Offset(size.width * 1.2, -size.height * 0.2);
-    final end = Offset(-size.width * 0.2, size.height * 1.2);
-
-    // Calculate current tip of the sword based on animation progress
-    final currentEnd = Offset(
-      start.dx + (end.dx - start.dx) * progress,
-      start.dy + (end.dy - start.dy) * progress,
-    );
-
-    canvas.drawLine(start, currentEnd, paint);
-    
-    // Add a secondary sharper "blade" line
-    canvas.drawLine(start, currentEnd, Paint()..color = Colors.cyanAccent.withOpacity(0.5)..strokeWidth = 1.0);
-  }
-
-  @override
-  bool shouldRepaint(SamuraiSlashPainter oldDelegate) => oldDelegate.progress != progress;
 }
