@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -14,7 +13,6 @@ enum BuildUpMode { forward, backward }
 class GameBuildUpScreen extends StatefulWidget {
   final Game game;
   final String gameText;
-  
   const GameBuildUpScreen({super.key, required this.game, required this.gameText});
 
   @override
@@ -23,10 +21,17 @@ class GameBuildUpScreen extends StatefulWidget {
 
 class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   // 1. Game Configuration
+  List<int> leftPile = [];
+  List<int> rightPile = [];  
   final List<int> targets = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
   final List<String> targetLabels = ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "BULL"];
+  int leftCurrentPlayerIdx = 0; // Index within the leftPile
+  int currentLeftDartIdx = 0;
+  int leftHitsInCurrentTurn = 0;
+  int rightCurrentPlayerIdx = 0; // Index within the rightPile
+  int currentRightDartIdx = 0;
+  int rightHitsInCurrentTurn = 0;
 
-  bool _isProcessing = false;
   int currentPlayerIndex = 0; // Index in widget.game.playersIDs
   int currentTargetIndex = 0; // Index in targets list (0-11)
   int currentDartIndex = 0;   // 0, 1, 2
@@ -39,7 +44,69 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   void initState() {
     super.initState();
     gameTeamBuildUpBox = Hive.box<GameBuildUp>('gameTeamBuildUpBox');
-    playersBox = Hive.box<Player>('playersBox'); 
+    playersBox = Hive.box<Player>('playersBox');
+    _splitPlayers();
+  }
+
+  void _splitPlayers() {
+    final List<int> originalList = widget.game.playersIDs;
+    final Random random = Random();
+
+    for (int i = 0; i < originalList.length; i++) {
+      // Check if it's the last player and the total count is odd
+      if (i == originalList.length - 1 && originalList.length % 2 != 0) {
+        if (random.nextBool()) {
+          leftPile.add(originalList[i]);
+        } else {
+          rightPile.add(originalList[i]);
+        }
+      } else {
+        // Alternating logic: 1st (index 0) Left, 2nd (index 1) Right...
+        if (i % 2 == 0) {
+          leftPile.add(originalList[i]);
+        } else {
+          rightPile.add(originalList[i]);
+        }
+      }
+    }
+  }
+
+  void _undoSpecificLane(bool isLeft) {
+    // 1. Get all entries for this specific game
+    final gameHistory = gameTeamBuildUpBox.values
+        .where((s) => s.idGame == widget.game.idGame)
+        .toList();
+
+    if (gameHistory.isEmpty) return;
+
+    // 2. Identify the correct pile to search in
+    final targetPile = isLeft ? leftPile : rightPile;
+
+    try {
+      // 3. Find the last entry made by anyone in this specific lane
+      final lastEntry = gameHistory.lastWhere(
+        (entry) => targetPile.contains(entry.idPlayer),
+      );
+
+      // 4. Delete from Hive immediately
+      gameTeamBuildUpBox.delete(lastEntry.key);
+
+      // 5. Update UI: Set the active player back to the one who just had their score deleted
+      setState(() {
+        if (isLeft) {
+          leftCurrentPlayerIdx = targetPile.indexOf(lastEntry.idPlayer);
+        } else {
+          rightCurrentPlayerIdx = targetPile.indexOf(lastEntry.idPlayer);
+        }
+        // Reset dart counters so the player can re-throw the cancelled dart
+        currentDartIndex = 0; 
+        hitsInCurrentTurn = 0;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No scores to undo in this lane"))
+      );
+    }
   }
   
   List<Map<String, dynamic>> _getCurrentRankings({int? winnerId}) {
@@ -51,7 +118,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         s.idGame == widget.game.idGame && s.idPlayer == pId
       ).length;
 
-      int targetIdx = _getPlayerCurrentTargetIndex(pId, i);
+      int targetIdx = _getPlayerCurrentTargetIndex(pId);
       
       rankings.add({
         'target': targetIdx,
@@ -127,61 +194,47 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     return deg < 0 ? deg + 360 : deg;
   }
 
-  void _processZoneTap(Offset localPosition, Size size) {
+  // 1. Update the Tap Processor to know which lane was hit
+  void _processZoneTap(Offset localPosition, Size size, bool isLeft) {
     double radius = size.width / 2;
     Offset center = Offset(radius, radius);
     double dist = (localPosition - center).distance / radius;
 
-    int pId = widget.game.playersIDs[currentPlayerIndex];
-    int activeTargetIdx = _getPlayerCurrentTargetIndex(pId, currentPlayerIndex);
+    // Identify who is throwing based on the lane tapped
+    int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
+    int activeTargetIdx = _getPlayerCurrentTargetIndex(pId);
     
-    if (activeTargetIdx < 0 || activeTargetIdx >= targets.length) return;
-
     int targetVal = targets[activeTargetIdx];
+    int leap = 0;
 
-    // 1. Angle Check (Only for non-bull targets)
-    if (targetVal != 25) {
+    if (targetVal == 25) {
+      if (dist <= 0.04) {
+        leap = 2;
+      } else if (dist <= 0.09) {
+        leap = 1;
+      }
+    } else {
       double tapAngle = _getTapAngle(localPosition, size);
       double targetAngle = TargetZonePainter.getAngleForValue(targetVal);
       double angleDiff = (tapAngle - targetAngle).abs();
       if (angleDiff > 180) angleDiff = 360 - angleDiff;
-      
-      // If they tapped outside the 18-degree wedge of the target number, ignore
-      if (angleDiff > 9) return; 
-    }
+      if (angleDiff > 9) return; // Ignore taps outside the slice
 
-    // 2. Leap Check - EXACTLY MATCHING YOUR PAINTER RATIOS
-    int leap = 0;
-    
-    if (targetVal == 25) {
-      // Bullseye Logic (0.04 and 0.09)
-      if (dist <= 0.04) {
-        leap = 2; // Double Bull
-      } else if (dist <= 0.09) {
-        leap = 1; // Single Bull
-      } 
-    } else {
-      // TRIPLE RING: (0.405 to 0.485)
       if (dist >= 0.405 && dist <= 0.485) {
         leap = 3;
-      } 
-      // DOUBLE RING: (0.69 to 0.77)
+      }
       else if (dist >= 0.69 && dist <= 0.77) {
         leap = 2;
-      } 
-      // SINGLE ZONE 1: (0.095 to 0.403)
-      // SINGLE ZONE 2: (0.487 to 0.687)
+      }
       else if ((dist >= 0.095 && dist <= 0.403) || (dist >= 0.487 && dist <= 0.687)) {
         leap = 1;
       }
     }
 
-    // 3. Final Execution
     if (leap > 0) {
-      _recordBuildUp(leap);
+      _recordBuildUp(leap, isLeft); 
     } else {
-      // Tapped the board but didn't hit the target wedge or the right ring
-      _handleMiss();
+      _handleMiss(isLeft);
     }
   }
 
@@ -202,7 +255,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       // Calculate what the global round was for that specific throw
       // This handles wrapping back from Round 5 to Round 4 correctly
       int pId = widget.game.playersIDs[currentPlayerIndex];
-      currentTargetIndex = _getPlayerCurrentTargetIndex(pId, currentPlayerIndex);
+      currentTargetIndex = _getPlayerCurrentTargetIndex(pId);
     });
 
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -212,90 +265,164 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   }
 
   // Change this helper to find where a specific player is currently standing
-  int _getPlayerCurrentTargetIndex(int playerId, int seatIndex) {
+  int _getPlayerCurrentTargetIndex(int playerId) {
     final history = gameTeamBuildUpBox.values.where((s) => 
       s.idGame == widget.game.idGame && 
-      s.idPlayer == playerId && 
-      s.seatIndex == seatIndex
+      s.idPlayer == playerId
     ).toList();
 
-    if (history.isEmpty) return 0; // Starts at '10' (index 0)
-    
-    // Their current target is the 'nextTargetValue' from their last saved entry
+    if (history.isEmpty) return 0; 
     int lastVal = history.last.nextTargetValue;
     int idx = targets.indexOf(lastVal);
     return idx == -1 ? 0 : idx;
   }
 
   // This is called when they tap the "MISS" button or tap the wrong area of the board
-  void _handleMiss() {
+  void _handleMiss(bool isLeft) {
     setState(() {
-      currentDartIndex++;
-      _checkTurnEnd();
+      if (isLeft) {
+        currentLeftDartIdx++;
+      } else {
+        currentRightDartIdx++;
+      }
+      _checkTurnEnd(isLeft);
     });
   }
 
-  void _recordBuildUp(int leap) async {
-    if (_isProcessing) return;
-    _isProcessing = true;
+  // 2. Update Record Logic
+  void _recordBuildUp(int leap, bool isLeft) {
+    int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
+    int seatIdx = widget.game.playersIDs.indexOf(pId);
+    int currentIdx = _getPlayerCurrentTargetIndex(pId);
     
-    try {
-      int pId = widget.game.playersIDs[currentPlayerIndex];
-      int currentIdx = _getPlayerCurrentTargetIndex(pId, currentPlayerIndex);
-      
-      // 1. Calculate and Save Hit (Since leap > 0)
-      hitsInCurrentTurn++; 
-      int nextIdx = (currentIdx + leap).clamp(0, targets.length - 1);
-
-      final gameBuildUp = GameBuildUp(
-        idGame: widget.game.idGame!,
-        idPlayer: pId,
-        seatIndex: currentPlayerIndex,
-        targetValue: targets[currentIdx],
-        hitDouble: leap == 2,
-        hitTriple: leap == 3,
-        nextTargetValue: targets[nextIdx],
-      );
-
-      await gameTeamBuildUpBox.add(gameBuildUp);
-      gameBuildUp.idGameBuildUp = gameBuildUp.key as int;
-      await gameBuildUp.save();
-
-      // 2. Winning Check
-      if (targets[currentIdx] == 25) {
-        _endGame(pId);
-        _isProcessing = false;
-        return;
-      }
-
-      // 3. Advance Dart Counter
-      setState(() {
-        currentDartIndex++;
-        _checkTurnEnd();
-      });
-    }finally{
-      await Future.delayed(const Duration(milliseconds: 300));
-      _isProcessing = false;
+    // Increment the specific lane counters
+    if (isLeft) {
+      leftHitsInCurrentTurn++;
+      currentLeftDartIdx++;
+    } else {
+      rightHitsInCurrentTurn++;
+      currentRightDartIdx++;
     }
+
+    int nextIdx = (currentIdx + leap).clamp(0, targets.length - 1);
+
+    final gameBuildUp = GameBuildUp(
+      idGame: widget.game.idGame!, 
+      idPlayer: pId, 
+      seatIndex: seatIdx,
+      targetValue: targets[currentIdx], 
+      hitDouble: leap == 2, 
+      hitTriple: leap == 3,
+      nextTargetValue: targets[nextIdx],
+    );
+
+    gameTeamBuildUpBox.add(gameBuildUp);
+    
+    if (targets[currentIdx] == 25) { 
+      _handleWinnerLogic(pId, isLeft); 
+      return; 
+    }
+
+    setState(() { 
+      _checkTurnEnd(isLeft); 
+    });
   }
 
-  void _checkTurnEnd() {
-    if (currentDartIndex < 3) return;
-    
-    bool isBonus = hitsInCurrentTurn == 3;
-    currentDartIndex = 0;
-    hitsInCurrentTurn = 0;
+  void _handleWinnerLogic(int winnerId, bool isLeft) {
+    // The "Heat" is defined by the position in the current pile.
+    // If the 2nd player in the Left Pile hits the bull, the 2nd player in the 
+    // Right Pile must be the last one allowed to finish.
+    int winningHeatIndex = isLeft ? leftCurrentPlayerIdx : rightCurrentPlayerIdx;
 
-    if (isBonus) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("3/3! RE-THROW"), backgroundColor: Colors.green));
-    } else {
-      currentPlayerIndex = (currentPlayerIndex + 1) % widget.game.playersIDs.length;
+    // 1. Clean up any "future" throws from the lane that was moving faster.
+    _pruneOutrunEntries(winningHeatIndex, isLeft);
+
+    // 2. Identify the 'Partner' in the other lane for the final throw.
+    // If the partner has already finished their turn for this heat, we end immediately.
+    // If they are currently throwing, the game will wait for them to finish (Dart 3).
+    
+    _endGame(winnerId);
+  }
+
+  void _pruneOutrunEntries(int currentHeatIndex, bool winnerIsLeft) {
+    // Get all throws for this specific game
+    final allHistory = gameTeamBuildUpBox.values
+        .where((s) => s.idGame == widget.game.idGame)
+        .toList();
+
+    // We are checking the pile OPPOSITE to the winner
+    List<int> opponentPile = winnerIsLeft ? rightPile : leftPile;
+
+    // List to track which keys to delete from Hive
+    List<dynamic> keysToDelete = [];
+
+    for (var entry in allHistory) {
+      // Check if this entry belongs to a player in the opponent's pile
+      if (opponentPile.contains(entry.idPlayer)) {
+        int positionInPile = opponentPile.indexOf(entry.idPlayer);
+        
+        // If the player who threw this is further in the list than the winning heat,
+        // or if they are in a "later" round (handled by seatIndex/logic), delete it.
+        if (positionInPile > currentHeatIndex) {
+          keysToDelete.add(entry.key);
+        }
+      }
     }
 
-    // Refresh the target index for the new player/turn
-    int nextPlayerId = widget.game.playersIDs[currentPlayerIndex];
-    currentTargetIndex = _getPlayerCurrentTargetIndex(nextPlayerId, currentPlayerIndex);
+    // Execute the deletion
+    for (var key in keysToDelete) {
+      gameTeamBuildUpBox.delete(key);
+    }
+
+    // Reset the opponent's index so the UI shows them back at the correct heat
+    setState(() {
+      if (winnerIsLeft) {
+        if (rightCurrentPlayerIdx > currentHeatIndex) {
+          rightCurrentPlayerIdx = currentHeatIndex;
+        }
+      } else {
+        if (leftCurrentPlayerIdx > currentHeatIndex) {
+          leftCurrentPlayerIdx = currentHeatIndex;
+        }
+      }
+    });
+  }
+
+  // 3. Independent Turn End
+  void _checkTurnEnd(bool isLeft) {
+    int dartIdx = isLeft ? currentLeftDartIdx : currentRightDartIdx;
+    int hits = isLeft ? leftHitsInCurrentTurn : rightHitsInCurrentTurn;
+
+    if (dartIdx >= 3) {
+      bool isBonus = (hits == 3);
+      
+      // Reset the specific lane counters
+      if (isLeft) {
+        currentLeftDartIdx = 0;
+        leftHitsInCurrentTurn = 0;
+      } else {
+        currentRightDartIdx = 0;
+        rightHitsInCurrentTurn = 0;
+      }
+
+      if (isBonus) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("3/3! RE-THROW"), 
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          )
+        );
+      } else {
+        setState(() {
+          if (isLeft) {
+            leftCurrentPlayerIdx = (leftCurrentPlayerIdx + 1) % leftPile.length;
+          } else {
+            rightCurrentPlayerIdx = (rightCurrentPlayerIdx + 1) % rightPile.length;
+          }
+        });
+      }
+    }
   }
 
   // --- LOGIC: GAME OVER ---
@@ -509,12 +636,8 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activePlayerId = widget.game.playersIDs[currentPlayerIndex];
-    final activePlayer = playersBox.get(activePlayerId);
-
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
-      // --- KEEPING YOUR APPBAR AS IS ---
       appBar: AppBar(
         title: Row(
           children: [
@@ -538,104 +661,148 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         backgroundColor: Colors.blueGrey.shade800,
         foregroundColor: Colors.white,
         actions: [
+          // Left Lane Undo (Blue)
           IconButton(
-            icon: const Icon(Icons.undo),
-            tooltip: "Undo last turn",
-            onPressed: (currentTargetIndex == 0 && currentPlayerIndex == 0)
+            icon: const Icon(Icons.undo, color: Colors.blueAccent),
+            tooltip: "Undo Left Lane",
+            onPressed: (leftCurrentPlayerIdx == 0 && currentDartIndex == 0)
                 ? null
-                : () => _undoLastScore(false),
+                : () => _undoSpecificLane(true),
+          ),
+          // Right Lane Undo (Orange)
+          IconButton(
+            icon: const Icon(Icons.undo, color: Colors.orangeAccent),
+            tooltip: "Undo Right Lane",
+            onPressed: (rightCurrentPlayerIdx == 0 && currentDartIndex == 0)
+                ? null
+                : () => _undoSpecificLane(false),
           ),
         ],
       ),
-
-      // --- NEW THREE-COLUMN BODY ---
-      body: Row(
-        children: [
-          // 1. LEFT PANEL: Player & Target
-          Container(
-            width: 160,
-            color: Colors.white,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      
+      body: SafeArea(
+        top: false,
+        child : Stack(
+          children: [
+            // 1. The Dartboards (This stays as the background layer)
+            Column(
               children: [
-                const Text("TARGET", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-                Text(
-                  targetLabels[_getPlayerCurrentTargetIndex(activePlayerId, currentPlayerIndex)],
-                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.w700, color: Colors.deepOrange.shade400),
-                ),
-                const SizedBox(height: 30),
-                const Text("PLAYER", style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-                Text(
-                  activePlayer?.nickName ?? "",
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "Is Throwing...",
-                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.deepOrange.shade400),
-                ),
-              ],
-            ),
-          ),
-
-          // 2. CENTER: Dartboard & Floating Button
-          Expanded(
-            child: Stack(
-              children: [
-                Center(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      double boardSize = min(constraints.maxWidth, constraints.maxHeight) * 0.95;
-                      return _buildDartboard(boardSize);
-                    },
-                  ),
-                ),
-                // FLOATING MISS BUTTON (Bottom Right of the center zone)
-                Positioned(
-                  bottom: 30,
-                  right: 30,
-                  child: FloatingActionButton.extended(
-                    onPressed: () => _handleMiss(),
-                    backgroundColor: Colors.red.shade900,
-                    foregroundColor: Colors.white,
-                    icon: const Icon(Icons.not_interested),
-                    label: const Text("MISS", style: TextStyle(fontWeight: FontWeight.bold)),
+                Expanded(
+                  flex: 2, 
+                  child: Row(
+                    children: [
+                      Expanded(child: _buildInputZone(true)),
+                      Container(width: 2, color: Colors.blueGrey.withValues(alpha: 0.3)),
+                      Expanded(child: _buildInputZone(false)),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
 
-          // 3. RIGHT PANEL: Permanent Ranking
-          SizedBox(
-            width: 260,            
-            child: _buildLiveRankings(), // Note: Remove the AnimatedPositioned from this function!
-          ),
-        ],
+            // 2. The Ranking Panel (Positioned in the middle)
+            Positioned(
+              bottom: 0,
+              left: 135, // This clears the left MISS button
+              right: 135, // This clears the right MISS button
+              height: 200, // Fixed height for the ranking area
+              child: _buildLiveRankings(),
+            ),
+
+            // 3. Left Miss Button
+            Positioned(
+              bottom: 20,
+              left: 15,
+              child: _buildSideMissButton("left_miss", true),
+            ),
+
+            // 4. Right Miss Button
+            Positioned(
+              bottom: 20,
+              right: 15,
+              child: _buildSideMissButton("right_miss", false),
+            ),
+          ],
+        ),
       ),
+    );
+  }  
+
+  Widget _buildInputZone(bool isLeftSide) {
+    return Stack(
+      children: [
+        Center(
+          child: LayoutBuilder(builder: (context, c) {
+            // We use 0.90 to leave a bit more breathing room for the two boards
+            double size = min(c.maxWidth, c.maxHeight) * 0.90;
+            int lanePId = isLeftSide ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];            
+            int activeTargetIdx = _getPlayerCurrentTargetIndex(lanePId);
+
+            return GestureDetector(
+              onTapUp: (d) => _processZoneTap(d.localPosition, Size(size, size), isLeftSide),
+              child: SizedBox(
+                width: size,
+                height: size,
+                child: Stack(
+                  children: [
+                    SvgPicture.asset('assets/svg/dartboard.svg', width: size, height: size),
+                    CustomPaint(
+                      size: Size(size, size), 
+                      painter: TargetZonePainter(targets[activeTargetIdx]),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+        
+        // Add the Player List here
+        Positioned(
+          top: 60,
+          left: isLeftSide ? 5 : null,
+          right: isLeftSide ? null : 5,
+          child: _buildLanePlayerList(isLeftSide),
+        ),
+
+        // LABEL TO SHOW WHO IS THROWING ON THIS BOARD
+        Positioned(
+          top: 20,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: isLeftSide ? Colors.blue.shade900 : Colors.indigo.shade900,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                isLeftSide ? "LANE 1" : "LANE 2",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDartboard(double size) {
-    int activePId = widget.game.playersIDs[currentPlayerIndex];
-    int activeTargetIdx = _getPlayerCurrentTargetIndex(activePId, currentPlayerIndex);
-
-    return GestureDetector(
-      onTapUp: (details) => _processZoneTap(details.localPosition, Size(size, size)),
-      child: FittedBox(
-        child: Stack(
+  Widget _buildSideMissButton(Object tag, bool isLeft) {
+    return SizedBox(
+      width: 110, // Slightly narrower to fit dual layout
+      height: 85,  // Slightly shorter
+      child: FloatingActionButton(
+        heroTag: tag,
+        onPressed: () => _handleMiss(isLeft),
+        backgroundColor: Colors.red.shade900,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              'assets/svg/dartboard.svg',
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              // placeholderBuilder: (context) => const CircularProgressIndicator(), // Optional loader
-            ),
-            CustomPaint(
-              size: Size(size, size),
-              painter: TargetZonePainter(targets[activeTargetIdx], Size(size, size)),
-            ),
+            Icon(Icons.not_interested, size: 30),
+            Text("MISS", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -649,7 +816,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       clipBehavior: Clip.antiAlias,
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(24),
-        bottomLeft: Radius.circular(24),
+        topRight: Radius.circular(24),
       ),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // The "Frosted Glass" effect
@@ -782,13 +949,60 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       child: Icon(icon, color: color, size: 16),
     );
   }
+
+  Widget _buildLanePlayerList(bool isLeft) {
+    List<int> pile = isLeft ? leftPile : rightPile;
+    int currentIdx = isLeft ? leftCurrentPlayerIdx : rightCurrentPlayerIdx;
+
+    return Container(
+      width: 80,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        children: List.generate(pile.length, (index) {
+          int pId = pile[index];
+          String name = playersBox.get(pId)?.nickName ?? "P";
+          bool isDone = index < currentIdx;
+          bool isActive = index == currentIdx;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Column(
+              children: [
+                Text(
+                  name.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                    color: isDone 
+                      ? Colors.grey.withValues(alpha: 0.5) 
+                      : (isActive ? Colors.blueAccent : Colors.black87),
+                  ),
+                ),
+                if (isActive)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (dIdx) {
+                      int laneDartIdx = isLeft ? currentLeftDartIdx : currentRightDartIdx;
+                      return Icon(
+                        Icons.circle,
+                        size: 6,
+                        color: dIdx < laneDartIdx ? Colors.orange : Colors.grey.shade300,
+                      );
+                    }),
+                  ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
 }
 
 class TargetZonePainter extends CustomPainter {
-  final int targetValue;
-  final Size boardSize;
+  final int targetValue;  
 
-  TargetZonePainter(this.targetValue, this.boardSize);
+  TargetZonePainter(this.targetValue);
 
   // Standard dartboard angles mapping...
   static double getAngleForValue(int val) {
@@ -854,5 +1068,5 @@ class TargetZonePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant TargetZonePainter oldDelegate) => oldDelegate.targetValue != targetValue;
 }
