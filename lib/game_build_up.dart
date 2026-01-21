@@ -21,7 +21,7 @@ class GameBuildUpScreen extends StatefulWidget {
 
 class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   // 1. Game Configuration
-  List<int> leftPile = [];
+  List<int> leftPile = []; //test5dsfas
   List<int> rightPile = [];  
   final List<int> targets = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
   final List<String> targetLabels = ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "BULL"];
