@@ -21,7 +21,7 @@ class GameBuildUpScreen extends StatefulWidget {
 
 class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   // 1. Game Configuration
-  List<int> leftPile = []; //test5dsfas
+  List<int> leftPile = [];
   List<int> rightPile = [];  
   final List<int> targets = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
   final List<String> targetLabels = ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "BULL"];
@@ -163,7 +163,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       
       // Find history for this player excluding the very last global entry
       final pHistory = allHistory.sublist(0, allHistory.length - 1)
-          .where((s) => s.idPlayer == pId && s.seatIndex == i)
+          .where((s) => s.idPlayer == pId)
           .toList();
 
       // Use the actual value to find the index in the targets list
@@ -231,11 +231,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       }
     }
 
-    if (leap > 0) {
-      _recordBuildUp(leap, isLeft); 
-    } else {
-      _handleMiss(isLeft);
-    }
+    _recordBuildUp(leap, isLeft);     
   }
 
   void _undoLastScore(bool isUndoFromDialog) {
@@ -246,22 +242,33 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     if (gameHistory.isEmpty) return;
 
     final lastEntry = gameHistory.last;
+    
+    // Identify which player this entry belonged to
+    int pId = lastEntry.idPlayer;
+    bool isLeft = leftPile.contains(pId);
+
+    // Delete from Hive
     gameTeamBuildUpBox.delete(lastEntry.key);
 
     setState(() {
-      // Sync pointers to exactly where the deleted throw happened
-      currentPlayerIndex = lastEntry.seatIndex;
-      
-      // Calculate what the global round was for that specific throw
-      // This handles wrapping back from Round 5 to Round 4 correctly
-      int pId = widget.game.playersIDs[currentPlayerIndex];
-      currentTargetIndex = _getPlayerCurrentTargetIndex(pId);
-    });
-
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Last score removed"), duration: Duration(seconds: 1)),
-    );
+      if (isLeft) {
+        // Revert the dart dot and the hit counter for the left lane
+        if (currentLeftDartIdx > 0) currentLeftDartIdx--;
+        if (!lastEntry.hitMiss && leftHitsInCurrentTurn > 0) {
+           leftHitsInCurrentTurn--;
+        }
+        // Ensure the correct player in the pile is active
+        leftCurrentPlayerIdx = leftPile.indexOf(pId);
+      } else {
+        // Revert the dart dot and the hit counter for the right lane
+        if (currentRightDartIdx > 0) currentRightDartIdx--;
+        if (!lastEntry.hitMiss && rightHitsInCurrentTurn > 0) {
+           rightHitsInCurrentTurn--;
+        }
+        // Ensure the correct player in the pile is active
+        rightCurrentPlayerIdx = rightPile.indexOf(pId);
+      }
+    });    
   }
 
   // Change this helper to find where a specific player is currently standing
@@ -277,30 +284,21 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     return idx == -1 ? 0 : idx;
   }
 
-  // This is called when they tap the "MISS" button or tap the wrong area of the board
-  void _handleMiss(bool isLeft) {
-    setState(() {
-      if (isLeft) {
-        currentLeftDartIdx++;
-      } else {
-        currentRightDartIdx++;
-      }
-      _checkTurnEnd(isLeft);
-    });
-  }
-
   // 2. Update Record Logic
   void _recordBuildUp(int leap, bool isLeft) {
     int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
-    int seatIdx = widget.game.playersIDs.indexOf(pId);
     int currentIdx = _getPlayerCurrentTargetIndex(pId);
     
     // Increment the specific lane counters
     if (isLeft) {
-      leftHitsInCurrentTurn++;
+      if (leap > 0) {
+        leftHitsInCurrentTurn++;
+      }
       currentLeftDartIdx++;
     } else {
-      rightHitsInCurrentTurn++;
+      if (leap > 0) {
+        rightHitsInCurrentTurn++;
+      }
       currentRightDartIdx++;
     }
 
@@ -309,16 +307,17 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     final gameBuildUp = GameBuildUp(
       idGame: widget.game.idGame!, 
       idPlayer: pId, 
-      seatIndex: seatIdx,
       targetValue: targets[currentIdx], 
+      hitSingle: leap == 1,
       hitDouble: leap == 2, 
       hitTriple: leap == 3,
+      hitMiss: leap == 0,
       nextTargetValue: targets[nextIdx],
     );
 
     gameTeamBuildUpBox.add(gameBuildUp);
     
-    if (targets[currentIdx] == 25) { 
+    if (targets[currentIdx] == 25 && leap > 0) { 
       _handleWinnerLogic(pId, isLeft); 
       return; 
     }
@@ -794,7 +793,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       height: 85,  // Slightly shorter
       child: FloatingActionButton(
         heroTag: tag,
-        onPressed: () => _handleMiss(isLeft),
+        onPressed: () => _recordBuildUp(0, isLeft),
         backgroundColor: Colors.red.shade900,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

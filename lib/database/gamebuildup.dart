@@ -14,11 +14,11 @@ class GameBuildUp extends HiveObject {
   int idPlayer;
 
   @HiveField(3)
-  int seatIndex; //position of the player during the whole game
-
-  @HiveField(4)
   // example, a build up game has values [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25]
   int targetValue;
+
+  @HiveField(4, defaultValue: false)
+  bool hitSingle;
 
   @HiveField(5, defaultValue: false)
   bool hitDouble;
@@ -26,16 +26,20 @@ class GameBuildUp extends HiveObject {
   @HiveField(6, defaultValue: false)
   bool hitTriple;
 
-  @HiveField(7)
+  @HiveField(7, defaultValue: false)
+  bool hitMiss;
+
+  @HiveField(8)
   int nextTargetValue; //The next target to be hit.
 
   GameBuildUp({
     required this.idGame,
     required this.idPlayer, 
-    required this.seatIndex, 
-    required this.targetValue, 
+    required this.targetValue,
+    required this.hitSingle,
     required this.hitDouble, 
     required this.hitTriple,
+    required this.hitMiss,
     required this.nextTargetValue,
   });
 }

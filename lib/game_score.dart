@@ -16,11 +16,15 @@ enum ScoringMode{
 class GameScoreScreen extends StatefulWidget {
   final Game game;
   final String gameText;
+  final Color tileBackgroundColor;
+  final bool resumeMode;
   
   const GameScoreScreen({
     super.key, 
     required this.game,
-    required this.gameText
+    required this.gameText,
+    required this.tileBackgroundColor,
+    required this.resumeMode
   });
 
   @override
@@ -53,15 +57,19 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
     playersBox = Hive.box<Player>('playersBox');
     teamsBox = Hive.box<Team>('teamsBox');
 
+    if (widget.resumeMode) {
+      _calculateResumeIndexes();
+    }
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true); // This keeps it moving forever
 
     _slashController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 300), // Fast like a sword
-  );
+      vsync: this,
+      duration: const Duration(seconds: 2), // Fast like a sword
+    );
   }
 
   @override
@@ -86,6 +94,51 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
     ];
 
     return materialColors[idTeam % materialColors.length];
+  }
+
+  void _calculateResumeIndexes() {
+    final gameScores = scoreBox.values
+        .where((s) => s.idGame == widget.game.idGame)
+        .toList();
+
+    if (gameScores.isNotEmpty) {
+      int maxRound = -1;
+      int maxSeat = -1;
+
+      for (var score in gameScores) {
+        if (score.round > maxRound) {
+          maxRound = score.round;
+          maxSeat = score.seatIndex;
+        } else if (score.round == maxRound) {
+          if (score.seatIndex > maxSeat) {
+            maxSeat = score.seatIndex;
+          }
+        }
+      }
+
+      int nextSeat = maxSeat + 1;
+      int nextRound = maxRound;
+
+      if (nextSeat >= widget.game.playersIDs.length) {
+        nextSeat = 0;
+        nextRound++;
+      }
+
+      // Prevent out of bounds if game was fully completed
+      if (nextRound >= targets.length) {
+        nextRound = targets.length - 1;
+        nextSeat = widget.game.playersIDs.length - 1;
+      }
+
+      // Set state variables directly since this is called from initState
+      currentTargetIndex = nextRound;
+      currentPlayerIndex = nextSeat;
+      
+      final int totalTeams = widget.game.teamsIDs?.length ?? 0;
+      if (totalTeams > 0) {
+        currentTeamIndex = currentPlayerIndex % totalTeams;
+      }
+    }
   }
   
   List<Map<String, dynamic>> _getCurrentRankings() {
@@ -575,17 +628,8 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
             ),
           ]          
         ),
-        backgroundColor: Colors.blueGrey.shade800,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.undo),
-            tooltip: "Undo last turn",
-            onPressed: (currentTargetIndex == 0 && currentPlayerIndex == 0) 
-                ? null // Disable if at the very start
-                : () => _undoLastScore(false),
-          ),
-        ],
+        backgroundColor: widget.tileBackgroundColor,
+        foregroundColor: Colors.white,        
       ),
       body: Stack(
         children: [
@@ -625,6 +669,19 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.undo, size: 44),
+                          color: Colors.blueGrey.shade800,
+                          onPressed: (currentTargetIndex == 0 && currentPlayerIndex == 0) 
+                              ? null 
+                              : () => _undoLastScore(false),
+                        ),
+                        const Text("Undo last score", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     Column(
@@ -705,15 +762,15 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Text(
                         "Number of Hits:",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12,                    
+                          fontSize: 16,                    
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       LayoutBuilder(
                         builder: (context, constraints) {
                         return Padding(
@@ -725,8 +782,8 @@ class _GameScoreScreenState extends State<GameScoreScreen> with TickerProviderSt
                             children: List.generate(10, (i) {
                               return SizedBox(
                                 // On a tablet, make buttons wider; on a phone, make them smaller
-                                width: constraints.maxWidth > 600 ? 90 : 75, 
-                                height: 80,
+                                width: 130, 
+                                height: 130,
                                 child: _buildInputButton(i),
                               );
                             }),

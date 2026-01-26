@@ -92,7 +92,36 @@ class _GameSelectionState extends State<GameSelection> {
     }
   }
 
-  void _startGame(BuildContext context) {
+  Future<void> _resumeGame(BuildContext context, Game game) async {
+    final bool isTeamGameMode = (game.gameMode == 2);
+
+    if (game.gameType == 1) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameScoreScreen(
+            game: game,
+            gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
+            tileBackgroundColor: widget.tileBackgroundColor,
+            resumeMode: true
+          ),
+        ),
+      );
+    } else if (game.gameType == 2) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameBuildUpScreen(
+            game: game,
+            gameText: 'Players Team Build Up Game',
+          ),
+        ),
+      );
+    }
+    setState(() {});
+  }
+
+  Future<void> _startGame(BuildContext context) async {
     final bool isTeamGameMode = (widget.enuGameMode == GameMode.gameTeams);    
     final List<int> selectedPlayersIds = [];
 
@@ -147,18 +176,20 @@ class _GameSelectionState extends State<GameSelection> {
     game.save(); 
     
     if (widget.enuGameType == GameType.gameHalfIt) {
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           // The add_player.dart page will be created and shown
           builder: (context) => GameScoreScreen(
             game: game,
             gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
+            tileBackgroundColor: widget.tileBackgroundColor,
+            resumeMode: false
           ),
         ),
       );
     }else if (widget.enuGameType == GameType.gameBuildUp){
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           // The add_player.dart page will be created and shown
@@ -169,6 +200,7 @@ class _GameSelectionState extends State<GameSelection> {
         ),
       );
     }    
+    setState(() {});
   }
 
   @override
@@ -182,6 +214,12 @@ class _GameSelectionState extends State<GameSelection> {
         minNbPlayers = 4;
         break;
     }
+
+    final gamesBox = Hive.box<Game>('gamesBox');
+    int currentTargetMode = widget.enuGameMode == GameMode.gamePlayers ? 1 : 2;
+    final Game? lastActiveGame = gamesBox.values.cast<Game?>()
+        .where((g) => g != null && g.ended == false && g.gameMode == currentTargetMode)
+        .lastOrNull;
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -228,6 +266,18 @@ class _GameSelectionState extends State<GameSelection> {
                     style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (lastActiveGame != null) 
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        _resumeGame(context, lastActiveGame);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade700,
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.history),
+                      label: const Text("RESUME LAST GAME"),
+                    ),
                   ElevatedButton.icon(
                     // Enable button if at least the minimum number of players or teams are selected
                     onPressed: _selectedIds.length < minNbPlayers 
@@ -240,7 +290,7 @@ class _GameSelectionState extends State<GameSelection> {
                       foregroundColor: Colors.white,
                     ),
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text("START"),
+                    label: const Text("START NEW GAME"),
                   ),
                 ],
               ),
