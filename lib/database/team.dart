@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'team.g.dart';
 
@@ -19,5 +19,11 @@ class Team extends HiveObject {
   @HiveField(4, defaultValue: false)
   bool? deleted;
 
-  Team({required this.idPlayer1, required this.idPlayer2, required this.surName, this.deleted});
+  Team({
+    this.idTeam,
+    required this.idPlayer1, 
+    required this.idPlayer2, 
+    required this.surName, 
+    this.deleted = false,
+  });
 }

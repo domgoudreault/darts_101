@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:darts_101/game_score.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+import 'package:darts_101/game_halfit.dart';
 import 'package:darts_101/game_build_up.dart';
 import 'package:darts_101/database/player.dart';
 import 'package:darts_101/database/team.dart';
@@ -99,11 +99,11 @@ class _GameSelectionState extends State<GameSelection> {
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => GameScoreScreen(
+          builder: (context) => GameHalfItScreen(
             game: game,
             gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
             tileBackgroundColor: widget.tileBackgroundColor,
-            resumeMode: true
+            resumeMode: true,
           ),
         ),
       );
@@ -114,6 +114,8 @@ class _GameSelectionState extends State<GameSelection> {
           builder: (context) => GameBuildUpScreen(
             game: game,
             gameText: 'Players Team Build Up Game',
+            tileBackgroundColor: widget.tileBackgroundColor,
+            resumeMode: true,
           ),
         ),
       );
@@ -180,11 +182,11 @@ class _GameSelectionState extends State<GameSelection> {
         context,
         MaterialPageRoute(
           // The add_player.dart page will be created and shown
-          builder: (context) => GameScoreScreen(
+          builder: (context) => GameHalfItScreen(
             game: game,
             gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
             tileBackgroundColor: widget.tileBackgroundColor,
-            resumeMode: false
+            resumeMode: false,
           ),
         ),
       );
@@ -196,6 +198,8 @@ class _GameSelectionState extends State<GameSelection> {
           builder: (context) => GameBuildUpScreen(
             game: game,
             gameText: 'Players Team Build Up Game',
+            tileBackgroundColor: widget.tileBackgroundColor,
+            resumeMode: false,
           ),
         ),
       );
@@ -216,9 +220,10 @@ class _GameSelectionState extends State<GameSelection> {
     }
 
     final gamesBox = Hive.box<Game>('gamesBox');
-    int currentTargetMode = widget.enuGameMode == GameMode.gamePlayers ? 1 : 2;
+    int currentTargetGameMode = widget.enuGameMode == GameMode.gamePlayers ? 1 : 2;
+    int currentTargetGameType = widget.enuGameType == GameType.gameHalfIt ? 1 : 2;
     final Game? lastActiveGame = gamesBox.values.cast<Game?>()
-        .where((g) => g != null && g.ended == false && g.gameMode == currentTargetMode)
+        .where((g) => g != null && g.ended == false && g.gameMode == currentTargetGameMode && g.gameType == currentTargetGameType)
         .lastOrNull;
 
     return Scaffold(
@@ -251,6 +256,7 @@ class _GameSelectionState extends State<GameSelection> {
           ]          
         ),
       ),
+      
       body: SafeArea(
         child: Column(
           children: [
@@ -261,9 +267,12 @@ class _GameSelectionState extends State<GameSelection> {
                 children: [
                   Text(
                     widget.enuGameMode == GameMode.gameTeams 
-                        ? "Teams in game" 
-                        : "Players in game",
-                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold,
+                        ? "Teams in game (${_selectedIds.length})" 
+                        : "Players in game (${_selectedIds.length})",
+                    style: TextStyle(
+                      fontSize: 20, 
+                      color: Colors.black, 
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   if (lastActiveGame != null) 
@@ -335,9 +344,13 @@ class _GameSelectionState extends State<GameSelection> {
                 children: [
                   Text(
                     widget.enuGameMode == GameMode.gameTeams 
-                        ? "Available Teams" 
-                        : "Available Players",
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                        ? "Available Teams (${teamsBox.values.where((t) => !(t.deleted ?? false)).length - _selectedIds.length})" 
+                        : "Available Players (${playersBox.values.where((p) => !(p.deleted ?? false)).length - _selectedIds.length})",
+                    style: TextStyle(
+                      fontSize: 20, 
+                      color: Colors.black, 
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ]
               ),
@@ -400,7 +413,7 @@ class _GameSelectionState extends State<GameSelection> {
               elevation: 4, // Optional: makes it look "lifted"
             );
           },
-            onReorder: (int oldIndex, int newIndex) {
+            onReorderItem : (int oldIndex, int newIndex) {
               setState(() {
                 if (newIndex > oldIndex) {
                   newIndex -= 1;

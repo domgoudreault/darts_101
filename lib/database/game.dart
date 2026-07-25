@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'game.g.dart';
 
@@ -31,12 +31,13 @@ class Game extends HiveObject {
   bool ended;
 
   Game({
+    this.idGame,
     required this.gameType, 
     required this.gameMode, 
-    required this.teamsIDs, 
+    this.teamsIDs, 
     this.idTeamWinner, 
     required this.playersIDs, 
     this.idPlayerWinner, 
-    required this.ended
+    this.ended = false,
   });
 }

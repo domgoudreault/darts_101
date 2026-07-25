@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'gamebuildup.g.dart';
 
@@ -13,33 +13,50 @@ class GameBuildUp extends HiveObject {
   @HiveField(2)
   int idPlayer;
 
-  @HiveField(3)
+  @HiveField(3, defaultValue: false)
+  bool isLeftLane;
+
+  @HiveField(4)
+  int seatIndex; //position of the player in the lane
+
+  @HiveField(5, defaultValue: false)
+  bool isSeatedRecord;
+
+  @HiveField(6)
+  int round;
+  
+  @HiveField(7)
   // example, a build up game has values [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25]
   int targetValue;
 
-  @HiveField(4, defaultValue: false)
+  @HiveField(8, defaultValue: false)
   bool hitSingle;
 
-  @HiveField(5, defaultValue: false)
+  @HiveField(9, defaultValue: false)
   bool hitDouble;
 
-  @HiveField(6, defaultValue: false)
+  @HiveField(10, defaultValue: false)
   bool hitTriple;
 
-  @HiveField(7, defaultValue: false)
+  @HiveField(11, defaultValue: false)
   bool hitMiss;
 
-  @HiveField(8)
+  @HiveField(12)
   int nextTargetValue; //The next target to be hit.
 
   GameBuildUp({
+    this.idGameBuildUp,
     required this.idGame,
     required this.idPlayer, 
+    this.isLeftLane = false, 
+    required this.seatIndex,
+    this.isSeatedRecord = false,
+    required this.round,
     required this.targetValue,
-    required this.hitSingle,
-    required this.hitDouble, 
-    required this.hitTriple,
-    required this.hitMiss,
+    this.hitSingle = false,
+    this.hitDouble = false,
+    this.hitTriple = false,
+    this.hitMiss = false,
     required this.nextTargetValue,
   });
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/modify_add_team.dart';
 import 'package:darts_101/database/player.dart';
 import 'package:darts_101/database/team.dart';

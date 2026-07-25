@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:darts_101/database/player.dart';
 import 'package:darts_101/database/game.dart';
@@ -13,7 +13,16 @@ enum BuildUpMode { forward, backward }
 class GameBuildUpScreen extends StatefulWidget {
   final Game game;
   final String gameText;
-  const GameBuildUpScreen({super.key, required this.game, required this.gameText});
+  final Color tileBackgroundColor;
+  final bool resumeMode;
+  
+  const GameBuildUpScreen({
+    super.key, 
+    required this.game,
+    required this.gameText,
+    required this.tileBackgroundColor,
+    required this.resumeMode
+  });
 
   @override
   State<GameBuildUpScreen> createState() => _GameBuildUpScreenState();
@@ -27,16 +36,19 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   final List<String> targetLabels = ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "BULL"];
   int leftCurrentPlayerIdx = 0; // Index within the leftPile
   int currentLeftDartIdx = 0;
+  int leftCurrentTargetIndex = 0;
   int leftHitsInCurrentTurn = 0;
+  int leftCurrentRound = 1;
+  
   int rightCurrentPlayerIdx = 0; // Index within the rightPile
   int currentRightDartIdx = 0;
-  int rightHitsInCurrentTurn = 0;
+  int rightCurrentTargetIndex = 0;
+  int rightHitsInCurrentTurn = 0;  
+  int rightCurrentRound = 1;
 
-  int currentPlayerIndex = 0; // Index in widget.game.playersIDs
-  int currentTargetIndex = 0; // Index in targets list (0-11)
-  int currentDartIndex = 0;   // 0, 1, 2
-  int hitsInCurrentTurn = 0;  // 0, 1, 2, 3
-
+  bool isLeftWinnerFreezeUI = false;
+  bool isRightWinnerFreezeUI = false;
+    
   late Box<GameBuildUp> gameTeamBuildUpBox;
   late Box<Player> playersBox;    
 
@@ -45,28 +57,122 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     super.initState();
     gameTeamBuildUpBox = Hive.box<GameBuildUp>('gameTeamBuildUpBox');
     playersBox = Hive.box<Player>('playersBox');
-    _splitPlayers();
+    _splitPlayers(widget.resumeMode);
+
+    if (widget.resumeMode) {
+      _calculateResumeIndexes();
+    }
   }
 
-  void _splitPlayers() {
-    final List<int> originalList = widget.game.playersIDs;
-    final Random random = Random();
+  void _calculateResumeIndexes() {        
+    // 1. Filter history for this specific game
+    final history = gameTeamBuildUpBox.values
+        .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false)
+        .toList();
 
-    for (int i = 0; i < originalList.length; i++) {
-      // Check if it's the last player and the total count is odd
-      if (i == originalList.length - 1 && originalList.length % 2 != 0) {
-        if (random.nextBool()) {
-          leftPile.add(originalList[i]);
+    if (history.isEmpty) {return;}
+
+    setState(() {
+      // --- LEFT LANE RESUME ---
+      // Efficiently find the MAX round from gameplay records
+      leftCurrentRound = gameTeamBuildUpBox.values
+          .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.isLeftLane == true)
+          .fold<int>(1, (max, e) => e.round > max ? e.round : max);
+      
+      final leftHistory = history.where((s) => s.isLeftLane == true).toList();
+      if (leftHistory.isNotEmpty) {
+        final lastLeft = leftHistory.last;
+        leftCurrentTargetIndex = targets.indexOf(lastLeft.nextTargetValue);
+        leftCurrentPlayerIdx = leftPile.indexOf(lastLeft.idPlayer);
+        
+        // Count only the darts thrown by THIS player in THIS round
+        int playerDartsThisRound = leftHistory.where((s) => 
+          s.idPlayer == lastLeft.idPlayer && 
+          s.round == lastLeft.round
+        ).length;
+
+        currentLeftDartIdx = playerDartsThisRound % 3;
+      }
+
+      // --- RIGHT LANE RESUME ---
+      // Efficiently find the MAX round from gameplay records
+      rightCurrentRound = gameTeamBuildUpBox.values
+          .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.isLeftLane == false)
+          .fold<int>(1, (max, e) => e.round > max ? e.round : max);
+      
+      final rightHistory = history.where((s) => s.isLeftLane == false).toList();
+      if (rightHistory.isNotEmpty) {
+        final lastRight = rightHistory.last;
+        rightCurrentTargetIndex = targets.indexOf(lastRight.nextTargetValue);
+        rightCurrentPlayerIdx = rightPile.indexOf(lastRight.idPlayer);
+
+        // Count only the darts thrown by THIS player in THIS round
+        int playerDartsThisRound = rightHistory.where((s) => 
+          s.idPlayer == lastRight.idPlayer && 
+          s.round == lastRight.round
+        ).length;
+
+        currentRightDartIdx = playerDartsThisRound % 3;        
+      }
+    });
+  }
+
+  void _splitPlayers(bool resumeMode) {    
+    if (resumeMode) {
+      // 1. Reconstruct piles from seating records (round 0)
+      final history = gameTeamBuildUpBox.values
+          .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == true && s.round == 0)
+          .toList()          
+          ..sort((a, b) => a.seatIndex.compareTo(b.seatIndex));
+
+      // 2. Reconstruct the piles based on those specific seating records
+      for (var record in history) {
+        if (record.isLeftLane) {
+          leftPile.add(record.idPlayer);
         } else {
-          rightPile.add(originalList[i]);
+          rightPile.add(record.idPlayer);
         }
-      } else {
-        // Alternating logic: 1st (index 0) Left, 2nd (index 1) Right...
-        if (i % 2 == 0) {
-          leftPile.add(originalList[i]);
+      }
+    } else {      
+      final Random random = Random();
+
+      List<int> shuffledIds = List<int>.from(widget.game.playersIDs);
+      shuffledIds.shuffle(random);
+
+      for (int i = 0; i < shuffledIds.length; i++) {
+        int pId = shuffledIds[i];
+        bool isLeft;
+
+        if (i == shuffledIds.length - 1 && shuffledIds.length % 2 != 0) {
+          isLeft = random.nextBool();
         } else {
-          rightPile.add(originalList[i]);
+          isLeft = (i % 2 == 0);
         }
+
+        // Assign to piles and save the "Seated Record"
+        if (isLeft) {
+          leftPile.add(pId);
+        } else {
+          rightPile.add(pId);
+        }        
+
+        // This ensures the player is "locked" into this lane for future resumes
+        final seatRecord = GameBuildUp(
+          idGame: widget.game.idGame!,
+          idPlayer: pId,
+          isLeftLane: isLeft,
+          seatIndex: i,
+          isSeatedRecord: true, // This is the magic flag
+          round: 0,
+          targetValue: targets[0],
+          hitSingle: false,
+          hitDouble: false,
+          hitTriple: false,
+          hitMiss: false,
+          nextTargetValue: targets[0],
+        );
+
+        gameTeamBuildUpBox.add(seatRecord);
       }
     }
   }
@@ -74,7 +180,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   void _undoSpecificLane(bool isLeft) {
     // 1. Get all entries for this specific game
     final gameHistory = gameTeamBuildUpBox.values
-        .where((s) => s.idGame == widget.game.idGame)
+        .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false)
         .toList();
 
     if (gameHistory.isEmpty) return;
@@ -91,17 +197,73 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       // 4. Delete from Hive immediately
       gameTeamBuildUpBox.delete(lastEntry.key);
 
-      // 5. Update UI: Set the active player back to the one who just had their score deleted
       setState(() {
         if (isLeft) {
+          // Check freeze first, unfreeze if it's necessary
+          if (isLeftWinnerFreezeUI) {
+            isLeftWinnerFreezeUI = false;
+            currentLeftDartIdx--;
+          }else{
+            // If we are undoing the first dart of the first player, go back one round
+            if (leftCurrentPlayerIdx == 0 && currentLeftDartIdx == 0) {
+              leftCurrentRound--;
+            }
+            
+            // If we were at the start of a turn (0), we jump back to 2 dots of the previous state
+            if (currentLeftDartIdx == 0) {
+              currentLeftDartIdx = 2; 
+            } else {
+              currentLeftDartIdx--; // Otherwise just go back one dot
+            }
+          }
+
+          // Re-verify hits for the current turn from Hive
+          final playerHistory = gameTeamBuildUpBox.values
+              .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.idPlayer == lastEntry.idPlayer)
+              .toList();
+          
+          int currentSetStart = (playerHistory.length ~/ 3) * 3;
+          leftHitsInCurrentTurn = playerHistory
+              .skip(currentSetStart)
+              .where((s) => !s.hitMiss)
+              .length;
+
+          leftCurrentTargetIndex = targets.indexOf(lastEntry.targetValue);
           leftCurrentPlayerIdx = targetPile.indexOf(lastEntry.idPlayer);
         } else {
+          // Check freeze first, unfreeze if it's necessary
+          if (isRightWinnerFreezeUI) {
+            isRightWinnerFreezeUI = false;
+            currentRightDartIdx--;
+          }else{
+            // If we are undoing the first dart of the first player, go back one round
+            if (rightCurrentPlayerIdx == 0 && currentRightDartIdx == 0) {
+              rightCurrentRound--;
+            }
+            
+            // If we were at the start of a turn (0), we jump back to 2 dots of the previous state
+            if (currentRightDartIdx == 0) {
+              currentRightDartIdx = 2; 
+            } else {
+              currentRightDartIdx--; // Otherwise just go back one dot
+            }
+          }                    
+
+          final playerHistory = gameTeamBuildUpBox.values
+              .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.idPlayer == lastEntry.idPlayer)
+              .toList();
+
+          int currentSetStart = (playerHistory.length ~/ 3) * 3;
+          rightHitsInCurrentTurn = playerHistory
+              .skip(currentSetStart)
+              .where((s) => !s.hitMiss)
+              .length;
+
+          rightCurrentTargetIndex = targets.indexOf(lastEntry.targetValue);
           rightCurrentPlayerIdx = targetPile.indexOf(lastEntry.idPlayer);
         }
-        // Reset dart counters so the player can re-throw the cancelled dart
-        currentDartIndex = 0; 
-        hitsInCurrentTurn = 0;
-      });
+      });      
+      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("No scores to undo in this lane"))
@@ -115,10 +277,10 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     for (int i = 0; i < widget.game.playersIDs.length; i++) {
       int pId = widget.game.playersIDs[i];
       final hitCount = gameTeamBuildUpBox.values.where((s) => 
-        s.idGame == widget.game.idGame && s.idPlayer == pId
+        s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.idPlayer == pId && s.hitMiss == false
       ).length;
 
-      int targetIdx = _getPlayerCurrentTargetIndex(pId);
+      int targetIdx = _getPlayerActiveTargetIndex(pId);
       
       rankings.add({
         'target': targetIdx,
@@ -148,10 +310,10 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     return rankings;
   }
 
-  List<Map<String, dynamic>> _getRankingsWithTrends() {
+  List<Map<String, dynamic>> _getRankings() {
     final currentRanks = _getCurrentRankings();
     final allHistory = gameTeamBuildUpBox.values
-        .where((s) => s.idGame == widget.game.idGame)
+        .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false)
         .toList();
 
     if (allHistory.isEmpty) return currentRanks;
@@ -193,8 +355,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     final deg = atan2(pos.dy - rad, pos.dx - rad) * (180 / pi);
     return deg < 0 ? deg + 360 : deg;
   }
-
-  // 1. Update the Tap Processor to know which lane was hit
+  
   void _processZoneTap(Offset localPosition, Size size, bool isLeft) {
     double radius = size.width / 2;
     Offset center = Offset(radius, radius);
@@ -202,7 +363,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
 
     // Identify who is throwing based on the lane tapped
     int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
-    int activeTargetIdx = _getPlayerCurrentTargetIndex(pId);
+    int activeTargetIdx = _getPlayerActiveTargetIndex(pId);
     
     int targetVal = targets[activeTargetIdx];
     int leap = 0;
@@ -236,7 +397,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
 
   void _undoLastScore(bool isUndoFromDialog) {
     final gameHistory = gameTeamBuildUpBox.values
-        .where((s) => s.idGame == widget.game.idGame)
+        .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false)
         .toList();
 
     if (gameHistory.isEmpty) return;
@@ -271,10 +432,9 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     });    
   }
 
-  // Change this helper to find where a specific player is currently standing
-  int _getPlayerCurrentTargetIndex(int playerId) {
+  int _getPlayerActiveTargetIndex(int playerId) {
     final history = gameTeamBuildUpBox.values.where((s) => 
-      s.idGame == widget.game.idGame && 
+      s.idGame == widget.game.idGame && s.isSeatedRecord == false && 
       s.idPlayer == playerId
     ).toList();
 
@@ -287,26 +447,30 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   // 2. Update Record Logic
   void _recordBuildUp(int leap, bool isLeft) {
     int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
-    int currentIdx = _getPlayerCurrentTargetIndex(pId);
+    int currentIdx = _getPlayerActiveTargetIndex(pId);
     
     // Increment the specific lane counters
-    if (isLeft) {
+    if (isLeft) {      
+      currentLeftDartIdx++;
       if (leap > 0) {
         leftHitsInCurrentTurn++;
       }
-      currentLeftDartIdx++;
-    } else {
+    } else {      
+      currentRightDartIdx++;
       if (leap > 0) {
         rightHitsInCurrentTurn++;
       }
-      currentRightDartIdx++;
     }
 
     int nextIdx = (currentIdx + leap).clamp(0, targets.length - 1);
 
     final gameBuildUp = GameBuildUp(
       idGame: widget.game.idGame!, 
-      idPlayer: pId, 
+      idPlayer: pId,
+      isLeftLane: isLeft,
+      seatIndex: isLeft ? (leftCurrentPlayerIdx * 2) : (rightCurrentPlayerIdx * 2 + 1),
+      isSeatedRecord: false,
+      round: isLeft ? leftCurrentRound : rightCurrentRound,
       targetValue: targets[currentIdx], 
       hitSingle: leap == 1,
       hitDouble: leap == 2, 
@@ -317,110 +481,198 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
 
     gameTeamBuildUpBox.add(gameBuildUp);
     
-    if (targets[currentIdx] == 25 && leap > 0) { 
-      _handleWinnerLogic(pId, isLeft); 
-      return; 
-    }
+    setState(() {
+      // 1. THE WINNER DETECTED
+      if (targets[currentIdx] == 25 && leap > 0) {         
+        if (isLeft) {
+          isLeftWinnerFreezeUI = true;
+        } else {
+          isRightWinnerFreezeUI = true;
+        }
+      }else{
+        if (isLeft) {
+          leftCurrentTargetIndex = nextIdx;
+        } else {
+          rightCurrentTargetIndex = nextIdx;
+        }
+      }
 
-    setState(() { 
-      _checkTurnEnd(isLeft); 
+      // ignore: unused_local_variable
+      bool isOneLaneFrozen = isLeft ? isLeftWinnerFreezeUI : isRightWinnerFreezeUI;
+    
+      // if (isOneLaneFrozen) {
+      // return false; 
+      // }
+
+      // _checkTurnEnd returns true if the player hit a streak and is re-throwing
+      // ignore: unused_local_variable
+      bool playerHasBonusRound = _checkTurnEnd(isLeft);
+      
+      bool someoneIsFrozen = isLeftWinnerFreezeUI || isRightWinnerFreezeUI;
+
+      // If someone is frozen and this specific turn is officially finished
+      if (someoneIsFrozen ) { // && !isStillThrowing) {
+        bool timeMatched = false;
+
+        // 1. Get the latest record for the Left Lane from Hive
+        final lastLeftRecord = gameTeamBuildUpBox.values.lastWhere(
+          (r) => r.isLeftLane == true,
+          orElse: () => GameBuildUp(idGame: -1, idPlayer: -1, isLeftLane: true, seatIndex: -1, isSeatedRecord: false, round: -1, targetValue: -1, hitSingle: false, hitDouble: false, hitTriple: false, hitMiss: false, nextTargetValue: -1),
+        );
+
+        // 2. Get the latest record for the Right Lane from Hive
+        final lastRightRecord = gameTeamBuildUpBox.values.lastWhere(
+          (r) => r.isLeftLane == false,
+          orElse: () => GameBuildUp(idGame: -1, idPlayer: -1, isLeftLane: false, seatIndex: -1, isSeatedRecord: false, round: -1, targetValue: -1, hitSingle: false, hitDouble: false, hitTriple: false, hitMiss: false, nextTargetValue: -1),
+        );
+
+        if (lastLeftRecord.idGame != -1 && lastRightRecord.idGame != -1) {
+          int leftPileIdx = (lastLeftRecord.seatIndex / 2).floor();
+          int rightPileIdx = (lastRightRecord.seatIndex / 2).floor();
+
+          if (isLeftWinnerFreezeUI) {
+            // Left won: Time is matched if Right is in the same round and same/later pile index
+            // OR if Right has already progressed to a later round.
+            timeMatched = (lastRightRecord.round > lastLeftRecord.round) || 
+                          (lastRightRecord.round == lastLeftRecord.round && rightPileIdx >= leftPileIdx);
+          } else if (isRightWinnerFreezeUI) {
+            // Right won: Time is matched if Left is in the same round and same/later pile index
+            // OR if Left has already progressed to a later round.
+            timeMatched = (lastLeftRecord.round > lastRightRecord.round) || 
+                          (lastLeftRecord.round == lastRightRecord.round && leftPileIdx >= rightPileIdx);
+          }
+        }
+
+        if (timeMatched) {
+          // Use the winner's ID from the lane that is actually frozen
+          int winnerPid = isLeftWinnerFreezeUI 
+              ? lastLeftRecord.idPlayer 
+              : lastRightRecord.idPlayer;
+              
+          _handleWinnerLogic(winnerPid, isLeftWinnerFreezeUI);
+        }
+      }
     });
   }
 
-  void _handleWinnerLogic(int winnerId, bool isLeft) {
-    // The "Heat" is defined by the position in the current pile.
-    // If the 2nd player in the Left Pile hits the bull, the 2nd player in the 
-    // Right Pile must be the last one allowed to finish.
-    int winningHeatIndex = isLeft ? leftCurrentPlayerIdx : rightCurrentPlayerIdx;
+  void _handleWinnerLogic(int winnerId, bool isLeft) {    
+    // Identify what needs to be deleted
+    final keysToDelete = _getKeysToPrune(winnerId, isLeft);
 
-    // 1. Clean up any "future" throws from the lane that was moving faster.
-    _pruneOutrunEntries(winningHeatIndex, isLeft);
-
-    // 2. Identify the 'Partner' in the other lane for the final throw.
-    // If the partner has already finished their turn for this heat, we end immediately.
-    // If they are currently throwing, the game will wait for them to finish (Dart 3).
+    // If we found entries that outran the win, prune them
+    if (keysToDelete.isNotEmpty) {
+      _pruneOutrunEntries(keysToDelete, isLeft);
+    }
     
     _endGame(winnerId);
   }
 
-  void _pruneOutrunEntries(int currentHeatIndex, bool winnerIsLeft) {
-    // Get all throws for this specific game
-    final allHistory = gameTeamBuildUpBox.values
-        .where((s) => s.idGame == widget.game.idGame)
+  List<dynamic> _getKeysToPrune(int winnerId, bool isLeft) {
+    // 1. Find the winning entry to get the exact seatIndex and round
+    final winningEntry = gameTeamBuildUpBox.values.lastWhere(
+      (s) => s.idGame == widget.game.idGame && 
+            s.idPlayer == winnerId && 
+            s.isSeatedRecord == false
+    );
+    
+    final int winningSeatIndex = winningEntry.seatIndex;
+    final int winningRound = isLeft ? leftCurrentRound : rightCurrentRound;
+
+    return gameTeamBuildUpBox.values
+        .where((s) => s.idGame == widget.game.idGame && s.isSeatedRecord == false)
+        .where((entry) {
+          // Condition 1: Any entry in a future round
+          if (entry.round > winningRound) return true;
+
+          // Condition 2: Current round pruning based on your seatIndex sequence
+          if (entry.round == winningRound) {
+            // If the winner is Left (even index), we prune everyone after their partner (index + 1)
+            // If the winner is Right (odd index), we prune everyone after them (index)
+            if (isLeft) {
+              return entry.seatIndex > (winningSeatIndex + 1);
+            } else {
+              return entry.seatIndex > winningSeatIndex;
+            }
+          }
+          return false;
+        })
+        .map((e) => e.key)
         .toList();
+  }
 
-    // We are checking the pile OPPOSITE to the winner
-    List<int> opponentPile = winnerIsLeft ? rightPile : leftPile;
-
-    // List to track which keys to delete from Hive
-    List<dynamic> keysToDelete = [];
-
-    for (var entry in allHistory) {
-      // Check if this entry belongs to a player in the opponent's pile
-      if (opponentPile.contains(entry.idPlayer)) {
-        int positionInPile = opponentPile.indexOf(entry.idPlayer);
-        
-        // If the player who threw this is further in the list than the winning heat,
-        // or if they are in a "later" round (handled by seatIndex/logic), delete it.
-        if (positionInPile > currentHeatIndex) {
-          keysToDelete.add(entry.key);
-        }
-      }
-    }
-
-    // Execute the deletion
+  void _pruneOutrunEntries(List<dynamic> keysToDelete, bool winnerIsLeft) {
+    // 1. Execute the deletion from Hive
     for (var key in keysToDelete) {
       gameTeamBuildUpBox.delete(key);
     }
 
-    // Reset the opponent's index so the UI shows them back at the correct heat
+    // 2. Sync the opponent's state directly
     setState(() {
       if (winnerIsLeft) {
-        if (rightCurrentPlayerIdx > currentHeatIndex) {
-          rightCurrentPlayerIdx = currentHeatIndex;
+        rightCurrentRound = leftCurrentRound;
+        if (rightCurrentPlayerIdx > leftCurrentPlayerIdx) {
+          rightCurrentPlayerIdx = leftCurrentPlayerIdx;
+          currentRightDartIdx = 0; 
+          rightHitsInCurrentTurn = 0;
         }
       } else {
-        if (leftCurrentPlayerIdx > currentHeatIndex) {
-          leftCurrentPlayerIdx = currentHeatIndex;
+        leftCurrentRound = rightCurrentRound;
+        if (leftCurrentPlayerIdx > rightCurrentPlayerIdx) {
+          leftCurrentPlayerIdx = rightCurrentPlayerIdx;
+          currentLeftDartIdx = 0;
+          leftHitsInCurrentTurn = 0;
         }
       }
     });
   }
 
   // 3. Independent Turn End
-  void _checkTurnEnd(bool isLeft) {
+  bool _checkTurnEnd(bool isLeft) {        
     int dartIdx = isLeft ? currentLeftDartIdx : currentRightDartIdx;
-    int hits = isLeft ? leftHitsInCurrentTurn : rightHitsInCurrentTurn;
+    
+    // Use the history to be 100% sure of the hits in this set
+    int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
+    int currentRound = isLeft ? leftCurrentRound : rightCurrentRound;    
+    int hits = gameTeamBuildUpBox.values
+      .where((r) => r.idPlayer == pId && r.round == currentRound && !r.hitMiss).length;
+    bool isBonus = (hits % 3 == 0);
 
-    if (dartIdx >= 3) {
-      bool isBonus = (hits == 3);
-      
-      // Reset the specific lane counters
-      if (isLeft) {
-        currentLeftDartIdx = 0;
-        leftHitsInCurrentTurn = 0;
-      } else {
-        currentRightDartIdx = 0;
-        rightHitsInCurrentTurn = 0;
-      }
-
-      if (isBonus) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("3/3! RE-THROW"), 
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 1),
-          )
-        );
-      } else {
-        setState(() {
-          if (isLeft) {
+    if (dartIdx >= 3) {            
+      setState(() {
+        if (isLeft) {
+          currentLeftDartIdx = 0;
+          leftHitsInCurrentTurn = 0;
+          if (!isBonus) {
+            if (leftCurrentPlayerIdx == leftPile.length - 1) {
+              leftCurrentRound++;
+            }
             leftCurrentPlayerIdx = (leftCurrentPlayerIdx + 1) % leftPile.length;
-          } else {
+          }
+        } else {
+          currentRightDartIdx = 0;
+          rightHitsInCurrentTurn = 0;
+          if (!isBonus) {
+            if (rightCurrentPlayerIdx == rightPile.length - 1) {
+              rightCurrentRound++;
+            }
             rightCurrentPlayerIdx = (rightCurrentPlayerIdx + 1) % rightPile.length;
           }
-        });
-      }
+        }
+      });
+    }
+
+    if (isBonus) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("3/3! RE-THROW"), 
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 1),
+        )
+      );
+      
+      return true;
+    }else{
+      return false;
     }
   }
 
@@ -635,6 +887,8 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //final double safeBottom = min(MediaQuery.of(context).padding.bottom, 10.0); // Capture the safe area inset
+
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
@@ -657,26 +911,8 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
             ),
           ],
         ),
-        backgroundColor: Colors.blueGrey.shade800,
-        foregroundColor: Colors.white,
-        actions: [
-          // Left Lane Undo (Blue)
-          IconButton(
-            icon: const Icon(Icons.undo, color: Colors.blueAccent),
-            tooltip: "Undo Left Lane",
-            onPressed: (leftCurrentPlayerIdx == 0 && currentDartIndex == 0)
-                ? null
-                : () => _undoSpecificLane(true),
-          ),
-          // Right Lane Undo (Orange)
-          IconButton(
-            icon: const Icon(Icons.undo, color: Colors.orangeAccent),
-            tooltip: "Undo Right Lane",
-            onPressed: (rightCurrentPlayerIdx == 0 && currentDartIndex == 0)
-                ? null
-                : () => _undoSpecificLane(false),
-          ),
-        ],
+        backgroundColor: widget.tileBackgroundColor,
+        foregroundColor: Colors.white,        
       ),
       
       body: SafeArea(
@@ -687,39 +923,54 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
             Column(
               children: [
                 Expanded(
-                  flex: 2, 
                   child: Row(
-                    children: [
+                    children: [                      
                       Expanded(child: _buildInputZone(true)),
-                      Container(width: 2, color: Colors.blueGrey.withValues(alpha: 0.3)),
+                      SizedBox(width: 2),
+                      SizedBox(
+                        width: 180, // Same width as your old ranking board
+                        child: Column(
+                          children: [
+                            // 1. Fake Divider TOP (Optical continuation)
+                            Container(
+                              width: 2, 
+                              height: 245, // Adjust height to match your top margin
+                              color: Colors.blueGrey.withValues(alpha: 0.3),
+                            ),
+                                                        
+                            // 2. THE RANKINGS (Literal old version)
+                            Expanded(
+                              child: _buildLiveRankings(),
+                            ),
+                            
+                            // 3. Fake Divider BOTTOM (Optical continuation)
+                            Container(
+                              width: 2, 
+                              height: 40, // Adjust height to clear the bottom MISS buttons
+                              color: Colors.blueGrey.withValues(alpha: 0.3),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 2),
                       Expanded(child: _buildInputZone(false)),
                     ],
                   ),
                 ),
               ],
             ),
-
-            // 2. The Ranking Panel (Positioned in the middle)
+            
+            // Left Player List
             Positioned(
-              bottom: 0,
-              left: 135, // This clears the left MISS button
-              right: 135, // This clears the right MISS button
-              height: 200, // Fixed height for the ranking area
-              child: _buildLiveRankings(),
+              top: 0,
+              right: (MediaQuery.of(context).size.width / 2) + 10,
+              child: _buildLanePlayerList(true),
             ),
-
-            // 3. Left Miss Button
+            // Right Player List
             Positioned(
-              bottom: 20,
-              left: 15,
-              child: _buildSideMissButton("left_miss", true),
-            ),
-
-            // 4. Right Miss Button
-            Positioned(
-              bottom: 20,
-              right: 15,
-              child: _buildSideMissButton("right_miss", false),
+              top: 0,
+              left: (MediaQuery.of(context).size.width / 2) + 10,
+              child: _buildLanePlayerList(false),
             ),
           ],
         ),
@@ -728,94 +979,269 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   }  
 
   Widget _buildInputZone(bool isLeftSide) {
-    return Stack(
-      children: [
-        Center(
-          child: LayoutBuilder(builder: (context, c) {
-            // We use 0.90 to leave a bit more breathing room for the two boards
-            double size = min(c.maxWidth, c.maxHeight) * 0.90;
-            int lanePId = isLeftSide ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];            
-            int activeTargetIdx = _getPlayerCurrentTargetIndex(lanePId);
+    // Determine if this specific lane is currently frozen
+    bool isFrozen = isLeftSide ? isLeftWinnerFreezeUI : isRightWinnerFreezeUI;
 
-            return GestureDetector(
-              onTapUp: (d) => _processZoneTap(d.localPosition, Size(size, size), isLeftSide),
-              child: SizedBox(
-                width: size,
-                height: size,
-                child: Stack(
-                  children: [
-                    SvgPicture.asset('assets/svg/dartboard.svg', width: size, height: size),
-                    CustomPaint(
-                      size: Size(size, size), 
-                      painter: TargetZonePainter(targets[activeTargetIdx]),
-                    ),
-                  ],
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.only(top: 4, bottom: 6),
+          height: 40,
+          child: Stack(
+            children: [
+              // 1. THE LANE LABEL: Always perfectly centered in the lane
+              Center(
+                child: _buildLaneLabel(isLeftSide), 
+              ),
+
+              // 2. THE ROUND BADGE: Pinned to the "inner" side
+              Positioned(
+                // If Left lane, pin to the right (inner). If Right lane, pin to the left (inner).
+                right: isLeftSide ? 5 : null,
+                left: isLeftSide ? null : 5,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: _buildRoundBadge(isLeftSide),
                 ),
               ),
-            );
-          }),
-        ),
-        
-        // Add the Player List here
-        Positioned(
-          top: 60,
-          left: isLeftSide ? 5 : null,
-          right: isLeftSide ? null : 5,
-          child: _buildLanePlayerList(isLeftSide),
+            ],
+          ),
         ),
 
-        // LABEL TO SHOW WHO IS THROWING ON THIS BOARD
-        Positioned(
-          top: 20,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: isLeftSide ? Colors.blue.shade900 : Colors.indigo.shade900,
-                borderRadius: BorderRadius.circular(20),
+        Expanded(
+          child: Stack(
+            children: [
+              IgnorePointer(
+                ignoring: isFrozen, // Locks the GestureDetector
+                child: Center(
+                  child: LayoutBuilder(builder: (context, c) {
+                    double size = min(c.maxWidth, c.maxHeight);
+                    int lanePId = isLeftSide ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];            
+                    int activeTargetIdx = _getPlayerActiveTargetIndex(lanePId);
+                    int currentTargetValue = targets[activeTargetIdx];
+
+                    // --- REFINED VIEWPORT LOGIC ---
+                    double zoomScale = 1.6; 
+                    Alignment zoomAlignment;
+
+                    if (currentTargetValue == 12 || currentTargetValue == 20 || currentTargetValue == 18) {
+                      // Push Top down slightly more to see the "20" label
+                      zoomAlignment = const Alignment(0.0, -0.9); 
+                    } else if (currentTargetValue == 13 || currentTargetValue == 10 || currentTargetValue == 15) {
+                      // Push Right further left to see the numbers 10, 13, 15
+                      zoomAlignment = const Alignment(0.95, 0.0);  
+                    } else if (currentTargetValue == 17 || currentTargetValue == 19) {
+                      // Push Bottom up to see 17 and 19 labels
+                      zoomAlignment = const Alignment(0.0, 0.9);  
+                    } else if (currentTargetValue == 16 || currentTargetValue == 11 || currentTargetValue == 14) {
+                      // Push Left further right to see 11, 14, 16
+                      zoomAlignment = const Alignment(-0.95, 0.0); 
+                    } else if (currentTargetValue == 25) {
+                      zoomAlignment = Alignment.center;
+                      zoomScale = 2.5; 
+                    } else {
+                      zoomAlignment = Alignment.center;
+                      zoomScale = 1.0;
+                    }
+
+                    return GestureDetector(
+                      onTapUp: (d) {
+                        double centerX = size / 2;
+                        double centerY = size / 2;
+                        
+                        // 1. Calculate how much the alignment shifted the board
+                        double shiftX = zoomAlignment.x * centerX * (zoomScale - 1);
+                        double shiftY = zoomAlignment.y * centerY * (zoomScale - 1);
+                        
+                        // 2. Reverse the shift and the scale
+                        // We subtract the shift first, then scale back to 1:1, then move back to center
+                        double touchX = (d.localPosition.dx - centerX + shiftX) / zoomScale + centerX;
+                        double touchY = (d.localPosition.dy - centerY + shiftY) / zoomScale + centerY;
+                        
+                        _processZoneTap(Offset(touchX, touchY), Size(size, size), isLeftSide);
+                      },
+                      child: SizedBox(
+                        width: size,
+                        height: size,
+                        child: ClipRect(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeOutCubic,
+                            child: Transform.scale(
+                              scale: zoomScale,
+                              alignment: zoomAlignment,
+                              child: Stack(
+                                children: [
+                                  SvgPicture.asset('assets/svg/dartboard.svg', width: size, height: size),
+                                  CustomPaint(
+                                    size: Size(size, size), 
+                                    painter: TargetZonePainter(currentTargetValue),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),  
               ),
-              child: Text(
-                isLeftSide ? "LANE 1" : "LANE 2",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
+              if (isFrozen)
+                Positioned.fill(
+                  child: _buildFrostedOverlay(),
+                ),
+            ],
+          ),
+        ),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: isLeftSide 
+              ? [
+                  // LANE 1 (Left): Miss on left, Undo on right
+                  IgnorePointer(
+                    ignoring: isFrozen,
+                    child: Opacity(
+                      opacity: isFrozen ? 0.4 : 1.0, 
+                      child: _buildSideMissButton(true),
+                    ),
+                  ),
+                  _buildUndoButton(true),
+                ]
+              : [
+                  // LANE 2 (Right): Undo on left, Miss on right
+                  _buildUndoButton(false),
+                  IgnorePointer(
+                    ignoring: isFrozen,
+                    child: Opacity(
+                      opacity: isFrozen ? 0.4 : 1.0, 
+                      child: _buildSideMissButton(false),
+                    ),
+                  ),
+                ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSideMissButton(Object tag, bool isLeft) {
-    return SizedBox(
-      width: 110, // Slightly narrower to fit dual layout
-      height: 85,  // Slightly shorter
-      child: FloatingActionButton(
-        heroTag: tag,
-        onPressed: () => _recordBuildUp(0, isLeft),
-        backgroundColor: Colors.red.shade900,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.not_interested, size: 30),
-            Text("MISS", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          ],
+  Widget _buildFrostedOverlay() {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.1),
+          child: const Center(
+            child: Icon(Icons.lock_outline, color: Colors.white54, size: 64),
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildUndoButton(bool isLeft) {
+    return SizedBox(
+      width: 160,
+      height: 105,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isLeft ? Colors.deepOrange.shade400 : Colors.blueAccent,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          elevation: 2,
+        ),
+        onPressed: () {
+          final hasHistory = gameTeamBuildUpBox.values.any((s) => 
+            s.idGame == widget.game.idGame && s.isSeatedRecord == false && 
+            (isLeft ? leftPile.contains(s.idPlayer) : rightPile.contains(s.idPlayer))
+          );
+          if (!hasHistory) return null;
+          return isLeft ? () => _undoSpecificLane(true) : () => _undoSpecificLane(false);
+        }(),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.undo, size: 42),
+            Text("UNDO", style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildLaneLabel(bool isLeft) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: isLeft ? Colors.deepOrange.shade400 : Colors.blueAccent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          isLeft ? "LANE 1" : "LANE 2",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoundBadge(bool isLeft) {
+    final int currentSideRound = isLeft ? leftCurrentRound : rightCurrentRound;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isLeft ? Colors.deepOrange.shade400 : Colors.blueAccent,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Text(
+        "ROUND $currentSideRound",
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+      ),
+    );
+  }
+
+  Widget _buildSideMissButton(bool isLeft) {
+    return SizedBox(
+      width: 160, 
+      height: 105,
+      child: ElevatedButton(
+        // The heroTag is removed because ElevatedButton doesn't use it
+        onPressed: () => _recordBuildUp(0, isLeft),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red.shade900,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 6, // Matches the "floating" feel of the original
+          padding: EdgeInsets.zero, // Ensures content isn't pushed around
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.not_interested, size: 42),
+            Text("MISS", style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }  
+
   Widget _buildLiveRankings() {
-    final ranks = _getRankingsWithTrends();
+    final ranks = _getRankings();
     
     return ClipRRect( // Clips the blur effect to the container bounds
       clipBehavior: Clip.antiAlias,
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(24),
+        bottomLeft: Radius.circular(24),
         topRight: Radius.circular(24),
+        bottomRight: Radius.circular(24),
       ),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // The "Frosted Glass" effect
@@ -828,30 +1254,60 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
             children: [
               // Header with Trophies Icons
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Image.asset('assets/png/trophy_24x24.png'),
-                        Text("Players Ranking", 
-                          style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 14)
+                        Image.asset('assets/png/trophy_36x36.png'),
+                        Column(
+                          children: [
+                            Text("Players", 
+                            style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 12)
+                            ),
+                            Text("Ranking", 
+                            style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 12)
+                            ),
+                          ],
                         ),
-                        Image.asset('assets/png/trophy_24x24.png'),                        
+                        Image.asset('assets/png/trophy_36x36.png'),                        
                       ]
                     ),
-                    const SizedBox(height: 2),
                     Divider(),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                      child: Row(                        
                         children: [                        
-                          Text("TARGETS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                          Text("HITS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                          Text("PLAYERS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                          Text("TREND", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                          SizedBox(
+                            width: 55,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text("TARG", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 30,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text("HIT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),                                
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 2.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("PLAYER", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -866,8 +1322,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
                   itemBuilder: (context, index) {
                     final item = ranks[index];
                     final bool isFirst = index == 0;
-                    final String trend = (item['trend'] ?? 'stable').toString();
-
+                    
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
                       decoration: BoxDecoration(
@@ -875,53 +1330,64 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 2),
                         visualDensity: const VisualDensity(vertical: -4),
-                        leading: SizedBox(
-                          width: 100, // Widened to fit both columns
-                          child: Row(
-                            children: [
-                              // TARGET column
-                              SizedBox(
-                                width: 60,
-                                child: Text(
-                                  targetLabels[item['target']], 
-                                  style: TextStyle(
-                                    color: isFirst ? Colors.orangeAccent : Colors.white70, 
-                                    fontWeight: FontWeight.bold, 
-                                    fontSize: 18,
+                        title: Row(
+                          children: [                            
+                            SizedBox(
+                              width: 55,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    targetLabels[item['target']], 
+                                    style: TextStyle(
+                                      fontSize: 16, 
+                                      fontWeight: FontWeight.bold, 
+                                      color: isFirst ? Colors.orangeAccent : Colors.white,
+                                    )
                                   ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "${item['hits']}",
+                                    style: TextStyle(
+                                      fontSize: 14, 
+                                      fontWeight: FontWeight.bold, 
+                                      color: isFirst ? Colors.orangeAccent : Colors.white,
+                                    )
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 4.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['name'],
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 14, 
+                                        fontWeight: FontWeight.bold, 
+                                        color: isFirst ? Colors.orangeAccent : Colors.white,
+                                      )
+                                    ),
+                                  ],
                                 ),
                               ),
-                              // HITS column
-                              SizedBox(
-                                width: 40,
-                                child: Center(
-                                  child: Text(
-                                    "${item['hits']}", 
-                                    style: const TextStyle(color: Colors.white60, fontSize: 14),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ]
                         ),
-                        title: Container(                        
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          child: Text(
-                            item['name'], 
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white, 
-                              fontSize: 13, 
-                              fontWeight: 
-                              FontWeight.w500
-                            )
-                          ),
-                        ),
-                        
-                        trailing: _buildTrendIcon(trend),
                       ),
                     );
                   },
@@ -934,27 +1400,12 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     );
   }
 
-  Widget _buildTrendIcon(String trend) {
-    final data = {
-      'up': [Icons.arrow_upward, Colors.greenAccent],
-      'down': [Icons.arrow_downward, Colors.redAccent],
-    }[trend] ?? [Icons.remove, Colors.white60];
-
-    final icon = data[0] as IconData, color = data[1] as Color;
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-      child: Icon(icon, color: color, size: 16),
-    );
-  }
-
   Widget _buildLanePlayerList(bool isLeft) {
     List<int> pile = isLeft ? leftPile : rightPile;
     int currentIdx = isLeft ? leftCurrentPlayerIdx : rightCurrentPlayerIdx;
 
     return Container(
-      width: 80,
+      width: 100,
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         children: List.generate(pile.length, (index) {
@@ -964,32 +1415,39 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
           bool isActive = index == currentIdx;
 
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Column(
-              children: [
-                Text(
-                  name.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                    color: isDone 
-                      ? Colors.grey.withValues(alpha: 0.5) 
-                      : (isActive ? Colors.blueAccent : Colors.black87),
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Align(
+              alignment: isLeft ? Alignment.centerRight : Alignment.centerLeft,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                // crossAxisAlignment: isLeft ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    name.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: isActive ? 20 : 16,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      color: isDone 
+                        ? Colors.grey.withValues(alpha: 0.5) 
+                        : (isActive ? isLeft ? Colors.deepOrange.shade400 : Colors.blueAccent : Colors.black),
+                    ),
                   ),
-                ),
-                if (isActive)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(3, (dIdx) {
-                      int laneDartIdx = isLeft ? currentLeftDartIdx : currentRightDartIdx;
-                      return Icon(
-                        Icons.circle,
-                        size: 6,
-                        color: dIdx < laneDartIdx ? Colors.orange : Colors.grey.shade300,
-                      );
-                    }),
-                  ),
-              ],
+                  if (isActive)
+                    Row(
+                      // mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(3, (dIdx) {
+                        int laneDartIdx = isLeft ? currentLeftDartIdx : currentRightDartIdx;
+                        return Icon(
+                          Icons.circle,
+                          size: 16,
+                          color: dIdx < laneDartIdx ? Colors.orange : Colors.grey.shade300,
+                        );
+                      }),
+                    ),
+                ],
+              ),
             ),
           );
         }),

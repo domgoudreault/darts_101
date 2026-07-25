@@ -1,11 +1,11 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
-part 'gamescore.g.dart';
+part 'gamehalfit.g.dart';
 
 @HiveType(typeId: 4) // Unique ID for your model
-class GameScore extends HiveObject {
+class GameHalfIt extends HiveObject {
   @HiveField(0)
-  int? idGameScore;
+  int? idGameHalfIt;
 
   @HiveField(1)
   int idGame;
@@ -39,7 +39,8 @@ class GameScore extends HiveObject {
   @HiveField(10, defaultValue: false)
   bool halfIt;
   
-  GameScore({
+  GameHalfIt({
+    this.idGameHalfIt,
     required this.idGame,
     this.idTeam,
     required this.idPlayer, 
@@ -49,6 +50,6 @@ class GameScore extends HiveObject {
     required this.hits, 
     required this.scoreSnapshot, 
     required this.scoreTeamSnapshot,
-    required this.halfIt,
+    this.halfIt = false,
   });
 }

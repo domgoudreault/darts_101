@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'player.g.dart';
 
@@ -19,5 +19,11 @@ class Player extends HiveObject {
   @HiveField(4, defaultValue: false)
   bool? deleted;
 
-  Player({this.idPlayer, required this.firstName, required this.lastName, required this.nickName, this.deleted});
+  Player({
+    this.idPlayer, 
+    required this.firstName, 
+    required this.lastName, 
+    required this.nickName, 
+    this.deleted = false,
+  });
 }
