@@ -1,9 +1,9 @@
 import 'package:hive_ce/hive_ce.dart';
 
-part 'player.g.dart';
+part 'tbl_player.g.dart';
 
 @HiveType(typeId: 1) // Unique ID for your model
-class Player extends HiveObject {
+class TblPlayer extends HiveObject {
   @HiveField(0)
   int? idPlayer;
 
@@ -17,13 +17,13 @@ class Player extends HiveObject {
   String nickName;
 
   @HiveField(4, defaultValue: false)
-  bool? deleted;
+  bool isDeleted;
 
-  Player({
+  TblPlayer({
     this.idPlayer, 
     required this.firstName, 
     required this.lastName, 
     required this.nickName, 
-    this.deleted = false,
+    this.isDeleted = false,
   });
 }

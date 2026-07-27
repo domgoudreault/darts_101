@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:darts_101/database/player.dart';
+import 'package:darts_101/database/tbl_player.dart';
 
 enum FormMode{
   formAdd,
@@ -15,7 +15,7 @@ enum TextType{
 
 class ModifyAddPlayerForm extends StatefulWidget {  
   final FormMode enuFormMode;
-  final Player? modifyPlayer;
+  final TblPlayer? modifyPlayer;
 
   const ModifyAddPlayerForm({
     super.key,
@@ -69,15 +69,15 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   void _savePlayer() {
     if (_formKey.currentState!.validate()) {      
       // Get the playersBox from Hive
-      final playersBox = Hive.box<Player>('playersBox');
+      final playersBox = Hive.box<TblPlayer>('playersBox');
 
       if (widget.enuFormMode == FormMode.formAdd){
         // Create the player object
-        final player = Player(
+        final player = TblPlayer(
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           nickName: _nickNameController.text.trim(),
-          deleted: false,
+          isDeleted: false,
         );
 
         // Add to Hive        

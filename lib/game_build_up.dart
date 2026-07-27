@@ -3,15 +3,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/game.dart';
-import 'package:darts_101/database/gamebuildup.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_game.dart';
+import 'package:darts_101/database/tbl_game_build_up.dart';
 
 enum TargetZone { single, double, triple }
 enum BuildUpMode { forward, backward }
 
 class GameBuildUpScreen extends StatefulWidget {
-  final Game game;
+  final TblGame game;
   final String gameText;
   final Color tileBackgroundColor;
   final bool resumeMode;
@@ -49,14 +49,14 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   bool isLeftWinnerFreezeUI = false;
   bool isRightWinnerFreezeUI = false;
     
-  late Box<GameBuildUp> gameTeamBuildUpBox;
-  late Box<Player> playersBox;    
+  late Box<TblGameBuildUp> gameTeamBuildUpBox;
+  late Box<TblPlayer> playersBox;    
 
   @override
   void initState() {
     super.initState();
-    gameTeamBuildUpBox = Hive.box<GameBuildUp>('gameTeamBuildUpBox');
-    playersBox = Hive.box<Player>('playersBox');
+    gameTeamBuildUpBox = Hive.box<TblGameBuildUp>('gameTeamBuildUpBox');
+    playersBox = Hive.box<TblPlayer>('playersBox');
     _splitPlayers(widget.resumeMode);
 
     if (widget.resumeMode) {
@@ -157,7 +157,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         }        
 
         // This ensures the player is "locked" into this lane for future resumes
-        final seatRecord = GameBuildUp(
+        final seatRecord = TblGameBuildUp(
           idGame: widget.game.idGame!,
           idPlayer: pId,
           isLeftLane: isLeft,
@@ -165,10 +165,10 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
           isSeatedRecord: true, // This is the magic flag
           round: 0,
           targetValue: targets[0],
-          hitSingle: false,
-          hitDouble: false,
-          hitTriple: false,
-          hitMiss: false,
+          isSingle: false,
+          isDouble: false,
+          isTriple: false,
+          isMiss: false,
           nextTargetValue: targets[0],
         );
 
@@ -225,7 +225,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
           int currentSetStart = (playerHistory.length ~/ 3) * 3;
           leftHitsInCurrentTurn = playerHistory
               .skip(currentSetStart)
-              .where((s) => !s.hitMiss)
+              .where((s) => !s.isMiss)
               .length;
 
           leftCurrentTargetIndex = targets.indexOf(lastEntry.targetValue);
@@ -256,7 +256,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
           int currentSetStart = (playerHistory.length ~/ 3) * 3;
           rightHitsInCurrentTurn = playerHistory
               .skip(currentSetStart)
-              .where((s) => !s.hitMiss)
+              .where((s) => !s.isMiss)
               .length;
 
           rightCurrentTargetIndex = targets.indexOf(lastEntry.targetValue);
@@ -277,7 +277,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     for (int i = 0; i < widget.game.playersIDs.length; i++) {
       int pId = widget.game.playersIDs[i];
       final hitCount = gameTeamBuildUpBox.values.where((s) => 
-        s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.idPlayer == pId && s.hitMiss == false
+        s.idGame == widget.game.idGame && s.isSeatedRecord == false && s.idPlayer == pId && s.isMiss == false
       ).length;
 
       int targetIdx = _getPlayerActiveTargetIndex(pId);
@@ -415,7 +415,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       if (isLeft) {
         // Revert the dart dot and the hit counter for the left lane
         if (currentLeftDartIdx > 0) currentLeftDartIdx--;
-        if (!lastEntry.hitMiss && leftHitsInCurrentTurn > 0) {
+        if (!lastEntry.isMiss && leftHitsInCurrentTurn > 0) {
            leftHitsInCurrentTurn--;
         }
         // Ensure the correct player in the pile is active
@@ -423,7 +423,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       } else {
         // Revert the dart dot and the hit counter for the right lane
         if (currentRightDartIdx > 0) currentRightDartIdx--;
-        if (!lastEntry.hitMiss && rightHitsInCurrentTurn > 0) {
+        if (!lastEntry.isMiss && rightHitsInCurrentTurn > 0) {
            rightHitsInCurrentTurn--;
         }
         // Ensure the correct player in the pile is active
@@ -464,7 +464,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
 
     int nextIdx = (currentIdx + leap).clamp(0, targets.length - 1);
 
-    final gameBuildUp = GameBuildUp(
+    final gameBuildUp = TblGameBuildUp(
       idGame: widget.game.idGame!, 
       idPlayer: pId,
       isLeftLane: isLeft,
@@ -472,10 +472,10 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       isSeatedRecord: false,
       round: isLeft ? leftCurrentRound : rightCurrentRound,
       targetValue: targets[currentIdx], 
-      hitSingle: leap == 1,
-      hitDouble: leap == 2, 
-      hitTriple: leap == 3,
-      hitMiss: leap == 0,
+      isSingle: leap == 1,
+      isDouble: leap == 2, 
+      isTriple: leap == 3,
+      isMiss: leap == 0,
       nextTargetValue: targets[nextIdx],
     );
 
@@ -517,13 +517,13 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         // 1. Get the latest record for the Left Lane from Hive
         final lastLeftRecord = gameTeamBuildUpBox.values.lastWhere(
           (r) => r.isLeftLane == true,
-          orElse: () => GameBuildUp(idGame: -1, idPlayer: -1, isLeftLane: true, seatIndex: -1, isSeatedRecord: false, round: -1, targetValue: -1, hitSingle: false, hitDouble: false, hitTriple: false, hitMiss: false, nextTargetValue: -1),
+          orElse: () => TblGameBuildUp(idGame: -1, idPlayer: -1, isLeftLane: true, seatIndex: -1, isSeatedRecord: false, round: -1, targetValue: -1, isSingle: false, isDouble: false, isTriple: false, isMiss: false, nextTargetValue: -1),
         );
 
         // 2. Get the latest record for the Right Lane from Hive
         final lastRightRecord = gameTeamBuildUpBox.values.lastWhere(
           (r) => r.isLeftLane == false,
-          orElse: () => GameBuildUp(idGame: -1, idPlayer: -1, isLeftLane: false, seatIndex: -1, isSeatedRecord: false, round: -1, targetValue: -1, hitSingle: false, hitDouble: false, hitTriple: false, hitMiss: false, nextTargetValue: -1),
+          orElse: () => TblGameBuildUp(idGame: -1, idPlayer: -1, isLeftLane: false, seatIndex: -1, isSeatedRecord: false, round: -1, targetValue: -1, isSingle: false, isDouble: false, isTriple: false, isMiss: false, nextTargetValue: -1),
         );
 
         if (lastLeftRecord.idGame != -1 && lastRightRecord.idGame != -1) {
@@ -634,7 +634,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     int pId = isLeft ? leftPile[leftCurrentPlayerIdx] : rightPile[rightCurrentPlayerIdx];
     int currentRound = isLeft ? leftCurrentRound : rightCurrentRound;    
     int hits = gameTeamBuildUpBox.values
-      .where((r) => r.idPlayer == pId && r.round == currentRound && !r.hitMiss).length;
+      .where((r) => r.idPlayer == pId && r.round == currentRound && !r.isMiss).length;
     bool isBonus = (hits % 3 == 0);
 
     if (dartIdx >= 3) {            
@@ -877,7 +877,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     widget.game.idPlayerWinner = finalResults[0]['id']; // keep the winner player id          
 
     // Save and end the game :)
-    widget.game.ended = true;
+    widget.game.isEnded = true;
     widget.game.save();
     
     // 2. Clear the Navigation stack back to the very first screen

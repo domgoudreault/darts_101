@@ -1,9 +1,9 @@
 import 'package:hive_ce/hive_ce.dart';
 
-part 'gamebuildup.g.dart';
+part 'tbl_game_build_up.g.dart';
 
 @HiveType(typeId: 5) // Unique ID for your model
-class GameBuildUp extends HiveObject {
+class TblGameBuildUp extends HiveObject {
   @HiveField(0)
   int? idGameBuildUp;
 
@@ -30,21 +30,21 @@ class GameBuildUp extends HiveObject {
   int targetValue;
 
   @HiveField(8, defaultValue: false)
-  bool hitSingle;
+  bool isSingle;
 
   @HiveField(9, defaultValue: false)
-  bool hitDouble;
+  bool isDouble;
 
   @HiveField(10, defaultValue: false)
-  bool hitTriple;
+  bool isTriple;
 
   @HiveField(11, defaultValue: false)
-  bool hitMiss;
+  bool isMiss;
 
   @HiveField(12)
   int nextTargetValue; //The next target to be hit.
 
-  GameBuildUp({
+  TblGameBuildUp({
     this.idGameBuildUp,
     required this.idGame,
     required this.idPlayer, 
@@ -53,10 +53,10 @@ class GameBuildUp extends HiveObject {
     this.isSeatedRecord = false,
     required this.round,
     required this.targetValue,
-    this.hitSingle = false,
-    this.hitDouble = false,
-    this.hitTriple = false,
-    this.hitMiss = false,
+    this.isSingle = false,
+    this.isDouble = false,
+    this.isTriple = false,
+    this.isMiss = false,
     required this.nextTargetValue,
   });
 }

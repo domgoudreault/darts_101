@@ -1,9 +1,9 @@
 import 'package:hive_ce/hive_ce.dart';
 
-part 'game.g.dart';
+part 'tbl_game.g.dart';
 
 @HiveType(typeId: 3) // Unique ID for your model
-class Game extends HiveObject {
+class TblGame extends HiveObject {
   @HiveField(0)
   int? idGame;
 
@@ -28,9 +28,9 @@ class Game extends HiveObject {
   int? idPlayerWinner;
 
   @HiveField(7, defaultValue: false)
-  bool ended;
+  bool isEnded;
 
-  Game({
+  TblGame({
     this.idGame,
     required this.gameType, 
     required this.gameMode, 
@@ -38,6 +38,6 @@ class Game extends HiveObject {
     this.idTeamWinner, 
     required this.playersIDs, 
     this.idPlayerWinner, 
-    this.ended = false,
+    this.isEnded = false,
   });
 }

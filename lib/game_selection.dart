@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/game_halfit.dart';
 import 'package:darts_101/game_build_up.dart';
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/team.dart';
-import 'package:darts_101/database/game.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
+import 'package:darts_101/database/tbl_game.dart';
 
 enum GameMode{
   gamePlayers,
@@ -49,14 +49,14 @@ class _GameSelectionState extends State<GameSelection> {
   bool _isHighlightInTop = false;
 
   // Access boxes
-  late Box<Player> playersBox;
-  late Box<Team> teamsBox;
+  late Box<TblPlayer> playersBox;
+  late Box<TblTeam> teamsBox;
 
   @override
   void initState() {
     super.initState();
-    playersBox = Hive.box<Player>('playersBox');
-    teamsBox = Hive.box<Team>('teamsBox');
+    playersBox = Hive.box<TblPlayer>('playersBox');
+    teamsBox = Hive.box<TblTeam>('teamsBox');
   }
 
   Set<int> _getBusyPlayerIds() {
@@ -92,7 +92,7 @@ class _GameSelectionState extends State<GameSelection> {
     }
   }
 
-  Future<void> _resumeGame(BuildContext context, Game game) async {
+  Future<void> _resumeGame(BuildContext context, TblGame game) async {
     final bool isTeamGameMode = (game.gameMode == 2);
 
     if (game.gameType == 1) {
@@ -128,7 +128,7 @@ class _GameSelectionState extends State<GameSelection> {
     final List<int> selectedPlayersIds = [];
 
     // Get the gamesBox from Hive
-    final gamesBox = Hive.box<Game>('gamesBox');    
+    final gamesBox = Hive.box<TblGame>('gamesBox');    
 
     if (isTeamGameMode) {
       // build List<int> of players that are contained in the teams selected Id's
@@ -160,12 +160,12 @@ class _GameSelectionState extends State<GameSelection> {
     }
 
     // Create the game object
-    final game = Game(
+    final game = TblGame(
       gameType: idGameType,
       gameMode: isTeamGameMode ? 2 : 1,
       teamsIDs: isTeamGameMode ? _selectedIds : null,
       playersIDs: isTeamGameMode ? selectedPlayersIds : _selectedIds,
-      ended: false,
+      isEnded: false,
     );
 
     // Add to Hive        
@@ -219,11 +219,11 @@ class _GameSelectionState extends State<GameSelection> {
         break;
     }
 
-    final gamesBox = Hive.box<Game>('gamesBox');
+    final gamesBox = Hive.box<TblGame>('gamesBox');
     int currentTargetGameMode = widget.enuGameMode == GameMode.gamePlayers ? 1 : 2;
     int currentTargetGameType = widget.enuGameType == GameType.gameHalfIt ? 1 : 2;
-    final Game? lastActiveGame = gamesBox.values.cast<Game?>()
-        .where((g) => g != null && g.ended == false && g.gameMode == currentTargetGameMode && g.gameType == currentTargetGameType)
+    final TblGame? lastActiveGame = gamesBox.values.cast<TblGame?>()
+        .where((g) => g != null && g.isEnded == false && g.gameMode == currentTargetGameMode && g.gameType == currentTargetGameType)
         .lastOrNull;
 
     return Scaffold(
@@ -344,8 +344,8 @@ class _GameSelectionState extends State<GameSelection> {
                 children: [
                   Text(
                     widget.enuGameMode == GameMode.gameTeams 
-                        ? "Available Teams (${teamsBox.values.where((t) => !(t.deleted ?? false)).length - _selectedIds.length})" 
-                        : "Available Players (${playersBox.values.where((p) => !(p.deleted ?? false)).length - _selectedIds.length})",
+                        ? "Available Teams (${teamsBox.values.where((t) => !(t.isDeleted)).length - _selectedIds.length})" 
+                        : "Available Players (${playersBox.values.where((p) => !(p.isDeleted)).length - _selectedIds.length})",
                     style: TextStyle(
                       fontSize: 20, 
                       color: Colors.black, 
@@ -369,14 +369,14 @@ class _GameSelectionState extends State<GameSelection> {
     
     if (widget.enuGameMode == GameMode.gamePlayers) {
       allIds = playersBox.values
-          .where((player) => player.deleted == false) // Filter active players
+          .where((player) => player.isDeleted == false) // Filter active players
           .map((player) => player.idPlayer!) // Extract the ID
           .toList();
     } else {
       final busyPlayers = _getBusyPlayerIds();
 
       allIds = teamsBox.values.where((team) {
-        if (team.deleted ?? false) return false;
+        if (team.isDeleted) return false;
 
         // Only filter the BOTTOM (Available) list
         if (!isTop) {

@@ -7,11 +7,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 
 // Database Models
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/team.dart';
-import 'package:darts_101/database/game.dart';
-import 'package:darts_101/database/gamehalfit.dart';
-import 'package:darts_101/database/gamebuildup.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
+import 'package:darts_101/database/tbl_game.dart';
+import 'package:darts_101/database/tbl_game_half_it.dart';
+import 'package:darts_101/database/tbl_game_build_up.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
@@ -37,16 +37,16 @@ void main() async {
   
   // Open ALL 5 boxes concurrently
   final results = await Future.wait([
-    Hive.openBox<Player>('playersBox'),
-    Hive.openBox<Team>('teamsBox'),
-    Hive.openBox<Game>('gamesBox'),
-    Hive.openBox<GameHalfIt>('gameHalfItBox'),
-    Hive.openBox<GameBuildUp>('gameTeamBuildUpBox'),
+    Hive.openBox<TblPlayer>('playersBox'),
+    Hive.openBox<TblTeam>('teamsBox'),
+    Hive.openBox<TblGame>('gamesBox'),
+    Hive.openBox<TblGameHalfIt>('gameHalfItBox'),
+    Hive.openBox<TblGameBuildUp>('gameBuildUpBox'),
   ]);
 
   // Extract the box references you need for seeding:
-  final playersBox = results[0] as Box<Player>;
-  final teamsBox = results[1] as Box<Team>;
+  final playersBox = results[0] as Box<TblPlayer>;
+  final teamsBox = results[1] as Box<TblTeam>;
   
   // Only seeds if we are in Debug Mode AND the database is empty
   if (kDebugMode) {
@@ -89,17 +89,6 @@ class MyApp extends StatelessWidget {
       },
       home: const MyHomePage(title: 'Darts 101'),
     );
-    /* return LayoutBuilder(
-      builder: (context, constraints) {
-        // 💡 UPDATED ONCE AT THE ROOT FOR THE ENTIRE APP
-        final size = MediaQuery.sizeOf(context);
-        AppDisplay.width = size.width;
-        AppDisplay.height = size.height;
-        AppDisplay.displayMode = getDisplayMode(size.width);
-
-        
-      },
-    ); */        
   }
 }
 

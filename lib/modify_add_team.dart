@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/team.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
 enum FormMode{
   formAdd,
@@ -16,7 +16,7 @@ enum TextType{
 
 class ModifyAddTeamForm extends StatefulWidget {  
   final FormMode enuFormMode;
-  final Team? modifyTeam;
+  final TblTeam? modifyTeam;
 
   const ModifyAddTeamForm({
     super.key,
@@ -70,7 +70,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   void _saveTeam() {
     if (_formKey.currentState!.validate()) {      
       // Get the playersBox from Hive
-      final teamsBox = Hive.box<Team>('teamsBox');
+      final teamsBox = Hive.box<TblTeam>('teamsBox');
 
       if (widget.enuFormMode == FormMode.formAdd){
         if (!_isSoloPlayer && _selectedPlayerIds.length < 2) {
@@ -81,11 +81,11 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
         }
         
         // Create the player object
-        final team = Team(
+        final team = TblTeam(
           idPlayer1: _selectedPlayerIds[0],
           idPlayer2: _isSoloPlayer ? _selectedPlayerIds[0] : _selectedPlayerIds[1],
           surName: _surNameController.text.trim(),
-          deleted: false,         
+          isDeleted: false,         
         );
 
         // Add to Hive        
@@ -112,7 +112,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   @override
   Widget build(BuildContext context) {
     // 1. Access the box you opened in main.dart
-    final playersBox = Hive.box<Player>('playersBox');
+    final playersBox = Hive.box<TblPlayer>('playersBox');
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -170,8 +170,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
             Expanded(
               child: ValueListenableBuilder(
                 valueListenable: playersBox.listenable(),
-                builder: (context, Box<Player> box, _) {
-                  final players = box.values.where((player) => player.deleted == false).toList();
+                builder: (context, Box<TblPlayer> box, _) {
+                  final players = box.values.where((player) => player.isDeleted == false).toList();
 
                   if (players.isEmpty) {
                     return const Center(

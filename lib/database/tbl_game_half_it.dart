@@ -1,9 +1,9 @@
 import 'package:hive_ce/hive_ce.dart';
 
-part 'gamehalfit.g.dart';
+part 'tbl_game_half_it.g.dart';
 
 @HiveType(typeId: 4) // Unique ID for your model
-class GameHalfIt extends HiveObject {
+class TblGameHalfIt extends HiveObject {
   @HiveField(0)
   int? idGameHalfIt;
 
@@ -37,9 +37,9 @@ class GameHalfIt extends HiveObject {
   int scoreTeamSnapshot; //The running total after the hits or halving.
 
   @HiveField(10, defaultValue: false)
-  bool halfIt;
+  bool isHalfIt;
   
-  GameHalfIt({
+  TblGameHalfIt({
     this.idGameHalfIt,
     required this.idGame,
     this.idTeam,
@@ -50,6 +50,6 @@ class GameHalfIt extends HiveObject {
     required this.hits, 
     required this.scoreSnapshot, 
     required this.scoreTeamSnapshot,
-    this.halfIt = false,
+    this.isHalfIt = false,
   });
 }

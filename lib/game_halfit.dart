@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:lottie/lottie.dart';
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/team.dart';
-import 'package:darts_101/database/game.dart';
-import 'package:darts_101/database/gamehalfit.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
+import 'package:darts_101/database/tbl_game.dart';
+import 'package:darts_101/database/tbl_game_half_it.dart';
 
 enum ScoringMode{
   forward,
@@ -14,7 +14,7 @@ enum ScoringMode{
 }
 
 class GameHalfItScreen extends StatefulWidget {
-  final Game game;
+  final TblGame game;
   final String gameText;
   final Color tileBackgroundColor;
   final bool resumeMode;
@@ -46,16 +46,16 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   int currentTeamIndex = 0; // Index in widget.game.teamsIDs
   int currentTargetIndex = 0; // Index in targets list (0-11)
 
-  late Box<GameHalfIt> scoreBox;
-  late Box<Player> playersBox;
-  late Box<Team> teamsBox;
+  late Box<TblGameHalfIt> scoreBox;
+  late Box<TblPlayer> playersBox;
+  late Box<TblTeam> teamsBox;
 
   @override
   void initState() {
     super.initState();
-    scoreBox = Hive.box<GameHalfIt>('gamescoresBox');
-    playersBox = Hive.box<Player>('playersBox');
-    teamsBox = Hive.box<Team>('teamsBox');
+    scoreBox = Hive.box<TblGameHalfIt>('gamescoresBox');
+    playersBox = Hive.box<TblPlayer>('playersBox');
+    teamsBox = Hive.box<TblTeam>('teamsBox');
 
     if (widget.resumeMode) {
       _calculateResumeIndexes();
@@ -347,7 +347,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     }
 
     // Save to Hive
-    final gameScore = GameHalfIt(
+    final gameScore = TblGameHalfIt(
       idGame: widget.game.idGame!,
       idTeam: widget.game.gameMode == 2 ? teamId : null,
       idPlayer: playerId,
@@ -357,7 +357,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       hits: hits,
       scoreSnapshot: newPlayerTotal,
       scoreTeamSnapshot: newTeamTotal,
-      halfIt: wasHalved,
+      isHalfIt: wasHalved,
     );
     scoreBox.add(gameScore);
 
@@ -590,7 +590,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     }
 
     // Save and end the game :)
-    widget.game.ended = true;
+    widget.game.isEnded = true;
     widget.game.save();
     
     // 2. Clear the Navigation stack back to the very first screen
@@ -1090,13 +1090,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }
 
   Widget _buildCell(int pId, int rIdx, int sIdx, bool isActive) {
-    final entry = scoreBox.values.cast<GameHalfIt?>().firstWhere(
+    final entry = scoreBox.values.cast<TblGameHalfIt?>().firstWhere(
       (s) => s?.idGame == widget.game.idGame && s?.idPlayer == pId && s?.round == rIdx && s?.seatIndex == sIdx,
       orElse: () => null,
     );
 
     // If halfIt is true, we show the oval
-    final bool isPenalized = entry?.halfIt ?? false;
+    final bool isPenalized = entry?.isHalfIt ?? false;
 
     return Container(
       padding: const EdgeInsets.all(2),

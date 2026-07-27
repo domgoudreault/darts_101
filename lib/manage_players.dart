@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/modify_add_player.dart';
-import 'package:darts_101/database/player.dart';
+import 'package:darts_101/database/tbl_player.dart';
 
 class ManagePlayers extends StatelessWidget {
   // Define variables to hold the data passed from the previous screen
@@ -30,7 +30,7 @@ class ManagePlayers extends StatelessWidget {
   }
 
   // Fonction de navigation when a button is pressed
-  void _modifyPlayer(BuildContext context, Player player) {
+  void _modifyPlayer(BuildContext context, TblPlayer player) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -43,15 +43,15 @@ class ManagePlayers extends StatelessWidget {
     );
   }
 
-  void _deletePlayer(Player player) {
-    player.deleted = true;
+  void _deletePlayer(TblPlayer player) {
+    player.isDeleted = true;
     player.save();
   }
 
   @override
   Widget build(BuildContext context) {
     // 1. Access the box you opened in main.dart
-    final playersBox = Hive.box<Player>('playersBox');
+    final playersBox = Hive.box<TblPlayer>('playersBox');
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -89,8 +89,8 @@ class ManagePlayers extends StatelessWidget {
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: playersBox.listenable(),
-              builder: (context, Box<Player> box, _) {
-                final players = box.values.where((player) => player.deleted == false).toList();
+              builder: (context, Box<TblPlayer> box, _) {
+                final players = box.values.where((player) => player.isDeleted == false).toList();
 
                 if (players.isEmpty) {
                   return const Center(
@@ -120,7 +120,7 @@ class ManagePlayers extends StatelessWidget {
                       child: ListView.builder(
                         itemCount: players.length,
                         itemBuilder: (context, index) {
-                          final Player player = players[index];
+                          final TblPlayer player = players[index];
                           return Card(                            
                             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                             child: ListTile(

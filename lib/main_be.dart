@@ -1,26 +1,26 @@
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/team.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
-Future<void> seedHivePlayers(Box<Player> playersBox) async {
+Future<void> seedHivePlayers(Box<TblPlayer> playersBox) async {
   // seed Players
-  List<Player> listPlayers = [
-    Player(idPlayer: 0, firstName: 'Dominique', lastName: 'Goudreault', nickName: 'Domi', deleted: false),
-    Player(idPlayer: 1, firstName: 'Éric', lastName: 'St-Pierre', nickName: 'Ricky', deleted: false),
-    Player(idPlayer: 2, firstName: 'Christopher', lastName: 'Lafond', nickName: 'Christo', deleted: false),
-    Player(idPlayer: 3, firstName: 'Frédéric', lastName: 'Gagnon', nickName: 'Marcel', deleted: false),
-    Player(idPlayer: 4, firstName: 'Frederik', lastName: 'Peeters Bélanger', nickName: 'Fred', deleted: false),
-    Player(idPlayer: 5, firstName: 'Simon', lastName: 'Drouin', nickName: 'Drou', deleted: false),
-    Player(idPlayer: 6, firstName: 'Étienne', lastName: 'Lefrançois', nickName: 'Ti-ti', deleted: false),
-    Player(idPlayer: 7, firstName: 'Marc-Olivier', lastName: 'Fortin', nickName: 'Marco', deleted: false),
-    Player(idPlayer: 8, firstName: 'Ludovick', lastName: 'Gosselin', nickName: 'Ludo', deleted: false),
-    Player(idPlayer: 9, firstName: 'Maxime', lastName: 'Gagnon', nickName: 'Max', deleted: false),
-    Player(idPlayer: 10, firstName: 'Michel', lastName: 'Deschênes', nickName: 'Papy', deleted: false),
-    Player(idPlayer: 11, firstName: 'Charles', lastName: 'Lirette', nickName: 'Charles', deleted: false),
-    Player(idPlayer: 12, firstName: 'Bryan', lastName: 'Bryan', nickName: 'Bryan', deleted: false),
-    Player(idPlayer: 13, firstName: 'Carl', lastName: 'Girard', nickName: 'Carl', deleted: false),
-    Player(idPlayer: 14, firstName: 'Carmel', lastName: 'Fortin', nickName: 'Carmel', deleted: false),
+  List<TblPlayer> listPlayers = [
+    TblPlayer(idPlayer: 0, firstName: 'Dominique', lastName: 'Goudreault', nickName: 'Domi', isDeleted: false),
+    TblPlayer(idPlayer: 1, firstName: 'Éric', lastName: 'St-Pierre', nickName: 'Ricky', isDeleted: false),
+    TblPlayer(idPlayer: 2, firstName: 'Christopher', lastName: 'Lafond', nickName: 'Christo', isDeleted: false),
+    TblPlayer(idPlayer: 3, firstName: 'Frédéric', lastName: 'Gagnon', nickName: 'Marcel', isDeleted: false),
+    TblPlayer(idPlayer: 4, firstName: 'Frederik', lastName: 'Peeters Bélanger', nickName: 'Fred', isDeleted: false),
+    TblPlayer(idPlayer: 5, firstName: 'Simon', lastName: 'Drouin', nickName: 'Drou', isDeleted: false),
+    TblPlayer(idPlayer: 6, firstName: 'Étienne', lastName: 'Lefrançois', nickName: 'Ti-ti', isDeleted: false),
+    TblPlayer(idPlayer: 7, firstName: 'Marc-Olivier', lastName: 'Fortin', nickName: 'Marco', isDeleted: false),
+    TblPlayer(idPlayer: 8, firstName: 'Ludovick', lastName: 'Gosselin', nickName: 'Ludo', isDeleted: false),
+    TblPlayer(idPlayer: 9, firstName: 'Maxime', lastName: 'Gagnon', nickName: 'Max', isDeleted: false),
+    TblPlayer(idPlayer: 10, firstName: 'Michel', lastName: 'Deschênes', nickName: 'Papy', isDeleted: false),
+    TblPlayer(idPlayer: 11, firstName: 'Charles', lastName: 'Lirette', nickName: 'Charles', isDeleted: false),
+    TblPlayer(idPlayer: 12, firstName: 'Bryan', lastName: 'Bryan', nickName: 'Bryan', isDeleted: false),
+    TblPlayer(idPlayer: 13, firstName: 'Carl', lastName: 'Girard', nickName: 'Carl', isDeleted: false),
+    TblPlayer(idPlayer: 14, firstName: 'Carmel', lastName: 'Fortin', nickName: 'Carmel', isDeleted: false),
   ];
 
   for (var player in listPlayers) {
@@ -32,7 +32,7 @@ Future<void> seedHivePlayers(Box<Player> playersBox) async {
   }
 }
 
-Future<void> seedHiveTeams(Box<Player> playersBox, Box<Team> teamsBox) async {
+Future<void> seedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) async {
   // Grab all saved players from Hive
   final players = playersBox.values.toList();
 
@@ -47,11 +47,11 @@ Future<void> seedHiveTeams(Box<Player> playersBox, Box<Team> teamsBox) async {
           ? '${p1.nickName} Twice'
           : '${p1.nickName}, ${p2.nickName}';
 
-      final team = Team(
+      final team = TblTeam(
         idPlayer1: p1.idPlayer!,
         idPlayer2: p2.idPlayer!,
         surName: teamName,
-        deleted: false,
+        isDeleted: false,
       );
 
       team.idTeam = await teamsBox.add(team);

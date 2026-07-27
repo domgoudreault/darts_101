@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/modify_add_team.dart';
-import 'package:darts_101/database/player.dart';
-import 'package:darts_101/database/team.dart';
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
 class ManageTeams extends StatelessWidget {
   // Define variables to hold the data passed from the previous screen
@@ -31,7 +31,7 @@ class ManageTeams extends StatelessWidget {
   }
 
   // Fonction de navigation when a button is pressed
-  void _modifyTeam(BuildContext context, Team team) {
+  void _modifyTeam(BuildContext context, TblTeam team) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -44,16 +44,16 @@ class ManageTeams extends StatelessWidget {
     );
   }
 
-  void _deleteTeam(Team team) {
-    team.deleted = true;
+  void _deleteTeam(TblTeam team) {
+    team.isDeleted = true;
     team.save();
   }
 
   @override
   Widget build(BuildContext context) {
     // 1. Access the box you opened in main.dart
-    final teamsBox = Hive.box<Team>('teamsBox');
-    final playersBox = Hive.box<Player>('playersBox');   
+    final teamsBox = Hive.box<TblTeam>('teamsBox');
+    final playersBox = Hive.box<TblPlayer>('playersBox');   
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -91,8 +91,8 @@ class ManageTeams extends StatelessWidget {
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: teamsBox.listenable(),
-              builder: (context, Box<Team> box, _) {
-                final teams = box.values.where((team) => team.deleted == false).toList();
+              builder: (context, Box<TblTeam> box, _) {
+                final teams = box.values.where((team) => team.isDeleted == false).toList();
 
                 if (teams.isEmpty) {
                   return const Center(
@@ -122,7 +122,7 @@ class ManageTeams extends StatelessWidget {
                       child: ListView.builder(
                         itemCount: teams.length,
                         itemBuilder: (context, index) {
-                          final Team team = teams[index];
+                          final TblTeam team = teams[index];
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                             child: ListTile(
