@@ -1,5 +1,5 @@
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/global_be.dart';
 import 'package:darts_101/database/player.dart';
 import 'package:darts_101/database/team.dart';
 
@@ -104,30 +104,37 @@ class InfoDialogImgCfg {
 }
 
 // Returns image configuration based on screen width
-InfoDialogImgCfg getInformationDialogImageConfig(DisplayMode displayMode) {  
-  switch (displayMode) {
-    case DisplayMode.display01CompactPhone:
+InfoDialogImgCfg getInformationDialogImageConfig() {  
+  switch (AppDisplay.displayMode) {
+    case DisplayMode.display05SmallPhone:
+      // Landscape Small/Narrow Phones
+      return const InfoDialogImgCfg(
+        assetPath: 'assets/png/LGGDS_180x180.png',
+        renderSize: 180,
+      );
+
+    case DisplayMode.display10CompactPhone:
       // Landscape Phones / Compact Tablets
       return const InfoDialogImgCfg(
         assetPath: 'assets/png/LGGDS_360x360.png',
         renderSize: 360,
       );
 
-    case DisplayMode.display05MediumTablet:
+    case DisplayMode.display15MediumTablet:
       // 10"-11" Landscape Tablets (Your Galaxy Tab S10 Lite @ 1024dp)
       return const InfoDialogImgCfg(
         assetPath: 'assets/png/LGGDS_512x512.png',
         renderSize: 512,
       );
 
-    case DisplayMode.display10LargeLapDesk:
+    case DisplayMode.display20LargeLapDesk:
       // Laptops & Desktop Displays
       return const InfoDialogImgCfg(
         assetPath: 'assets/png/LGGDS_720x720.png',
         renderSize: 720,
       );
 
-    case DisplayMode.display15Ultra4K:
+    case DisplayMode.display25Ultra4K:
       // 4K & Ultra-wide Displays
       return const InfoDialogImgCfg(
         assetPath: 'assets/png/LGGDS_1000x1000.png',

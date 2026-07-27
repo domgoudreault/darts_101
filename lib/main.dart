@@ -15,7 +15,7 @@ import 'package:darts_101/database/gamebuildup.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/global_be.dart';
 import 'package:darts_101/main_be.dart';
 
 // UI Screens
@@ -60,13 +60,10 @@ void main() async {
   // Wrap runApp with DevicePreview
   runApp(
     DevicePreview(
-      enabled: kDebugMode, // 💡 Only active during debug mode!
+      enabled: false,
       builder: (context) => const MyApp(),
     ),
   );
-
-  // Do not delete, obligatoire pour que l'application fonctionne
-  // runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -79,11 +76,30 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Darts 101',      
       theme: ThemeData(
-        // This is the theme of your application.
-        colorScheme:  ColorScheme.fromSeed(seedColor: Colors.blueAccent),        
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),        
       ),
+
+      builder: (context, child) {
+        final size = MediaQuery.sizeOf(context);
+        AppDisplay.width = size.width;
+        AppDisplay.height = size.height;
+        AppDisplay.displayMode = getDisplayMode(size.width);
+
+        return child!;
+      },
       home: const MyHomePage(title: 'Darts 101'),
     );
+    /* return LayoutBuilder(
+      builder: (context, constraints) {
+        // 💡 UPDATED ONCE AT THE ROOT FOR THE ENTIRE APP
+        final size = MediaQuery.sizeOf(context);
+        AppDisplay.width = size.width;
+        AppDisplay.height = size.height;
+        AppDisplay.displayMode = getDisplayMode(size.width);
+
+        
+      },
+    ); */        
   }
 }
 
@@ -94,11 +110,14 @@ class MainPopupMenu extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        // Registers this dialog as a listener for screen size changes (it does nothing else)
+        MediaQuery.sizeOf(context);
+        
         return AlertDialog(
           title: const Text('Privacy Policy'),
           content: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            width: double.maxFinite,
+            height: AppDisplay.height * 0.7,
+            width: AppDisplay.width * 0.8,
             child: Column(
               children: [
                 // 1. SCROLLABLE TEXT AREA
@@ -173,14 +192,17 @@ class MainPopupMenu extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        InfoDialogImgCfg imageConfig = getInformationDialogImageConfig(AppDisplay.displayMode);
+        // Registers this dialog as a listener for screen size changes (it does nothing else)
+        MediaQuery.sizeOf(context);
+
+        InfoDialogImgCfg imageConfig = getInformationDialogImageConfig();
 
         return AlertDialog(
-          title: const Text('Information'),
+          title: Text('Information [${AppDisplay.displayMode.name}] : ${imageConfig.assetPath}'),
           content: SizedBox(
             // Set a fixed height so the dialog doesn't jump around
-            height: MediaQuery.of(context).size.height * 0.7,
-            width: double.maxFinite,
+            height: AppDisplay.height * 0.7,
+            width: AppDisplay.width * 0.8,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -402,9 +424,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 Initialize global display context once at top of build
-    AppDisplay.init(context);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,        
