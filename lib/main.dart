@@ -61,13 +61,13 @@ void main() async {
   runApp(
     DevicePreview(
       enabled: false,
-      builder: (context) => const MyApp(),
+      builder: (context) => const Darts101App(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Darts101App extends StatelessWidget {
+  const Darts101App({super.key});
 
   // This widget is the root of your application.
   @override
@@ -87,13 +87,13 @@ class MyApp extends StatelessWidget {
 
         return child!;
       },
-      home: const MyHomePage(title: 'Darts 101'),
+      home: const MainScreen(title: 'Darts 101'),
     );
   }
 }
 
-class MainPopupMenu extends StatelessWidget {
-  const MainPopupMenu({super.key});
+class MainScreenPopupMenu extends StatelessWidget {
+  const MainScreenPopupMenu({super.key});
 
   void _showPrivacyDialog(BuildContext context) {
     showDialog(
@@ -314,17 +314,17 @@ class MainPopupMenu extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key, required this.title});
 
   // This widget is the home page of your application.
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {  
+class _MainScreenState extends State<MainScreen> {  
   // Fonction de navigation when a button is pressed
   void _onTileTapped(BuildContext context, String tileText, String tileCode, Color tileColor, Color tileBackgroundColor) {    
     switch (tileCode){
@@ -438,12 +438,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ]          
         ),
         actions: const [
-          MainPopupMenu(), // Cleanly calling the extracted widget
+          MainScreenPopupMenu(), // Cleanly calling the extracted widget
         ],
       ),
       
       // The body starts right under the AppBar
-      /* body: Column(
+      body: Column(
         // Set the Column's main axis size to min to keep it tight, 
         // or leave it at default (max) if you want the buttons at the top.
         mainAxisSize: MainAxisSize.max, 
@@ -506,64 +506,11 @@ class _MyHomePageState extends State<MyHomePage> {
           
           const Spacer(),
         ],
-      ), */
-      
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 3, // 3 square tiles per row (or 4 depending on preference)
-          crossAxisSpacing: 16.0, // Horizontal space between tiles
-          mainAxisSpacing: 16.0,  // Vertical space between rows
-          childAspectRatio: 1.0,  // Forces exact square dimensions (1:1 aspect ratio)
-          children: <Widget>[
-            _buildDarts101Tile(
-              context,
-              tileText: 'New Players Half-It Game',
-              tileCode: 'half_it_game_players',
-              //tileImageAsset: 'assets/png/dartboard_player_48x48.png',
-              tileImageAsset: 'assets/png/trophy_2_players_48x120.png',
-              tileColor: Colors.lightBlue.shade400,
-              tileBackgroundColor: Colors.lightBlue.shade200,
-            ),
-            _buildDarts101Tile(
-              context,
-              tileText: 'New Teams Half-It Game',
-              tileCode: 'half_it_game_teams',
-              tileImageAsset: 'assets/png/dartboard_team_48x48.png',
-              tileColor: Colors.green.shade400,
-              tileBackgroundColor: Colors.green.shade200,
-            ),
-            _buildDarts101Tile(
-              context,
-              tileText: 'Team build up',
-              tileCode: 'team_build_up',
-              tileImageAsset: 'assets/png/team_build_up_48x48.png',
-              tileColor: Colors.grey.shade700,
-              tileBackgroundColor: Colors.grey.shade400,
-            ),
-            _buildDarts101Tile(
-              context,
-              tileText: 'Manage Players',
-              tileCode: 'manage_players',
-              tileImageAsset: 'assets/png/darts_player_48x48.png',
-              tileColor: Colors.deepOrange.shade400,
-              tileBackgroundColor: Colors.deepOrange.shade200,
-            ),
-            _buildDarts101Tile(
-              context,
-              tileText: 'Manage Teams',
-              tileCode: 'manage_teams',
-              tileImageAsset: 'assets/png/darts_team_48x48.png',
-              tileColor: Colors.red.shade900,
-              tileBackgroundColor: Colors.red.shade400,
-            ),
-          ],
-        ),
       ),
     );
   }
   
-  /* Widget _buildDarts101Tile(
+  Widget _buildDarts101Tile(
       BuildContext context, {
       required String tileCode,
       required String tileText,
@@ -594,48 +541,6 @@ class _MyHomePageState extends State<MyHomePage> {
             const Spacer(),
             const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
           ],
-        ),
-      ),
-    );
-  } */
-
-  Widget _buildDarts101Tile(
-      BuildContext context, {
-      required String tileCode,
-      required String tileText,
-      required String tileImageAsset,
-      required Color tileColor,
-      required Color tileBackgroundColor,
-  }) {
-    return Material(
-      color: tileColor,
-      borderRadius: BorderRadius.circular(12.0),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _onTileTapped(context, tileText, tileCode, tileColor, tileBackgroundColor),
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icon scaled up slightly for square cards
-              Image.asset(
-                tileImageAsset,
-                width: 64,
-                height: 64,
-              ),
-              const SizedBox(height: 12.0),
-              Text(
-                tileText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
