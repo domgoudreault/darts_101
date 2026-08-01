@@ -149,8 +149,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       for (int i = 0; i < widget.game.teamsIDs!.length; i++) {
         int tId = widget.game.teamsIDs![i];
         final team = teamsBox.get(tId);
-        final player1 = playersBox.get(team?.idPlayer1)?.nickName ?? "Player 1";
-        final player2 = playersBox.get(team?.idPlayer2)?.nickName ?? "Player 2";
+        final player1 = team?.player1.nickName;
+        final player2 = team?.player2.nickName;
         rankings.add({
           'name': "$player1, $player2",
           'team_name': team?.surName ?? "Team",

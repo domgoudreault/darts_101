@@ -1,3 +1,4 @@
+import 'package:darts_101/database/tbl_player.dart';
 import 'package:hive_ce/hive_ce.dart';
 
 part 'tbl_team.g.dart';
@@ -5,24 +6,20 @@ part 'tbl_team.g.dart';
 @HiveType(typeId: 2) // Unique ID for your model
 class TblTeam extends HiveObject {
   @HiveField(0)
-  int? idTeam;
+  TblPlayer player1;
 
   @HiveField(1)
-  int idPlayer1;
+  TblPlayer player2;
 
   @HiveField(2)
-  int idPlayer2;
-
-  @HiveField(3)
   String surName;
 
-  @HiveField(4, defaultValue: false)
+  @HiveField(3, defaultValue: false)
   bool isDeleted;
 
   TblTeam({
-    this.idTeam,
-    required this.idPlayer1, 
-    required this.idPlayer2, 
+    required this.player1, 
+    required this.player2, 
     required this.surName, 
     this.isDeleted = false,
   });

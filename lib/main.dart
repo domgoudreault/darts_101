@@ -75,15 +75,13 @@ class Darts101App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Darts 101',      
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),        
-      ),
+      /* theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey.shade800),
+        scaffoldBackgroundColor: Colors.grey.shade800,        
+      ), */
 
       builder: (context, child) {
-        final size = MediaQuery.sizeOf(context);
-        AppDisplay.width = size.width;
-        AppDisplay.height = size.height;
-        AppDisplay.displayMode = getDisplayMode(size.width);
+        AppDisplay.updateDisplayMode(context);
 
         return child!;
       },
@@ -157,7 +155,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
+                      backgroundColor: Colors.grey.shade800,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -184,7 +182,7 @@ class MainScreenPopupMenu extends StatelessWidget {
         // Registers this dialog as a listener for screen size changes (it does nothing else)
         MediaQuery.sizeOf(context);
 
-        InfoDialogImgCfg imageConfig = getInformationDialogImageConfig();
+        ImageConfig imageConfig = getInformationDialogImageConfig();
 
         return AlertDialog(
           title: Text('Information [${AppDisplay.displayMode.name}] : ${imageConfig.assetPath}'),
@@ -266,7 +264,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
+                      backgroundColor: Colors.grey.shade800,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -287,7 +285,7 @@ class MainScreenPopupMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      color: Colors.blueAccent,
+      color: Colors.grey.shade800,
       iconColor: Colors.white,
       onSelected: (String value) {
         switch (value) {
@@ -413,9 +411,12 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    MediaQuery.sizeOf(context);
+    
     return Scaffold(
+      backgroundColor: Colors.grey.shade800,
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,        
+        backgroundColor: Colors.grey.shade800,        
         title: Row (
           children: [
             Padding(
@@ -437,112 +438,249 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ]          
         ),
-        actions: const [
-          MainScreenPopupMenu(), // Cleanly calling the extracted widget
+        actions: [
+          // Live badge showing active carousel tile size (256 or 512)
+          TextButton.icon(
+            onPressed: () {
+              // Optional: Tap to trigger your debug dialog if you ever need extra details
+              _showDebugCarouselImageDialog(context);
+            },
+            icon: const Icon(Icons.aspect_ratio, color: Colors.amber, size: 18),
+            label: Text(
+              '${AppDisplay.carouselTileSize.toInt()}px',
+              style: const TextStyle(
+                color: Colors.amber,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const MainScreenPopupMenu(),
         ],
       ),
       
       // The body starts right under the AppBar
-      body: Column(
-        // Set the Column's main axis size to min to keep it tight, 
-        // or leave it at default (max) if you want the buttons at the top.
-        mainAxisSize: MainAxisSize.max, 
-        
-        children: <Widget>[
-          const Divider(height: 1, thickness: 1),
-
-          _buildDarts101Tile(
-            context,
-            tileText: 'New Players Half-It Game',
-            tileCode: 'half_it_game_players',
-            tileImageAsset: 'assets/png/dartboard_player_48x48.png',
-            tileColor: Colors.lightBlue.shade400,
-            tileBackgroundColor: Colors.lightBlue.shade200,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: SizedBox(
+          height: AppDisplay.carouselTileSize,
+          child: CarouselView(
+            itemExtent: AppDisplay.carouselTileSize,
+            shrinkExtent: 80, // Shrinks edge cards into thin vertical rounded pills
+            backgroundColor: Colors.transparent,
+            /* shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero, // Removes default card clipping shapes
+            ), */
+            children: [
+              _buildMainScreenTile(
+                context,
+                menuType: 'game',
+                tileText: 'New Half-It Game',
+                tileCode: 'half-it',
+                tileColor: Colors.lightBlue.shade400,
+                tileBackgroundColor: Colors.lightBlue.shade200,
+              ),
+              _buildMainScreenTile(
+                context,
+                menuType: 'game',
+                tileText: 'New 7 darts Game',
+                tileCode: '7-darts',
+                tileColor: Colors.green.shade400,
+                tileBackgroundColor: Colors.green.shade200,
+              ),
+              _buildMainScreenTile(
+                context,
+                menuType: 'game',
+                tileText: 'New Build-up Teams Game',
+                tileCode: 'build-up',
+                tileColor: Colors.grey.shade700,
+                tileBackgroundColor: Colors.grey.shade400,
+              ),
+              _buildMainScreenTile(
+                context,
+                menuType: 'settings',
+                tileText: 'Manage Players',
+                tileCode: 'players',
+                tileColor: Colors.deepOrange.shade400,
+                tileBackgroundColor: Colors.deepOrange.shade200,
+              ),
+              _buildMainScreenTile(
+                context,
+                menuType: 'settings',
+                tileText: 'Manage Teams',
+                tileCode: 'teams',
+                tileColor: Colors.red.shade900,
+                tileBackgroundColor: Colors.red.shade400,
+              ),
+            ],
           ),
-
-          _buildDarts101Tile(
-            context,
-            tileText: 'New Teams Half-It Game',
-            tileCode: 'half_it_game_teams',
-            tileImageAsset: 'assets/png/dartboard_team_48x48.png',
-            tileColor: Colors.green.shade400,
-            tileBackgroundColor: Colors.green.shade200,
-          ),
-          
-          _buildDarts101Tile(
-            context,
-            tileText: 'Team build up',
-            tileCode: 'team_build_up',
-            tileImageAsset: 'assets/png/team_build_up_48x48.png',
-            tileColor: Colors.grey.shade700,
-            tileBackgroundColor: Colors.grey.shade400,
-          ),
-
-          _buildDarts101Tile(
-            context,
-            tileText: 'Manage Players',
-            tileCode: 'manage_players',
-            tileImageAsset: 'assets/png/darts_player_48x48.png',
-            tileColor: Colors.deepOrange.shade400,
-            tileBackgroundColor: Colors.deepOrange.shade200,
-          ),
-          
-          _buildDarts101Tile(
-            context,
-            tileText: 'Manage Teams',
-            tileCode: 'manage_teams',
-            tileImageAsset: 'assets/png/darts_team_48x48.png',
-            tileColor: Colors.red.shade900,
-            tileBackgroundColor: Colors.red.shade400,
-          ), 
-
-          /* _buildDarts101Tile(
-            context,
-            tileText: 'Statistics',
-            tileCode: 'stats',
-            tileImageAsset: 'assets/png/statistics_48x48.png',
-            tileColor: Colors.purple.shade400,
-          ), */
-          
-          const Spacer(),
-        ],
+        ),
       ),
     );
   }
   
-  Widget _buildDarts101Tile(
-      BuildContext context, {
-      required String tileCode,
-      required String tileText,
-      required String tileImageAsset,
-      required Color tileColor,
-      required Color tileBackgroundColor,
+  Widget _buildMainScreenTile(
+    BuildContext context, {
+    required String menuType,
+    required String tileCode,
+    required String tileText,
+    required Color tileColor,
+    required Color tileBackgroundColor,
   }) {
-    return InkWell( // InkWell provides a beautiful ripple effect on tap
+    ImageConfig imageConfig = getCarouselTileImageConfig(menuType, tileCode);
+
+    return InkWell(
       onTap: () => _onTileTapped(context, tileText, tileCode, tileColor, tileBackgroundColor),
-      child: Container(
-        width: double.infinity, // Ensures the tile fills the width
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        margin: const EdgeInsets.only(bottom: 1.0), // Small line separator
-        decoration: BoxDecoration(
-          color: tileColor,
-          border: Border(
-            bottom: BorderSide(color: Colors.white, width: 1),
-          ),
-        ),
-        child: Row(
-          children: [
-            Image.asset(tileImageAsset),
-            const SizedBox(width: 16.0),
-            Text(
-              tileText,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: 1.0,
+          child: FittedBox(
+            fit: BoxFit.contain, // Forces BOTH the color box and the image to scale down TOGETHER
+            child: SizedBox(
+              width: imageConfig.renderSize,
+              height: imageConfig.renderSize,
+              child: Stack(
+                children: [
+                  // 1. Color fill tucked inside fixed canvas dimensions
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Container(color: tileColor),
+                    ),
+                  ),
+                  // 2. PNG frame overlaid on top
+                  Positioned.fill(
+                    child: Image.asset(
+                      imageConfig.assetPath,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const Spacer(),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+void _showDebugCarouselImageDialog(BuildContext context) {
+  final ImageConfig config = getCarouselTileImageConfig('game', 'frame');
+
+  // Dynamic scale factor derived directly from dialog viewport height
+  final double dialogHeight = AppDisplay.height * 0.7;
+  final double baseFontSize = (dialogHeight * 0.045).clamp(14.0, 22.0);
+  final double titleFontSize = baseFontSize * 1.25;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey.shade900,
+        title: Text(
+          'Carousel Image Debug Info',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: titleFontSize,
+          ),
+        ),
+        content: SizedBox(
+          height: dialogHeight,
+          width: AppDisplay.width * 0.8,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // LEFT SIDE: All text details with scaled typography
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Display Mode: ${AppDisplay.displayMode.name}',
+                        style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Screen Width: ${AppDisplay.width.toStringAsFixed(1)} dp',
+                        style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Screen Height: ${AppDisplay.height.toStringAsFixed(1)} dp',
+                        style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
+                      ),
+                      const Divider(color: Colors.white24, height: 24),
+                      Text(
+                        'Asset Path:\n${config.assetPath}',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontWeight: FontWeight.bold,
+                          fontSize: baseFontSize,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Render Size: ${config.renderSize.toInt()} x ${config.renderSize.toInt()} px',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontSize: baseFontSize,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              // RIGHT SIDE: Preview image (FittedBox ensures high-DPI scaling)
+              Expanded(
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.amber, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.asset(
+                        config.assetPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              '⚠️ Asset Not Found!',
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: baseFontSize,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Close',
+              style: TextStyle(color: Colors.white, fontSize: baseFontSize),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

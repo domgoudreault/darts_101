@@ -14,6 +14,7 @@ class AppDisplay {
   static late DisplayMode displayMode;
   static late double height;
   static late double width;
+  static late double carouselTileSize;
 
   // Call this once when screen size is resolved to set global display context
   static DisplayMode updateDisplayMode(BuildContext context) {
@@ -21,23 +22,26 @@ class AppDisplay {
     final size = MediaQuery.sizeOf(context);
     height = size.height;
     width = size.width;
-    displayMode = getDisplayMode(width);
+
+    final (mode, tileSize) = getDisplayMode(width);
+    displayMode = mode;
+    carouselTileSize = tileSize;
 
     return displayMode;
   }
 }
 
 // Core function evaluating physical width against breakpoints
-DisplayMode getDisplayMode(double screenWidth) {
-  if (screenWidth < 700) {
-    return DisplayMode.display05SmallPhone;
+(DisplayMode displayMode, double carouselTileSize) getDisplayMode(double screenWidth) {
+  if (screenWidth < 700) {    
+    return (DisplayMode.display05SmallPhone, 256.0);
   } else if (screenWidth < 960) {
-    return DisplayMode.display10CompactPhone;
+    return (DisplayMode.display10CompactPhone, 256.0);
   } else if (screenWidth < 1500) {
-    return DisplayMode.display15MediumTablet; // Fits your 1408dp Galaxy S10 Lite Tablet
+    return (DisplayMode.display15MediumTablet, 512.0); // Fits your 1408dp Galaxy S10 Lite Tablet
   } else if (screenWidth < 1920) {
-    return DisplayMode.display20LargeLapDesk;
+    return (DisplayMode.display20LargeLapDesk, 768.0);
   } else {
-    return DisplayMode.display25Ultra4K;
+    return (DisplayMode.display25Ultra4K, 1024.0);
   }
 }

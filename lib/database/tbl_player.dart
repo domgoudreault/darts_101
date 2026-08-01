@@ -5,22 +5,18 @@ part 'tbl_player.g.dart';
 @HiveType(typeId: 1) // Unique ID for your model
 class TblPlayer extends HiveObject {
   @HiveField(0)
-  int? idPlayer;
-
-  @HiveField(1)
   String firstName;
 
-  @HiveField(2)
+  @HiveField(1)
   String lastName;
 
-  @HiveField(3)
+  @HiveField(2)
   String nickName;
 
-  @HiveField(4, defaultValue: false)
+  @HiveField(3, defaultValue: false)
   bool isDeleted;
 
   TblPlayer({
-    this.idPlayer, 
     required this.firstName, 
     required this.lastName, 
     required this.nickName, 

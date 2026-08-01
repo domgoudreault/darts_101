@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/modify_add_team.dart';
-import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 
 class ManageTeams extends StatelessWidget {
@@ -52,8 +51,7 @@ class ManageTeams extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 1. Access the box you opened in main.dart
-    final teamsBox = Hive.box<TblTeam>('teamsBox');
-    final playersBox = Hive.box<TblPlayer>('playersBox');   
+    final teamsBox = Hive.box<TblTeam>('teamsBox');       
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -126,12 +124,12 @@ class ManageTeams extends StatelessWidget {
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                             child: ListTile(
-                              leading: team.idPlayer1 == team.idPlayer2 ? Image.asset('assets/png/dummy_24x24.png') : Image.asset('assets/png/darts_team_24x24.png'),
+                              leading: team.player1 == team.player2 ? Image.asset('assets/png/dummy_24x24.png') : Image.asset('assets/png/darts_team_24x24.png'),
                               visualDensity: VisualDensity(vertical: -4),
                               title: Text(team.surName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                               subtitle: Text(
-                                team.idPlayer1 == team.idPlayer2 ? "${playersBox.get(team.idPlayer1)?.nickName}, ${playersBox.get(team.idPlayer2)?.nickName} (Dummy)" : "${playersBox.get(team.idPlayer1)?.nickName}, ${playersBox.get(team.idPlayer2)?.nickName}", 
-                                style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),                              
+                                team.player1 == team.player2 ? "${team.player1.nickName}, ${team.player2.nickName} (Dummy)" : "${team.player1.nickName}, ${team.player2.nickName}", 
+                                style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

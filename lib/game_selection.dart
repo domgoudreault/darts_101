@@ -59,16 +59,16 @@ class _GameSelectionState extends State<GameSelection> {
     teamsBox = Hive.box<TblTeam>('teamsBox');
   }
 
-  Set<int> _getBusyPlayerIds() {
-    final busyIds = <int>{};
+  Set<TblPlayer> _getBusyPlayers() {
+    final busyPlayers = <TblPlayer>{};
     for (int teamId in _selectedIds) {
       final team = teamsBox.get(teamId);
       if (team != null) {
-        busyIds.add(team.idPlayer1);
-        busyIds.add(team.idPlayer2);
+        busyPlayers.add(team.player1);
+        busyPlayers.add(team.player2);
       }
     }
-    return busyIds;
+    return busyPlayers;
   }
 
   String _getTextByMode(TextType textType, int id) {        
@@ -82,12 +82,12 @@ class _GameSelectionState extends State<GameSelection> {
       switch (textType){
         case TextType.title: return teamsBox.get(id)!.surName;
         case TextType.subtitle:
-          if (teamsBox.get(id)!.idPlayer1 == teamsBox.get(id)!.idPlayer2) {
-            return '${playersBox.get(teamsBox.get(id)!.idPlayer1)?.nickName}, ${playersBox.get(teamsBox.get(id)!.idPlayer2)?.nickName} (Dummy)';
+          if (teamsBox.get(id)!.player1 == teamsBox.get(id)!.player2) {
+            return '${playersBox.get(teamsBox.get(id)!.player1)?.nickName}, ${playersBox.get(teamsBox.get(id)!.player2)?.nickName} (Dummy)';
           } else {
-            return '${playersBox.get(teamsBox.get(id)!.idPlayer1)?.nickName}, ${playersBox.get(teamsBox.get(id)!.idPlayer2)?.nickName}';
+            return '${playersBox.get(teamsBox.get(id)!.player1)?.nickName}, ${playersBox.get(teamsBox.get(id)!.player2)?.nickName}';
           }          
-        case TextType.icon: return teamsBox.get(id)!.idPlayer1 == teamsBox.get(id)!.idPlayer2 ? 'assets/png/dummy_24x24.png' : 'assets/png/darts_team_24x24.png';
+        case TextType.icon: return teamsBox.get(id)!.player1 == teamsBox.get(id)!.player2 ? 'assets/png/dummy_24x24.png' : 'assets/png/darts_team_24x24.png';
       }
     }
   }
@@ -136,7 +136,7 @@ class _GameSelectionState extends State<GameSelection> {
       for (int teamId in _selectedIds) {
         final team = teamsBox.get(teamId);
         if (team != null) {
-          selectedPlayersIds.add(team.idPlayer1);
+          selectedPlayersIds.add(team.player1.key as int);
         }
       }
 
@@ -144,7 +144,7 @@ class _GameSelectionState extends State<GameSelection> {
       for (int teamId in _selectedIds) {
         final team = teamsBox.get(teamId);
         if (team != null) {
-          selectedPlayersIds.add(team.idPlayer2);
+          selectedPlayersIds.add(team.player2.key as int);
         }
       }
     }
@@ -370,24 +370,24 @@ class _GameSelectionState extends State<GameSelection> {
     if (widget.enuGameMode == GameMode.gamePlayers) {
       allIds = playersBox.values
           .where((player) => player.isDeleted == false) // Filter active players
-          .map((player) => player.idPlayer!) // Extract the ID
+          .map((player) => player.key as int) // Extract native Hive integer key
           .toList();
     } else {
-      final busyPlayers = _getBusyPlayerIds();
+      final busyPlayers = _getBusyPlayers();
 
       allIds = teamsBox.values.where((team) {
         if (team.isDeleted) return false;
 
         // Only filter the BOTTOM (Available) list
         if (!isTop) {
-          bool p1Busy = busyPlayers.contains(team.idPlayer1);
-          bool p2Busy = busyPlayers.contains(team.idPlayer2);
+          bool p1Busy = busyPlayers.contains(team.player1);
+          bool p2Busy = busyPlayers.contains(team.player2);
           // If either player is already "in game" via another team, hide this team
           if (p1Busy || p2Busy) return false;
         }
 
         return true;
-      }).map((team) => team.idTeam!).toList();
+      }).map((team) => team.key as int).toList();
     }
 
     // Filter based on whether they are in the selection or not
