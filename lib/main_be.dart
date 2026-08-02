@@ -164,3 +164,30 @@ ImageConfig getCarouselTileImageConfig(String menuType, String tileName) {
       );
   }
 }
+
+// Returns Accordion Section Header configuration based on screen width
+ImageConfig getSectionHeaderImageConfig(String sectionCode) {  
+  switch (AppDisplay.displayMode) {
+    case DisplayMode.display05SmallPhone:
+    case DisplayMode.display10CompactPhone:
+      return ImageConfig(        
+        assetPath: 'assets/png/section_${sectionCode}_width_128.png',
+        renderSize: 128,
+      );
+    case DisplayMode.display15MediumTablet:
+      return ImageConfig(        
+        assetPath: 'assets/png/section_${sectionCode}_width_256.png',
+        renderSize: 256,
+      );
+    case DisplayMode.display20LargeLapDesk:
+      return ImageConfig(        
+        assetPath: 'assets/png/section_${sectionCode}_width_256.png',
+        renderSize: 256,
+      );
+    case DisplayMode.display25Ultra4K:
+      return ImageConfig(        
+        assetPath: 'assets/png/section_${sectionCode}_width_512.png',
+        renderSize: 512,
+      );
+  }
+}

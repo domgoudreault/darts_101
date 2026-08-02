@@ -23,6 +23,11 @@ import 'package:darts_101/manage_players.dart';
 import 'package:darts_101/manage_teams.dart';
 import 'package:darts_101/game_selection.dart';
 
+enum MainScreenSection {
+  section05Games,
+  section10Settings,
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -323,6 +328,9 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {  
+  // Accordion State: GAMES active by default
+  MainScreenSection _activeSection = MainScreenSection.section05Games;
+
   // Fonction de navigation when a button is pressed
   void _onTileTapped(BuildContext context, String tileText, String tileCode, Color tileColor, Color tileBackgroundColor) {    
     switch (tileCode){
@@ -459,74 +467,106 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       
-      // The body starts right under the AppBar
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
-        child: SizedBox(
-          height: AppDisplay.carouselTileSize,
-          child: CarouselView(
-            itemExtent: AppDisplay.carouselTileSize,
-            shrinkExtent: 80, // Shrinks edge cards into thin vertical rounded pills
-            backgroundColor: Colors.transparent,
-            /* shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero, // Removes default card clipping shapes
-            ), */
-            children: [
-              _buildMainScreenTile(
-                context,
-                menuType: 'game',
-                tileText: 'New Half-It Game',
-                tileCode: 'half-it',
-                tileColor: Colors.lightBlue.shade400,
-                tileBackgroundColor: Colors.lightBlue.shade200,
-              ),
-              _buildMainScreenTile(
-                context,
-                menuType: 'game',
-                tileText: 'New 7 darts Game',
-                tileCode: '7-darts',
-                tileColor: Colors.green.shade400,
-                tileBackgroundColor: Colors.green.shade200,
-              ),
-              _buildMainScreenTile(
-                context,
-                menuType: 'game',
-                tileText: 'New Build-up Teams Game',
-                tileCode: 'build-up',
-                tileColor: Colors.grey.shade700,
-                tileBackgroundColor: Colors.grey.shade400,
-              ),
-              _buildMainScreenTile(
-                context,
-                menuType: 'settings',
-                tileText: 'Manage Players',
-                tileCode: 'players',
-                tileColor: Colors.deepOrange.shade400,
-                tileBackgroundColor: Colors.deepOrange.shade200,
-              ),
-              _buildMainScreenTile(
-                context,
-                menuType: 'settings',
-                tileText: 'Manage Teams',
-                tileCode: 'teams',
-                tileColor: Colors.red.shade900,
-                tileBackgroundColor: Colors.red.shade400,
-              ),
-            ],
+      // The body starts right under the AppBar      
+      body: Column(
+        children: [
+          // 1. TOP SEGMENTED TOGGLE BAR (GAMES | SETTINGS Side-by-Side)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+            color: Colors.grey.shade900,
+            child: Row(
+              children: [
+                _buildSectionToggleButton(
+                  sectionCode: 'games',
+                  section: MainScreenSection.section05Games,
+                ),
+                const SizedBox(width: 12),
+                _buildSectionToggleButton(
+                  sectionCode: 'settings',
+                  section: MainScreenSection.section10Settings,
+                ),
+              ],
+            ),
           ),
-        ),
+
+          // 2. FIXED CAROUSEL DISPLAY AREA (Takes remaining vertical screen space)
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                height: AppDisplay.carouselTileSize,
+                child: CarouselView(
+                  itemExtent: AppDisplay.carouselTileSize,
+                  shrinkExtent: 80,
+                  backgroundColor: Colors.transparent,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  children: _activeSection == MainScreenSection.section05Games
+                      ? [
+                          // --- GAMES TILES ---
+                          _buildMainScreenTile(
+                            context,
+                            menuType: 'game',
+                            tileText: 'New Half-It Game',
+                            tileCode: 'half-it',
+                            tileColor: Colors.lightBlue.shade400,
+                            tileBackgroundColor: Colors.lightBlue.shade200,
+                          ),
+                          _buildMainScreenTile(
+                            context,
+                            menuType: 'game',
+                            tileText: 'New 7 darts Game',
+                            tileCode: '7-darts',
+                            tileColor: Colors.green.shade400,
+                            tileBackgroundColor: Colors.green.shade200,
+                          ),
+                          _buildMainScreenTile(
+                            context,
+                            menuType: 'game',
+                            tileText: 'New Build-up Teams Game',
+                            tileCode: 'build-up',
+                            tileColor: Colors.grey.shade700,
+                            tileBackgroundColor: Colors.grey.shade400,
+                          ),
+                        ]
+                      : [
+                          // --- SETTINGS TILES ---
+                          _buildMainScreenTile(
+                            context,
+                            menuType: 'settings',
+                            tileText: 'Manage Players',
+                            tileCode: 'players',
+                            tileColor: Colors.deepOrange.shade400,
+                            tileBackgroundColor: Colors.deepOrange.shade200,
+                          ),
+                          _buildMainScreenTile(
+                            context,
+                            menuType: 'settings',
+                            tileText: 'Manage Teams',
+                            tileCode: 'teams',
+                            tileColor: Colors.red.shade900,
+                            tileBackgroundColor: Colors.red.shade400,
+                          ),
+                        ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
   
   Widget _buildMainScreenTile(
     BuildContext context, {
-    required String menuType,
-    required String tileCode,
-    required String tileText,
-    required Color tileColor,
-    required Color tileBackgroundColor,
-  }) {
+      required String menuType,
+      required String tileCode,
+      required String tileText,
+      required Color tileColor,
+      required Color tileBackgroundColor,
+    }
+  ) {
     ImageConfig imageConfig = getCarouselTileImageConfig(menuType, tileCode);
 
     return InkWell(
@@ -544,7 +584,7 @@ class _MainScreenState extends State<MainScreen> {
                   // 1. Color fill tucked inside fixed canvas dimensions
                   Positioned.fill(
                     child: Padding(
-                      padding: const EdgeInsets.all(12.0),
+                      padding: EdgeInsets.all(imageConfig.renderSize * 0.03),
                       child: Container(color: tileColor),
                     ),
                   ),
@@ -556,6 +596,47 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionToggleButton({
+    required String sectionCode,
+    required MainScreenSection section,
+  }) {
+    final bool isSelected = _activeSection == section;
+    final ImageConfig imageConfig = getSectionHeaderImageConfig(sectionCode);
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          if (!isSelected) {
+            setState(() => _activeSection = section);
+          }
+        },
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          opacity: isSelected ? 1.0 : 0.5,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 6.0),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isSelected ? Colors.amber : Colors.transparent,
+                width: 4.0,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: SizedBox(
+                height: imageConfig.renderSize / 2,
+                child: Image.asset(
+                  imageConfig.assetPath,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
@@ -654,7 +735,7 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                           return Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Text(
-                              '⚠️ Asset Not Found!',
+                              'Asset Not Found!',
                               style: TextStyle(
                                 color: Colors.redAccent,
                                 fontWeight: FontWeight.bold,
