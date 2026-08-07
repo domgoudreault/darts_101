@@ -149,11 +149,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       for (int i = 0; i < widget.game.teamsIDs!.length; i++) {
         int tId = widget.game.teamsIDs![i];
         final team = teamsBox.get(tId);
-        final player1 = team?.player1.nickName;
-        final player2 = team?.player2.nickName;
+        final player1 = team?.fldPlayers[0].fldNickName;
+        final player2 = team?.fldPlayers[1].fldNickName;
         rankings.add({
           'name': "$player1, $player2",
-          'team_name': team?.surName ?? "Team",
+          'team_name': team?.fldSurName ?? "Team",
           'score': _getLatestTeamScore(tId),
           'color': _getTeamColor(i),
           'id': tId,
@@ -163,8 +163,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       for (int i = 0; i < widget.game.playersIDs.length; i++) {
         int pId = widget.game.playersIDs[i];
         rankings.add({          
-          'name': playersBox.get(pId)?.nickName ?? "Player",
-          'team_name': playersBox.get(pId)?.nickName ?? "Player", // property won't be used in TeamMode, needs to be identical for purpose
+          'name': playersBox.get(pId)?.fldNickName ?? "Player",
+          'team_name': playersBox.get(pId)?.fldNickName ?? "Player", // property won't be used in TeamMode, needs to be identical for purpose
           'score': _getLatestPlayerScore(pId, i),
           'color': Colors.blueGrey.shade700,
           'id': pId,
@@ -436,7 +436,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         final team = teamsBox.get(tId);
         final score = _getLatestTeamScore(tId);
         finalResults.add({
-          'name': team?.surName,
+          'name': team?.fldSurName,
           'id': tId,
           'score': score,
           'color': _getTeamColor(tId),
@@ -450,7 +450,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         final seatIdx = widget.game.playersIDs.indexOf(pId);
         final score = _getLatestPlayerScore(pId, seatIdx);
         finalResults.add({
-          'name': player?.nickName,
+          'name': player?.fldNickName,
           'id': pId,
           'score': score,
           'color': Colors.blueGrey.shade700,
@@ -616,7 +616,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),
@@ -700,7 +700,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                               color: Colors.white,
                             ),
                             child: Text(
-                              activePlayer?.nickName ?? "",
+                              activePlayer?.fldNickName ?? "",
                               style: TextStyle(
                                 height: 1.1,
                                 fontSize: 42,
@@ -1017,7 +1017,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 teamID = widget.game.teamsIDs![teamIndex];
                 
                 final team = teamsBox.get(teamID);
-                teamName = team?.surName ?? "";
+                teamName = team?.fldSurName ?? "";
               }
 
               return Padding(
@@ -1043,7 +1043,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                       ),
                       const SizedBox(height: 2), // Small gap between team box and player name                                          
                     Text(
-                      player?.nickName ?? "",
+                      player?.fldNickName ?? "",
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),

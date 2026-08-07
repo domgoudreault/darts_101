@@ -5,13 +5,13 @@ import 'package:darts_101/database/tbl_player.dart';
 
 class ManagePlayers extends StatelessWidget {
   // Define variables to hold the data passed from the previous screen
-  final String tileText;
+  final String tileType;
   final Color tileColor;
   final Color tileBackgroundColor;
 
   const ManagePlayers({
     super.key,
-    required this.tileText,
+    required this.tileType,
     required this.tileColor,
     required this.tileBackgroundColor,
   });
@@ -44,7 +44,7 @@ class ManagePlayers extends StatelessWidget {
   }
 
   void _deletePlayer(TblPlayer player) {
-    player.isDeleted = true;
+    player.fldIsDeleted = true;
     player.save();
   }
 
@@ -70,14 +70,14 @@ class ManagePlayers extends StatelessWidget {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),
             ),
             // pour le titre de la tuile
             Text(
-              tileText,              
+              tileType,              
               style: const TextStyle(color: Colors.white),
             ),
           ]          
@@ -90,7 +90,7 @@ class ManagePlayers extends StatelessWidget {
             child: ValueListenableBuilder(
               valueListenable: playersBox.listenable(),
               builder: (context, Box<TblPlayer> box, _) {
-                final players = box.values.where((player) => player.isDeleted == false).toList();
+                final players = box.values.where((player) => player.fldIsDeleted == false).toList();
 
                 if (players.isEmpty) {
                   return const Center(
@@ -126,8 +126,8 @@ class ManagePlayers extends StatelessWidget {
                             child: ListTile(
                               leading: Image.asset('assets/png/darts_player_24x24.png'),
                               visualDensity: VisualDensity(vertical: -4),
-                              title: Text(player.nickName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                              subtitle: Text("${player.firstName} ${player.lastName}", style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),                              
+                              title: Text(player.fldNickName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                              subtitle: Text("${player.fldFirstName} ${player.fldLastName}", style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),                              
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

@@ -50,9 +50,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     super.initState();
     // If we are modifying, fill the controllers with existing data
     if (widget.enuFormMode == FormMode.formModify && widget.modifyPlayer != null) {
-      _firstNameController.text = widget.modifyPlayer!.firstName;
-      _lastNameController.text = widget.modifyPlayer!.lastName;
-      _nickNameController.text = widget.modifyPlayer!.nickName;
+      _firstNameController.text = widget.modifyPlayer!.fldFirstName;
+      _lastNameController.text = widget.modifyPlayer!.fldLastName;
+      _nickNameController.text = widget.modifyPlayer!.fldNickName;
     }
   }
 
@@ -74,19 +74,21 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
       if (widget.enuFormMode == FormMode.formAdd){
         // Create the player object
         final player = TblPlayer(
-          firstName: _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
-          nickName: _nickNameController.text.trim(),
-          isDeleted: false,
+          fldFirstName: _firstNameController.text.trim(),
+          fldLastName: _lastNameController.text.trim(),
+          fldNickName: _nickNameController.text.trim(),
+          fldIsDeleted: false,
+          fldIsAdminSys: false,
+          fldAvatarCode: '',
         );
 
         // Add to Hive        
         playersBox.add(player);        
 
       } else {
-          widget.modifyPlayer?.firstName = _firstNameController.text.trim();
-          widget.modifyPlayer?.lastName = _lastNameController.text.trim();
-          widget.modifyPlayer?.nickName = _nickNameController.text.trim();
+          widget.modifyPlayer?.fldFirstName = _firstNameController.text.trim();
+          widget.modifyPlayer?.fldLastName = _lastNameController.text.trim();
+          widget.modifyPlayer?.fldNickName = _nickNameController.text.trim();
 
           // Save to Hive        
           widget.modifyPlayer?.save();
@@ -116,7 +118,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),

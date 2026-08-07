@@ -6,21 +6,21 @@ import 'package:darts_101/database/tbl_team.dart';
 Future<void> seedHivePlayers(Box<TblPlayer> playersBox) async {
   // seed Players
   List<TblPlayer> listPlayers = [
-    TblPlayer(firstName: 'Dominique', lastName: 'Goudreault', nickName: 'Domi', isDeleted: false),
-    TblPlayer(firstName: 'Éric', lastName: 'St-Pierre', nickName: 'Ricky', isDeleted: false),
-    TblPlayer(firstName: 'Christopher', lastName: 'Lafond', nickName: 'Christo', isDeleted: false),
-    TblPlayer(firstName: 'Frédéric', lastName: 'Gagnon', nickName: 'Marcel', isDeleted: false),
-    TblPlayer(firstName: 'Frederik', lastName: 'Peeters Bélanger', nickName: 'Fred', isDeleted: false),
-    TblPlayer(firstName: 'Simon', lastName: 'Drouin', nickName: 'Drou', isDeleted: false),
-    TblPlayer(firstName: 'Étienne', lastName: 'Lefrançois', nickName: 'Ti-ti', isDeleted: false),
-    TblPlayer(firstName: 'Marc-Olivier', lastName: 'Fortin', nickName: 'Marco', isDeleted: false),
-    TblPlayer(firstName: 'Ludovick', lastName: 'Gosselin', nickName: 'Ludo', isDeleted: false),
-    TblPlayer(firstName: 'Maxime', lastName: 'Gagnon', nickName: 'Max', isDeleted: false),
-    TblPlayer(firstName: 'Michel', lastName: 'Deschênes', nickName: 'Papy', isDeleted: false),
-    TblPlayer(firstName: 'Charles', lastName: 'Lirette', nickName: 'Charles', isDeleted: false),
-    TblPlayer(firstName: 'Bryan', lastName: 'Bryan', nickName: 'Bryan', isDeleted: false),
-    TblPlayer(firstName: 'Carl', lastName: 'Girard', nickName: 'Carl', isDeleted: false),
-    TblPlayer(firstName: 'Carmel', lastName: 'Fortin', nickName: 'Carmel', isDeleted: false),
+    TblPlayer(fldFirstName: 'Dominique', fldLastName: 'Goudreault', fldNickName: 'Domi', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'domi'),
+    TblPlayer(fldFirstName: 'Éric', fldLastName: 'St-Pierre', fldNickName: 'Ricky', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'ricky'),
+    TblPlayer(fldFirstName: 'Christopher', fldLastName: 'Lafond', fldNickName: 'Christo', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'christo'),
+    TblPlayer(fldFirstName: 'Frédéric', fldLastName: 'Gagnon', fldNickName: 'Marcel', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'marcel'),
+    TblPlayer(fldFirstName: 'Frederik', fldLastName: 'Peeters Bélanger', fldNickName: 'Fred', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'fred'),
+    TblPlayer(fldFirstName: 'Simon', fldLastName: 'Drouin', fldNickName: 'Drou', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'drou'),
+    TblPlayer(fldFirstName: 'Étienne', fldLastName: 'Lefrançois', fldNickName: 'Ti-ti', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'titi'),
+    TblPlayer(fldFirstName: 'Marc-Olivier', fldLastName: 'Fortin', fldNickName: 'Marco', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'marco'),
+    TblPlayer(fldFirstName: 'Ludovick', fldLastName: 'Gosselin', fldNickName: 'Ludo', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'ludo'),
+    TblPlayer(fldFirstName: 'Maxime', fldLastName: 'Gagnon', fldNickName: 'Max', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'max'),
+    TblPlayer(fldFirstName: 'Michel', fldLastName: 'Deschênes', fldNickName: 'Papy', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'papy'),
+    TblPlayer(fldFirstName: 'Charles', fldLastName: 'Lirette', fldNickName: 'Charles', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'charles'),
+    TblPlayer(fldFirstName: 'Bryan', fldLastName: 'Bryan', fldNickName: 'Bryan', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'bryan'),
+    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Girard', fldNickName: 'Carl', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: '01'),
+    TblPlayer(fldFirstName: 'Carmel', fldLastName: 'Fortin', fldNickName: 'Carmel', fldIsDeleted: false, fldIsAdminSys: true, fldAvatarCode: 'carmel'),
   ];
 
   await playersBox.addAll(listPlayers);
@@ -38,15 +38,14 @@ Future<void> seedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) asy
 
       // Format surName based on whether it's a self-team or normal team
       final String teamName = (i == j)
-          ? '${p1.nickName} Twice'
-          : '${p1.nickName}, ${p2.nickName}';
+          ? '${p1.fldNickName} Twice'
+          : '${p1.fldNickName}, ${p2.fldNickName}';
 
       listTeams.add(
         TblTeam(
-          player1: p1, // Direct object reference!
-          player2: p2, // Direct object reference!
-          surName: teamName,
-          isDeleted: false,
+          fldPlayers: [p1, p2],
+          fldSurName: teamName,
+          fldIsDeleted: false,
         ),
       );
     }
@@ -104,62 +103,62 @@ ImageConfig getInformationDialogImageConfig() {
     case DisplayMode.display05SmallPhone:
       // Landscape Small/Narrow Phones
       return const ImageConfig(
-        assetPath: 'assets/png/LGGDS_180x180.png',
+        assetPath: 'assets/png/logos/LGGDS_180x180.png',
         renderSize: 180,
       );
 
     case DisplayMode.display10CompactPhone:
       // Landscape Phones / Compact Tablets
       return const ImageConfig(
-        assetPath: 'assets/png/LGGDS_360x360.png',
+        assetPath: 'assets/png/logos/LGGDS_360x360.png',
         renderSize: 360,
       );
 
     case DisplayMode.display15MediumTablet:
       // 10"-11" Landscape Tablets (Your Galaxy Tab S10 Lite @ 1024dp)
       return const ImageConfig(
-        assetPath: 'assets/png/LGGDS_512x512.png',
+        assetPath: 'assets/png/logos/LGGDS_512x512.png',
         renderSize: 512,
       );
 
     case DisplayMode.display20LargeLapDesk:
       // Laptops & Desktop Displays
       return const ImageConfig(
-        assetPath: 'assets/png/LGGDS_720x720.png',
+        assetPath: 'assets/png/logos/LGGDS_720x720.png',
         renderSize: 720,
       );
 
     case DisplayMode.display25Ultra4K:
       // 4K & Ultra-wide Displays
       return const ImageConfig(
-        assetPath: 'assets/png/LGGDS_1000x1000.png',
+        assetPath: 'assets/png/logos/LGGDS_1000x1000.png',
         renderSize: 1000,
       );
   }
 }
 
 // Returns CarouselView tile configuration based on screen width
-ImageConfig getCarouselTileImageConfig(String menuType, String tileName) {  
+ImageConfig getCarouselTileImageConfig(String tileType, String tileName) {  
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
       return ImageConfig(        
-        assetPath: 'assets/png/${menuType}_${tileName}_256x256.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileName}_256x256.png',
         renderSize: 256,
       );
     case DisplayMode.display15MediumTablet:
       return ImageConfig(        
-        assetPath: 'assets/png/${menuType}_${tileName}_512x512.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileName}_512x512.png',
         renderSize: 512,
       );
     case DisplayMode.display20LargeLapDesk:
       return ImageConfig(        
-        assetPath: 'assets/png/${menuType}_${tileName}_768x768.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileName}_768x768.png',
         renderSize: 768,
       );
     case DisplayMode.display25Ultra4K:
       return ImageConfig(        
-        assetPath: 'assets/png/${menuType}_${tileName}_1024x1024.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileName}_1024x1024.png',
         renderSize: 1024,
       );
   }
@@ -171,22 +170,22 @@ ImageConfig getSectionHeaderImageConfig(String sectionCode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
       return ImageConfig(        
-        assetPath: 'assets/png/section_${sectionCode}_width_128.png',
+        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_128.png',
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
       return ImageConfig(        
-        assetPath: 'assets/png/section_${sectionCode}_width_256.png',
+        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_256.png',
         renderSize: 256,
       );
     case DisplayMode.display20LargeLapDesk:
       return ImageConfig(        
-        assetPath: 'assets/png/section_${sectionCode}_width_256.png',
+        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_256.png',
         renderSize: 256,
       );
     case DisplayMode.display25Ultra4K:
       return ImageConfig(        
-        assetPath: 'assets/png/section_${sectionCode}_width_512.png',
+        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_512.png',
         renderSize: 512,
       );
   }

@@ -80,6 +80,10 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/png/
+    - assets/png/avatars/
+    - assets/png/logos/
+    - assets/png/mechanics/
+    - assets/png/tiles/
     - assets/svg/
     - assets/lottie/
 

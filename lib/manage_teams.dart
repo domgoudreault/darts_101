@@ -5,15 +5,17 @@ import 'package:darts_101/database/tbl_team.dart';
 
 class ManageTeams extends StatelessWidget {
   // Define variables to hold the data passed from the previous screen
-  final String tileText;
+  final String tileType;
   final Color tileColor;
   final Color tileBackgroundColor;
+  final String tileDescription;
 
   const ManageTeams({
     super.key,
-    required this.tileText,
+    required this.tileType,
     required this.tileColor,
-    required this.tileBackgroundColor,  
+    required this.tileBackgroundColor,
+    required this.tileDescription,
   });
 
   // Fonction de navigation when a button is pressed
@@ -44,7 +46,7 @@ class ManageTeams extends StatelessWidget {
   }
 
   void _deleteTeam(TblTeam team) {
-    team.isDeleted = true;
+    team.fldIsDeleted = true;
     team.save();
   }
 
@@ -70,14 +72,14 @@ class ManageTeams extends StatelessWidget {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),
             ),
             // pour le titre de la tuile
             Text(
-              tileText,              
+              tileDescription,              
               style: const TextStyle(color: Colors.white),
             ),
           ]          
@@ -90,7 +92,7 @@ class ManageTeams extends StatelessWidget {
             child: ValueListenableBuilder(
               valueListenable: teamsBox.listenable(),
               builder: (context, Box<TblTeam> box, _) {
-                final teams = box.values.where((team) => team.isDeleted == false).toList();
+                final teams = box.values.where((team) => team.fldIsDeleted == false).toList();
 
                 if (teams.isEmpty) {
                   return const Center(
@@ -124,11 +126,11 @@ class ManageTeams extends StatelessWidget {
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                             child: ListTile(
-                              leading: team.player1 == team.player2 ? Image.asset('assets/png/dummy_24x24.png') : Image.asset('assets/png/darts_team_24x24.png'),
+                              leading: team.fldPlayers[0] == team.fldPlayers[1] ? Image.asset('assets/png/dummy_24x24.png') : Image.asset('assets/png/darts_team_24x24.png'),
                               visualDensity: VisualDensity(vertical: -4),
-                              title: Text(team.surName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                              title: Text(team.fldSurName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                               subtitle: Text(
-                                team.player1 == team.player2 ? "${team.player1.nickName}, ${team.player2.nickName} (Dummy)" : "${team.player1.nickName}, ${team.player2.nickName}", 
+                                team.fldPlayers[0] == team.fldPlayers[1] ? "${team.fldPlayers[0].fldNickName}, ${team.fldPlayers[1].fldNickName} (Dummy)" : "${team.fldPlayers[0].fldNickName}, ${team.fldPlayers[2].fldNickName}", 
                                 style: TextStyle(fontSize: 10, color: Colors.grey.shade700)),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,

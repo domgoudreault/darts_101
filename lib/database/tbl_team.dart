@@ -6,21 +6,19 @@ part 'tbl_team.g.dart';
 @HiveType(typeId: 2) // Unique ID for your model
 class TblTeam extends HiveObject {
   @HiveField(0)
-  TblPlayer player1;
+  List<TblPlayer> fldPlayers;
 
   @HiveField(1)
-  TblPlayer player2;
+  String fldSurName;
 
-  @HiveField(2)
-  String surName;
-
-  @HiveField(3, defaultValue: false)
-  bool isDeleted;
+  @HiveField(2, defaultValue: false)
+  bool fldIsDeleted;
 
   TblTeam({
-    required this.player1, 
-    required this.player2, 
-    required this.surName, 
-    this.isDeleted = false,
+    required this.fldPlayers, 
+    required this.fldSurName, 
+    this.fldIsDeleted = false,
   });
+
+  int get playersCount => fldPlayers.length;
 }

@@ -24,17 +24,19 @@ enum TextType{
 
 class GameSelection extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
-  final String tileText;
+  final String tileType;
   final Color tileColor;
   final Color tileBackgroundColor;
+  final String tileDescription;
   final GameMode enuGameMode;
   final GameType enuGameType;
 
   const GameSelection({
     super.key,
-    required this.tileText,
+    required this.tileType,
     required this.tileColor,
     required this.tileBackgroundColor,
+    required this.tileDescription,
     required this.enuGameMode,
     required this.enuGameType,
   });
@@ -64,8 +66,8 @@ class _GameSelectionState extends State<GameSelection> {
     for (int teamId in _selectedIds) {
       final team = teamsBox.get(teamId);
       if (team != null) {
-        busyPlayers.add(team.player1);
-        busyPlayers.add(team.player2);
+        busyPlayers.add(team.fldPlayers[0]);
+        busyPlayers.add(team.fldPlayers[1]);
       }
     }
     return busyPlayers;
@@ -74,20 +76,20 @@ class _GameSelectionState extends State<GameSelection> {
   String _getTextByMode(TextType textType, int id) {        
     if (widget.enuGameMode == GameMode.gamePlayers) {
       switch (textType){
-        case TextType.title: return playersBox.get(id)!.nickName;
-        case TextType.subtitle: return '${playersBox.get(id)!.firstName} ${playersBox.get(id)!.lastName}';
+        case TextType.title: return playersBox.get(id)!.fldNickName;
+        case TextType.subtitle: return '${playersBox.get(id)!.fldFirstName} ${playersBox.get(id)!.fldLastName}';
         case TextType.icon: return 'assets/png/darts_player_24x24.png';
       }
     } else {
       switch (textType){
-        case TextType.title: return teamsBox.get(id)!.surName;
+        case TextType.title: return teamsBox.get(id)!.fldSurName;
         case TextType.subtitle:
-          if (teamsBox.get(id)!.player1 == teamsBox.get(id)!.player2) {
-            return '${playersBox.get(teamsBox.get(id)!.player1)?.nickName}, ${playersBox.get(teamsBox.get(id)!.player2)?.nickName} (Dummy)';
+          if (teamsBox.get(id)!.fldPlayers[0] == teamsBox.get(id)!.fldPlayers[1]) {
+            return '${playersBox.get(teamsBox.get(id)!.fldPlayers[0])?.fldNickName}, ${playersBox.get(teamsBox.get(id)!.fldPlayers[1])?.fldNickName} (Dummy)';
           } else {
-            return '${playersBox.get(teamsBox.get(id)!.player1)?.nickName}, ${playersBox.get(teamsBox.get(id)!.player2)?.nickName}';
+            return '${playersBox.get(teamsBox.get(id)!.fldPlayers[0])?.fldNickName}, ${playersBox.get(teamsBox.get(id)!.fldPlayers[1])?.fldNickName}';
           }          
-        case TextType.icon: return teamsBox.get(id)!.player1 == teamsBox.get(id)!.player2 ? 'assets/png/dummy_24x24.png' : 'assets/png/darts_team_24x24.png';
+        case TextType.icon: return teamsBox.get(id)!.fldPlayers[0] == teamsBox.get(id)!.fldPlayers[1] ? 'assets/png/dummy_24x24.png' : 'assets/png/darts_team_24x24.png';
       }
     }
   }
@@ -136,7 +138,7 @@ class _GameSelectionState extends State<GameSelection> {
       for (int teamId in _selectedIds) {
         final team = teamsBox.get(teamId);
         if (team != null) {
-          selectedPlayersIds.add(team.player1.key as int);
+          selectedPlayersIds.add(team.fldPlayers[0].key as int);
         }
       }
 
@@ -144,7 +146,7 @@ class _GameSelectionState extends State<GameSelection> {
       for (int teamId in _selectedIds) {
         final team = teamsBox.get(teamId);
         if (team != null) {
-          selectedPlayersIds.add(team.player2.key as int);
+          selectedPlayersIds.add(team.fldPlayers[1].key as int);
         }
       }
     }
@@ -243,14 +245,14 @@ class _GameSelectionState extends State<GameSelection> {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),
             ),
             // pour le titre de la tuile
             Text(
-              widget.tileText,              
+              widget.tileDescription,              
               style: const TextStyle(color: Colors.white),
             ),
           ]          
@@ -344,8 +346,8 @@ class _GameSelectionState extends State<GameSelection> {
                 children: [
                   Text(
                     widget.enuGameMode == GameMode.gameTeams 
-                        ? "Available Teams (${teamsBox.values.where((t) => !(t.isDeleted)).length - _selectedIds.length})" 
-                        : "Available Players (${playersBox.values.where((p) => !(p.isDeleted)).length - _selectedIds.length})",
+                        ? "Available Teams (${teamsBox.values.where((t) => !(t.fldIsDeleted)).length - _selectedIds.length})" 
+                        : "Available Players (${playersBox.values.where((p) => !(p.fldIsDeleted)).length - _selectedIds.length})",
                     style: TextStyle(
                       fontSize: 20, 
                       color: Colors.black, 
@@ -369,19 +371,19 @@ class _GameSelectionState extends State<GameSelection> {
     
     if (widget.enuGameMode == GameMode.gamePlayers) {
       allIds = playersBox.values
-          .where((player) => player.isDeleted == false) // Filter active players
+          .where((player) => player.fldIsDeleted == false) // Filter active players
           .map((player) => player.key as int) // Extract native Hive integer key
           .toList();
     } else {
       final busyPlayers = _getBusyPlayers();
 
       allIds = teamsBox.values.where((team) {
-        if (team.isDeleted) return false;
+        if (team.fldIsDeleted) return false;
 
         // Only filter the BOTTOM (Available) list
         if (!isTop) {
-          bool p1Busy = busyPlayers.contains(team.player1);
-          bool p2Busy = busyPlayers.contains(team.player2);
+          bool p1Busy = busyPlayers.contains(team.fldPlayers[0]);
+          bool p2Busy = busyPlayers.contains(team.fldPlayers[1]);
           // If either player is already "in game" via another team, hide this team
           if (p1Busy || p2Busy) return false;
         }

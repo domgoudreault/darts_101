@@ -285,7 +285,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       rankings.add({
         'target': targetIdx,
         'hits': hitCount,
-        'name': playersBox.get(pId)?.nickName ?? "Player",
+        'name': playersBox.get(pId)?.fldNickName ?? "Player",
         'id': pId,
         'color': Colors.blueGrey.shade700,
       });
@@ -900,7 +900,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png',
+                  'assets/png/logos/darts_101_logo_48x48.png',
                   fit: BoxFit.contain,
                 ),
               ),
@@ -1410,7 +1410,7 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
       child: Column(
         children: List.generate(pile.length, (index) {
           int pId = pile[index];
-          String name = playersBox.get(pId)?.nickName ?? "P";
+          String name = playersBox.get(pId)?.fldNickName ?? "P";
           bool isDone = index < currentIdx;
           bool isActive = index == currentIdx;
 

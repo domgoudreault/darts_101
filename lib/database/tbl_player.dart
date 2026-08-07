@@ -5,21 +5,29 @@ part 'tbl_player.g.dart';
 @HiveType(typeId: 1) // Unique ID for your model
 class TblPlayer extends HiveObject {
   @HiveField(0)
-  String firstName;
+  String fldFirstName;
 
   @HiveField(1)
-  String lastName;
+  String fldLastName;
 
   @HiveField(2)
-  String nickName;
+  String fldNickName;
 
   @HiveField(3, defaultValue: false)
-  bool isDeleted;
+  bool fldIsDeleted;
+
+  @HiveField(4, defaultValue: false)
+  bool fldIsAdminSys;
+
+  @HiveField(5, defaultValue: 'avatar_01')
+  String fldAvatarCode;
 
   TblPlayer({
-    required this.firstName, 
-    required this.lastName, 
-    required this.nickName, 
-    this.isDeleted = false,
+    required this.fldFirstName, 
+    required this.fldLastName, 
+    required this.fldNickName, 
+    this.fldIsDeleted = false,
+    this.fldIsAdminSys = false,
+    required this.fldAvatarCode,
   });
 }

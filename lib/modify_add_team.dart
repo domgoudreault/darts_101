@@ -53,7 +53,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     super.initState();
     // If we are modifying, fill the controllers with existing data
     if (widget.enuFormMode == FormMode.formModify && widget.modifyTeam != null) {
-      _surNameController.text = widget.modifyTeam!.surName;      
+      _surNameController.text = widget.modifyTeam!.fldSurName;      
     }
   }
 
@@ -82,17 +82,16 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
         
         // Create the player object
         final team = TblTeam(
-          player1: _selectedPlayers[0],
-          player2: _isSoloPlayer ? _selectedPlayers[0] : _selectedPlayers[1],
-          surName: _surNameController.text.trim(),
-          isDeleted: false,
+          fldPlayers: [_selectedPlayers[0], _isSoloPlayer ? _selectedPlayers[0] : _selectedPlayers[1]],
+          fldSurName: _surNameController.text.trim(),
+          fldIsDeleted: false,
         );
 
         // Add to Hive        
         teamsBox.add(team);        
 
       } else {
-          widget.modifyTeam?.surName = _surNameController.text.trim();          
+          widget.modifyTeam?.fldSurName = _surNameController.text.trim();          
 
           // Save to Hive        
           widget.modifyTeam?.save();
@@ -125,7 +124,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),
@@ -165,7 +164,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
               child: ValueListenableBuilder(
                 valueListenable: playersBox.listenable(),
                 builder: (context, Box<TblPlayer> box, _) {
-                  final players = box.values.where((player) => player.isDeleted == false).toList();
+                  final players = box.values.where((player) => player.fldIsDeleted == false).toList();
 
                   if (players.isEmpty) {
                     return const Center(
@@ -242,11 +241,11 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            player.nickName,
+                                            player.fldNickName,
                                             style: const TextStyle(fontWeight: FontWeight.bold),
                                           ),
                                           Text(
-                                            "${player.firstName} ${player.lastName}",
+                                            "${player.fldFirstName} ${player.fldLastName}",
                                             style: TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey.shade700,

@@ -19,7 +19,8 @@ import 'package:darts_101/global_be.dart';
 import 'package:darts_101/main_be.dart';
 
 // UI Screens
-import 'package:darts_101/manage_players.dart';
+//import 'package:darts_101/manage_players.dart';
+import 'package:darts_101/settings_players.dart';
 import 'package:darts_101/manage_teams.dart';
 import 'package:darts_101/game_selection.dart';
 
@@ -79,11 +80,7 @@ class Darts101App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Darts 101',      
-      /* theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey.shade800),
-        scaffoldBackgroundColor: Colors.grey.shade800,        
-      ), */
+      title: 'Darts 101',            
 
       builder: (context, child) {
         AppDisplay.updateDisplayMode(context);
@@ -317,6 +314,22 @@ class MainScreenPopupMenu extends StatelessWidget {
   }
 }
 
+class CarouselTileData {
+  final String tileType;
+  final String tileCode;
+  final Color tileColor;
+  final Color tileBackgroundColor;
+  final String tileDescription;
+
+  const CarouselTileData({
+    required this.tileType,
+    required this.tileCode,
+    required this.tileColor,
+    required this.tileBackgroundColor,
+    required this.tileDescription,
+  });
+}
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.title});
 
@@ -331,17 +344,90 @@ class _MainScreenState extends State<MainScreen> {
   // Accordion State: GAMES active by default
   MainScreenSection _activeSection = MainScreenSection.section05Games;
 
+  // Single Source of Truth for Game Tiles
+  static final List<CarouselTileData> _gameTiles = [
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: 'half-it',
+      tileColor: Colors.lightBlue.shade400,
+      tileBackgroundColor: Colors.lightBlue.shade200,
+      tileDescription: 'Game Half-It',
+    ),
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: 'around-clock',
+      tileColor: Colors.teal.shade400,
+      tileBackgroundColor: Colors.teal.shade200,
+      tileDescription: 'Game Around the Clock (skip the numbers version)',
+    ),
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: '7-darts',
+      tileColor: Colors.green.shade400,
+      tileBackgroundColor: Colors.green.shade200,
+      tileDescription: 'Game 7 Darts',
+    ),
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: 'all-fives',
+      tileColor: Colors.purple.shade200,
+      tileBackgroundColor: Colors.purple.shade100,
+      
+      tileDescription: 'Game All Fives / 51 by 5''s',
+    ),
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: 'killers',
+      tileColor: Colors.grey.shade500,
+      tileBackgroundColor: Colors.grey.shade200,      
+      tileDescription: 'Game Killers',
+    ),
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: 'sudden-death',
+      tileColor: Colors.red.shade900,
+      tileBackgroundColor: Colors.red.shade400,
+      tileDescription: 'Game Sudden Death',
+    ),
+    CarouselTileData(
+      tileType: 'game',
+      tileCode: 'build-up',
+      tileColor: Colors.deepPurple.shade400,
+      tileBackgroundColor: Colors.grey.shade200,
+      tileDescription: 'Game Team Build-up',
+    ),
+  ];
+
+  // Single Source of Truth for Settings Tiles
+  static final List<CarouselTileData> _settingsTiles = [
+    CarouselTileData(
+      tileType: 'settings',
+      tileCode: 'players',
+      tileColor: Colors.deepOrange.shade400,
+      tileBackgroundColor: Colors.deepOrange.shade200,
+      tileDescription: 'Players Management',
+    ),
+    CarouselTileData(
+      tileType: 'settings',
+      tileCode: 'teams',
+      tileColor: Colors.indigo.shade600,
+      tileBackgroundColor: Colors.indigo.shade200,
+      tileDescription: 'Teams Management',
+    ),
+  ];
+
   // Fonction de navigation when a button is pressed
-  void _onTileTapped(BuildContext context, String tileText, String tileCode, Color tileColor, Color tileBackgroundColor) {    
-    switch (tileCode){
-      case 'manage_players':
+  void _onTileTapped(BuildContext context, CarouselTileData tile) {    
+    switch (tile.tileCode){
+      case 'players':
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ManagePlayers(
-              tileText: tileText,
-              tileColor: tileColor,
-              tileBackgroundColor: tileBackgroundColor,
+            builder: (context) => SettingsPlayers(
+              tileType: tile.tileType,
+              tileColor: tile.tileColor,
+              tileBackgroundColor: tile.tileBackgroundColor,
+              tileDescription: tile.tileDescription,
             ),
           ),
         );
@@ -352,9 +438,10 @@ class _MainScreenState extends State<MainScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => ManageTeams(
-              tileText: tileText,
-              tileColor: tileColor,
-              tileBackgroundColor: tileBackgroundColor,
+              tileType: tile.tileType,
+              tileColor: tile.tileColor,
+              tileBackgroundColor: tile.tileBackgroundColor,
+              tileDescription: tile.tileDescription,
             ),
           ),
         );
@@ -365,9 +452,10 @@ class _MainScreenState extends State<MainScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => GameSelection(
-              tileText: tileText,
-              tileColor: tileColor,
-              tileBackgroundColor: tileBackgroundColor,
+              tileType: tile.tileType,
+              tileColor: tile.tileColor,
+              tileBackgroundColor: tile.tileBackgroundColor,
+              tileDescription: tile.tileDescription,
               enuGameMode: GameMode.gameTeams,
               enuGameType: GameType.gameHalfIt,
             ),
@@ -380,9 +468,10 @@ class _MainScreenState extends State<MainScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => GameSelection(
-              tileText: tileText,
-              tileColor: tileColor,
-              tileBackgroundColor: tileBackgroundColor,
+              tileType: tile.tileType,
+              tileColor: tile.tileColor,
+              tileBackgroundColor: tile.tileBackgroundColor,
+              tileDescription: tile.tileDescription,
               enuGameMode: GameMode.gamePlayers,
               enuGameType: GameType.gameHalfIt,
             ),
@@ -395,9 +484,10 @@ class _MainScreenState extends State<MainScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => GameSelection(
-              tileText: tileText,
-              tileColor: tileColor,
-              tileBackgroundColor: tileBackgroundColor,
+              tileType: tile.tileType,
+              tileColor: tile.tileColor,
+              tileBackgroundColor: tile.tileBackgroundColor,
+              tileDescription: tile.tileDescription,
               enuGameMode: GameMode.gamePlayers,
               enuGameType: GameType.gameBuildUp,
             ),
@@ -409,7 +499,7 @@ class _MainScreenState extends State<MainScreen> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$tileText was clicked!'),
+            content: Text('${tile.tileDescription} was clicked!'),
             duration: const Duration(milliseconds: 800),
           ),
         );
@@ -421,6 +511,12 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context);
     
+    // Select active dataset based on section toggle
+    final List<CarouselTileData> activeTiles = 
+        _activeSection == MainScreenSection.section05Games 
+            ? _gameTiles 
+            : _settingsTiles;
+
     return Scaffold(
       backgroundColor: Colors.grey.shade800,
       appBar: AppBar(
@@ -433,7 +529,7 @@ class _MainScreenState extends State<MainScreen> {
                 width: 48.0,
                 height: 48.0,
                 child: Image.asset(
-                  'assets/png/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
+                  'assets/png/logos/darts_101_logo_48x48.png', // Replace with your image path (PNG, JPG, or SVG)
                   fit: BoxFit.contain, // Ensures the image fits within the box
                 ),
               ),
@@ -499,56 +595,18 @@ class _MainScreenState extends State<MainScreen> {
                   itemExtent: AppDisplay.carouselTileSize,
                   shrinkExtent: 80,
                   backgroundColor: Colors.transparent,
+                  overlayColor: WidgetStateProperty.all(Colors.transparent),
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero,
                   ),
-                  children: _activeSection == MainScreenSection.section05Games
-                      ? [
-                          // --- GAMES TILES ---
-                          _buildMainScreenTile(
-                            context,
-                            menuType: 'game',
-                            tileText: 'New Half-It Game',
-                            tileCode: 'half-it',
-                            tileColor: Colors.lightBlue.shade400,
-                            tileBackgroundColor: Colors.lightBlue.shade200,
-                          ),
-                          _buildMainScreenTile(
-                            context,
-                            menuType: 'game',
-                            tileText: 'New 7 darts Game',
-                            tileCode: '7-darts',
-                            tileColor: Colors.green.shade400,
-                            tileBackgroundColor: Colors.green.shade200,
-                          ),
-                          _buildMainScreenTile(
-                            context,
-                            menuType: 'game',
-                            tileText: 'New Build-up Teams Game',
-                            tileCode: 'build-up',
-                            tileColor: Colors.grey.shade700,
-                            tileBackgroundColor: Colors.grey.shade400,
-                          ),
-                        ]
-                      : [
-                          // --- SETTINGS TILES ---
-                          _buildMainScreenTile(
-                            context,
-                            menuType: 'settings',
-                            tileText: 'Manage Players',
-                            tileCode: 'players',
-                            tileColor: Colors.deepOrange.shade400,
-                            tileBackgroundColor: Colors.deepOrange.shade200,
-                          ),
-                          _buildMainScreenTile(
-                            context,
-                            menuType: 'settings',
-                            tileText: 'Manage Teams',
-                            tileCode: 'teams',
-                            tileColor: Colors.red.shade900,
-                            tileBackgroundColor: Colors.red.shade400,
-                          ),
-                        ],
+                  // Tap lookup directly uses the active list index!
+                  onTap: (int index) {
+                    _onTileTapped(context, activeTiles[index]);
+                  },
+                  // Dynamically map active list to Tile Widgets
+                  children: activeTiles
+                      .map((tileData) => _buildMainScreenTile(context, tileData))
+                      .toList(),
                 ),
               ),
             ),
@@ -558,45 +616,34 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
   
-  Widget _buildMainScreenTile(
-    BuildContext context, {
-      required String menuType,
-      required String tileCode,
-      required String tileText,
-      required Color tileColor,
-      required Color tileBackgroundColor,
-    }
-  ) {
-    ImageConfig imageConfig = getCarouselTileImageConfig(menuType, tileCode);
+  Widget _buildMainScreenTile(BuildContext context, CarouselTileData tile) {
+    ImageConfig imageConfig = getCarouselTileImageConfig(tile.tileType, tile.tileCode);
 
-    return InkWell(
-      onTap: () => _onTileTapped(context, tileText, tileCode, tileColor, tileBackgroundColor),
-      child: Center(
-        child: AspectRatio(
-          aspectRatio: 1.0,
-          child: FittedBox(
-            fit: BoxFit.contain, // Forces BOTH the color box and the image to scale down TOGETHER
-            child: SizedBox(
-              width: imageConfig.renderSize,
-              height: imageConfig.renderSize,
-              child: Stack(
-                children: [
-                  // 1. Color fill tucked inside fixed canvas dimensions
-                  Positioned.fill(
-                    child: Padding(
-                      padding: EdgeInsets.all(imageConfig.renderSize * 0.03),
-                      child: Container(color: tileColor),
-                    ),
+    return Center(
+      child: AspectRatio(
+        aspectRatio: 1.0,
+        child: FittedBox(
+          fit: BoxFit.contain, // Forces BOTH the color box and the image to scale down TOGETHER
+          child: SizedBox(
+            width: imageConfig.renderSize,
+            height: imageConfig.renderSize,
+            child: Stack(
+              children: [
+                // 1. Color fill tucked inside fixed canvas dimensions
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(imageConfig.renderSize * 0.03),
+                    child: Container(color: tile.tileColor),
                   ),
-                  // 2. PNG frame overlaid on top
-                  Positioned.fill(
-                    child: Image.asset(
-                      imageConfig.assetPath,
-                      fit: BoxFit.fill,
-                    ),
+                ),
+                // 2. PNG frame overlaid on top
+                Positioned.fill(
+                  child: Image.asset(
+                    imageConfig.assetPath,
+                    fit: BoxFit.fill,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -622,11 +669,11 @@ class _MainScreenState extends State<MainScreen> {
           duration: const Duration(milliseconds: 200),
           opacity: isSelected ? 1.0 : 0.5,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 6.0),
+            padding: const EdgeInsets.symmetric(vertical: 2.0),
             decoration: BoxDecoration(
               border: Border.all(
                 color: isSelected ? Colors.amber : Colors.transparent,
-                width: 4.0,
+                width: 8.0,
               ),
               borderRadius: BorderRadius.circular(8),
             ),
