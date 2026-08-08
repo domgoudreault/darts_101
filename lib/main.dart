@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 
 // Database Models
+import 'package:darts_101/database/tbl_avatar.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
@@ -19,7 +20,6 @@ import 'package:darts_101/global_be.dart';
 import 'package:darts_101/main_be.dart';
 
 // UI Screens
-//import 'package:darts_101/manage_players.dart';
 import 'package:darts_101/settings_players.dart';
 import 'package:darts_101/manage_teams.dart';
 import 'package:darts_101/game_selection.dart';
@@ -43,6 +43,7 @@ void main() async {
   
   // Open ALL 5 boxes concurrently
   final results = await Future.wait([
+    Hive.openBox<TblAvatar>('avatarsBox'),
     Hive.openBox<TblPlayer>('playersBox'),
     Hive.openBox<TblTeam>('teamsBox'),
     Hive.openBox<TblGame>('gamesBox'),
@@ -51,10 +52,16 @@ void main() async {
   ]);
 
   // Extract the box references you need for seeding:
-  final playersBox = results[0] as Box<TblPlayer>;
-  final teamsBox = results[1] as Box<TblTeam>;
+  final avatarsBox = results[0] as Box<TblAvatar>;
+  final playersBox = results[1] as Box<TblPlayer>;
+  final teamsBox = results[2] as Box<TblTeam>;
   
-  // Only seeds if we are in Debug Mode AND the database is empty
+  // Only seeds avatars if the database is empty
+  if (avatarsBox.isEmpty){
+    await seedHiveAvatars(avatarsBox);
+  }
+  
+  // Only seeds players from my league if we are in Debug Mode AND the database is empty
   if (kDebugMode) {
     // AutoFill for testing           
     if (playersBox.isEmpty){

@@ -2,7 +2,7 @@ import 'package:hive_ce/hive_ce.dart';
 
 part 'tbl_game.g.dart';
 
-@HiveType(typeId: 3) // Unique ID for your model
+@HiveType(typeId: 4) // Unique ID for your model
 class TblGame extends HiveObject {
   @HiveField(0)
   int? idGame;

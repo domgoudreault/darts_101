@@ -160,22 +160,18 @@ class SettingsPlayers extends StatelessWidget {
             height: imageCardFrameConfig.renderHeight,
             child: Stack(
               children: [
-                // 1. Top Avatar Color Window
-                Positioned(
-                  top: imageCardFrameConfig.renderHeight * 0.12,
-                  left: imageCardFrameConfig.renderWidth * 0.10,
-                  right: imageCardFrameConfig.renderWidth * 0.10,
-                  height: imageCardFrameConfig.renderHeight * 0.38,
-                  child: Container(color: cardColor),
+                // 1. PNG Frame Background
+                Positioned.fill(
+                  child: Image.asset(
+                    imageCardFrameConfig.assetPathBackground,
+                    fit: BoxFit.fill,
+                  ),
                 ),
 
                 // 2. Avatar Layer
                 Positioned.fill(
                   child: Image.asset(
-                    getCarouselPlayerImageConfig(
-                      player.fldIsAdminSys,
-                      player.fldAvatarCode,
-                    ).assetPath,
+                    getCarouselPlayerImageConfig(player.fldAvatarCode).assetPath,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.account_circle,
@@ -188,7 +184,7 @@ class SettingsPlayers extends StatelessWidget {
                 // 3. PNG Frame Overlay
                 Positioned.fill(
                   child: Image.asset(
-                    imageCardFrameConfig.assetPath,
+                    imageCardFrameConfig.assetPathFrame,
                     fit: BoxFit.fill,
                   ),
                 ),

@@ -78,7 +78,6 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           fldLastName: _lastNameController.text.trim(),
           fldNickName: _nickNameController.text.trim(),
           fldIsDeleted: false,
-          fldIsAdminSys: false,
           fldAvatarCode: '',
         );
 

@@ -16,10 +16,7 @@ class TblPlayer extends HiveObject {
   @HiveField(3, defaultValue: false)
   bool fldIsDeleted;
 
-  @HiveField(4, defaultValue: false)
-  bool fldIsAdminSys;
-
-  @HiveField(5, defaultValue: 'avatar_01')
+  @HiveField(4, defaultValue: 'avatar_01')
   String fldAvatarCode;
 
   TblPlayer({
@@ -27,7 +24,6 @@ class TblPlayer extends HiveObject {
     required this.fldLastName, 
     required this.fldNickName, 
     this.fldIsDeleted = false,
-    this.fldIsAdminSys = false,
     required this.fldAvatarCode,
   });
 }
