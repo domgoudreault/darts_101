@@ -84,6 +84,7 @@ flutter:
     - assets/png/logos/
     - assets/png/mechanics/
     - assets/png/tiles/
+    - assets/png/ui_buttons/
     - assets/svg/
     - assets/lottie/
 

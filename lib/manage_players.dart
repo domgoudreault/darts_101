@@ -23,7 +23,9 @@ class ManagePlayers extends StatelessWidget {
       MaterialPageRoute(
         // The add_player.dart page will be created and shown
         builder: (context) => ModifyAddPlayerForm(
-          enuFormMode: FormMode.formAdd,          
+          enuFormMode: FormMode.formAdd,
+          tileColor: tileColor,
+          tileBackgroundColor: tileBackgroundColor,          
         ),
       ),
     );
@@ -37,7 +39,9 @@ class ManagePlayers extends StatelessWidget {
         // The add_player.dart page will be created and shown
         builder: (context) => ModifyAddPlayerForm(
           enuFormMode: FormMode.formModify,
-          modifyPlayer: player,         
+          modifyPlayer: player,
+          tileColor: tileColor,
+          tileBackgroundColor: tileBackgroundColor,         
         ),
       ),
     );

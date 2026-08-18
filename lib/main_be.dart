@@ -1,28 +1,35 @@
-import 'package:darts_101/database/tbl_avatar.dart';
+// Flutter basics
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:darts_101/global_be.dart';
-//import 'package:darts_101/database/tbl_avatar.dart';
+
+// Database Models
+import 'package:darts_101/database/tbl_avatar.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
+
+// Backend Logic
+import 'package:darts_101/global_be.dart';
 
 Future<void> seedHiveAvatars(Box<TblAvatar> avatarsBox) async {
   // seed Avatars
   List<TblAvatar> listAvatars = [
-    TblAvatar(fldAvatarCode: 'domi', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'ricky', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'christo', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'marcel', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'fred', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'drou', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'titi', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'marco', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'ludo', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'max', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'papy', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'charles', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'bryan', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: 'carmel', fldIsAdminSys: true, fldIsMale: true),
-    TblAvatar(fldAvatarCode: '01', fldIsAdminSys: false, fldIsMale: false),
+    TblAvatar(fldAvatarCode: 'domi', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'ricky', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'christo', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'marcel', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'fred', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'drou', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'titi', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'marco', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'ludo', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'max', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'papy', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'charles', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'bryan', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'carmel', fldIsMale: true),
+    TblAvatar(fldAvatarCode: '01', fldIsMale: false),
+    TblAvatar(fldAvatarCode: '02', fldIsMale: false),
+    TblAvatar(fldAvatarCode: '03', fldIsMale: false),
+    TblAvatar(fldAvatarCode: 'question', fldIsMale: true),
   ];
 
   await avatarsBox.addAll(listAvatars);
@@ -31,21 +38,23 @@ Future<void> seedHiveAvatars(Box<TblAvatar> avatarsBox) async {
 Future<void> seedHivePlayers(Box<TblPlayer> playersBox) async {
   // seed Players
   List<TblPlayer> listPlayers = [
-    TblPlayer(fldFirstName: 'Dominique', fldLastName: 'Goudreault', fldNickName: 'Domi', fldIsDeleted: false, fldAvatarCode: 'domi'),
-    TblPlayer(fldFirstName: 'Éric', fldLastName: 'St-Pierre', fldNickName: 'Ricky', fldIsDeleted: false, fldAvatarCode: 'ricky'),
-    TblPlayer(fldFirstName: 'Christopher', fldLastName: 'Lafond', fldNickName: 'Christo', fldIsDeleted: false, fldAvatarCode: 'christo'),
-    TblPlayer(fldFirstName: 'Frédéric', fldLastName: 'Gagnon', fldNickName: 'Marcel', fldIsDeleted: false, fldAvatarCode: 'marcel'),
-    TblPlayer(fldFirstName: 'Frederik', fldLastName: 'Peeters Bélanger', fldNickName: 'Fred', fldIsDeleted: false, fldAvatarCode: 'fred'),
-    TblPlayer(fldFirstName: 'Simon', fldLastName: 'Drouin', fldNickName: 'Drou', fldIsDeleted: false, fldAvatarCode: 'drou'),
-    TblPlayer(fldFirstName: 'Étienne', fldLastName: 'Lefrançois', fldNickName: 'Ti-ti', fldIsDeleted: false, fldAvatarCode: 'titi'),
-    TblPlayer(fldFirstName: 'Marc-Olivier', fldLastName: 'Fortin', fldNickName: 'Marco', fldIsDeleted: false, fldAvatarCode: 'marco'),
-    TblPlayer(fldFirstName: 'Ludovick', fldLastName: 'Gosselin', fldNickName: 'Ludo', fldIsDeleted: false, fldAvatarCode: 'ludo'),
-    TblPlayer(fldFirstName: 'Maxime', fldLastName: 'Gagnon', fldNickName: 'Max', fldIsDeleted: false, fldAvatarCode: 'max'),
-    TblPlayer(fldFirstName: 'Michel', fldLastName: 'Deschênes', fldNickName: 'Papy', fldIsDeleted: false, fldAvatarCode: 'papy'),
-    TblPlayer(fldFirstName: 'Charles', fldLastName: 'Lirette', fldNickName: 'Charles', fldIsDeleted: false, fldAvatarCode: 'charles'),
-    TblPlayer(fldFirstName: 'Bryan', fldLastName: 'Bryan', fldNickName: 'Bryan', fldIsDeleted: false, fldAvatarCode: 'bryan'),
-    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Girard', fldNickName: 'Carl', fldIsDeleted: false, fldAvatarCode: '01'),
-    TblPlayer(fldFirstName: 'Carmel', fldLastName: 'Fortin', fldNickName: 'Carmel', fldIsDeleted: false, fldAvatarCode: 'carmel'),
+    TblPlayer(fldFirstName: 'Dominique', fldLastName: 'Goudreault', fldNickName: 'Domi', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'domi'),
+    TblPlayer(fldFirstName: 'Éric', fldLastName: 'St-Pierre', fldNickName: 'Ricky', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'ricky'),
+    TblPlayer(fldFirstName: 'Christopher', fldLastName: 'Lafond', fldNickName: 'Christo', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'christo'),
+    TblPlayer(fldFirstName: 'Frédéric', fldLastName: 'Gagnon', fldNickName: 'Marcel', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'marcel'),
+    TblPlayer(fldFirstName: 'Frederik', fldLastName: 'Peeters Bélanger', fldNickName: 'Fred', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'fred'),
+    TblPlayer(fldFirstName: 'Simon', fldLastName: 'Drouin', fldNickName: 'Drou', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'drou'),
+    TblPlayer(fldFirstName: 'Étienne', fldLastName: 'Lefrançois', fldNickName: 'Ti-ti', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'titi'),
+    TblPlayer(fldFirstName: 'Marc-Olivier', fldLastName: 'Fortin', fldNickName: 'Marco', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'marco'),
+    TblPlayer(fldFirstName: 'Ludovick', fldLastName: 'Gosselin', fldNickName: 'Ludo', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'ludo'),
+    TblPlayer(fldFirstName: 'Maxime', fldLastName: 'Gagnon', fldNickName: 'Max', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'max'),
+    TblPlayer(fldFirstName: 'Michel', fldLastName: 'Deschênes', fldNickName: 'Papy', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'papy'),
+    TblPlayer(fldFirstName: 'Charles', fldLastName: 'Lirette', fldNickName: 'Charles', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'charles'),
+    TblPlayer(fldFirstName: 'Bryan', fldLastName: 'Bryan', fldNickName: 'Bryan', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'bryan'),
+    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Girard', fldNickName: 'Carl', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: '01'),
+    TblPlayer(fldFirstName: 'Carmel', fldLastName: 'Fortin', fldNickName: 'Carmel', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'carmel'),
+    TblPlayer(fldFirstName: 'Valérie', fldLastName: 'Hrobarek-Halmos', fldNickName: 'Val', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '02'),
+    TblPlayer(fldFirstName: 'Sandra', fldLastName: 'Desgagnés-Laberge', fldNickName: 'San', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '03'),
   ];
 
   await playersBox.addAll(listPlayers);
