@@ -108,158 +108,146 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 ),
               ),
             ),
-            Text(
-              widget.tileDescription,              
-              style: const TextStyle(color: Colors.white),
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Players Management',
+                  style: gBuildArcadeTextStyle(20),
+                ),
+              ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            padding: EdgeInsets.zero,
-            tooltip: 'Add New Player',
-            onPressed: () => _addPlayer(context),
-            icon: SizedBox(
-              width: 48.0,
-              height: 48.0,
-              child: Image.asset(
-                'assets/png/ui_buttons/player_team_add_48x48.png', // Adjust path if needed
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8.0),
-        ],
       ),
 
-      body: Column(
-        children: [
-          // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: imageCardFrameConfig.renderHeight * 0.06,
-              vertical: imageCardFrameConfig.renderHeight * 0.02,
-            ),
-            color: Colors.grey.shade900,
-            child: Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: imageCardFrameConfig.renderHeight * 0.12,
-                    child: TextField(
-                      controller: _searchController,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: imageCardFrameConfig.renderHeight * 0.055,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Search player name or nickname...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: imageCardFrameConfig.renderHeight * 0.055,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.amber,
-                          size: imageCardFrameConfig.renderHeight * 0.09,
-                        ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                          ? Padding(
-                              padding: EdgeInsets.only(
-                                right: imageCardFrameConfig.renderHeight * 0.025, // Pulls the 'X' inward on larger cards
-                              ),
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: Icon(
-                                  Icons.clear,
-                                  color: Colors.white54,
-                                  size: imageCardFrameConfig.renderHeight * 0.065,
-                                ),
-                                onPressed: () => _searchController.clear(),
-                              ),
-                            )
-                          : null,
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 0,
-                          horizontal: imageCardFrameConfig.renderHeight * 0.045,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade800,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
-                          borderSide: BorderSide(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: imageCardFrameConfig.renderHeight * 0.06,
+                vertical: imageCardFrameConfig.renderHeight * 0.02,
+              ),
+              color: Colors.grey.shade900,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: imageCardFrameConfig.renderHeight * 0.12,
+                      child: TextField(
+                        controller: _searchController,
+                        style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035),
+                        decoration: InputDecoration(
+                          hintText: 'Search player name or nickname...',
+                          hintStyle: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
+                          prefixIcon: Icon(
+                            Icons.search,
                             color: Colors.amber,
-                            width: (imageCardFrameConfig.renderHeight * 0.008).clamp(1.5, 4.0),
+                            size: imageCardFrameConfig.renderHeight * 0.09,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                            ? Padding(
+                                padding: EdgeInsets.only(
+                                  right: imageCardFrameConfig.renderHeight * 0.025, // Pulls the 'X' inward on larger cards
+                                ),
+                                child: IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: Colors.white54,
+                                    size: imageCardFrameConfig.renderHeight * 0.065,
+                                  ),
+                                  onPressed: () => _searchController.clear(),
+                                ),
+                              )
+                            : null,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: imageCardFrameConfig.renderHeight * 0.045,
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade800,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
+                            borderSide: BorderSide(
+                              color: Colors.amber,
+                              width: (imageCardFrameConfig.renderHeight * 0.008).clamp(1.5, 4.0),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // 2. LIVE PLAYER CAROUSEL DISPLAY AREA
-          Expanded(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                height: AppDisplay.carouselTileSize,
-                child: ValueListenableBuilder<Box<TblPlayer>>(
-                  valueListenable: playersBox.listenable(),
-                  builder: (context, box, _) {
-                    final allPlayers = box.values.toList();
+            _buildAddPlayerTriangleBanner(context, widget.tileColor, widget.tileBackgroundColor),
 
-                    // Filter by First Name, Last Name, or Nickname
-                    final players = _searchQuery.isEmpty
-                        ? allPlayers
-                        : allPlayers.where((player) {
-                            final firstName = player.fldFirstName.toLowerCase();
-                            final lastName = player.fldLastName.toLowerCase();
-                            final nickName = player.fldNickName.toLowerCase();
+            // 2. LIVE PLAYER CAROUSEL DISPLAY AREA
+            Expanded(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  height: AppDisplay.carouselTileSize,
+                  child: ValueListenableBuilder<Box<TblPlayer>>(
+                    valueListenable: playersBox.listenable(),
+                    builder: (context, box, _) {
+                      final allPlayers = box.values.toList();
 
-                            return firstName.contains(_searchQuery) ||
-                                lastName.contains(_searchQuery) ||
-                                nickName.contains(_searchQuery);
-                          }).toList();
+                      // Filter by First Name, Last Name, or Nickname
+                      final players = _searchQuery.isEmpty
+                          ? allPlayers
+                          : allPlayers.where((player) {
+                              final firstName = player.fldFirstName.toLowerCase();
+                              final lastName = player.fldLastName.toLowerCase();
+                              final nickName = player.fldNickName.toLowerCase();
 
-                    if (players.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No players found.',
-                          style: TextStyle(color: Colors.white70, fontSize: 18),
+                              return firstName.contains(_searchQuery) ||
+                                  lastName.contains(_searchQuery) ||
+                                  nickName.contains(_searchQuery);
+                            }).toList();
+
+                      if (players.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No players found.',
+                            style: gBuildArcadeTextStyle(18),
+                          ),
+                        );
+                      }
+
+                      return CarouselView(
+                        itemExtent: imageCardFrameConfig.renderWidth,
+                        shrinkExtent: 80,
+                        backgroundColor: Colors.transparent,
+                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
                         ),
+                        onTap: (int index) {
+                          final player = players[index];
+                          _onPlayerTapped(context, player);
+                        },
+                        children: players
+                            .map((player) => _buildPlayerCard(context, player))
+                            .toList(),
                       );
-                    }
-
-                    return CarouselView(
-                      itemExtent: imageCardFrameConfig.renderWidth,
-                      shrinkExtent: 80,
-                      backgroundColor: Colors.transparent,
-                      overlayColor: WidgetStateProperty.all(Colors.transparent),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      onTap: (int index) {
-                        final player = players[index];
-                        _onPlayerTapped(context, player);
-                      },
-                      children: players
-                          .map((player) => _buildPlayerCard(context, player))
-                          .toList(),
-                    );
-                  },
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -386,20 +374,24 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            '« ${player.fldNickName} »'.toUpperCase(),
+                            player.fldNickName.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: imageCardFrameConfig.renderHeight * 0.042,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
+                            style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.032, gFontWeight: FontWeight.w800),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                // 5. PNG if Player Is League Member Patch
+                if (player.fldIsLeagueMember) 
+                  Positioned.fill(
+                    child: Image.asset(
+                      imageCardFrameConfig.assetPathIsLeagueMember,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -407,4 +399,68 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       ),
     );
   }
+
+  Widget _buildAddPlayerTriangleBanner(BuildContext context, Color tileColor, Color tileBackgroundColor) {
+  final double responsiveTile = AppDisplay.carouselTileSize;
+  final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 40.0);
+  final double iconSize = (responsiveTile * 0.08).clamp(28.0, 48.0);
+
+  return InkWell(
+    onTap: () {
+      _addPlayer(context);
+    },
+    child: ClipPath(
+      clipper: ArcadeTriangleClipper(),
+      child: Container(
+        width: double.infinity,
+        height: (responsiveTile * 0.15).clamp(50.0, 90.0),
+        color: Colors.grey.shade900,
+        alignment: Alignment.topCenter,
+        padding: EdgeInsets.only(top: responsiveTile * 0.015),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'ADD NEW',
+              style: gBuildArcadeTextStyle(
+                responsiveFontSize,
+                gTextColor: Colors.lightBlueAccent,
+              ),
+            ),
+            SizedBox(width: responsiveTile * 0.02),
+            Image.asset(
+              'assets/png/ui_buttons/player_team_add_48x48.png',
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(width: responsiveTile * 0.02),
+            Text(
+              'PLAYER',
+              style: gBuildArcadeTextStyle(
+                responsiveFontSize,
+                gTextColor: Colors.lightBlueAccent,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+}
+// Custom Clipper that draws a shallow downward triangle banner
+class ArcadeTriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, 0); // Top-left
+    path.lineTo(size.width, 0); // Top-right
+    path.lineTo(size.width * 0.5, size.height); // Bottom-center apex
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

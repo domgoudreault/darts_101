@@ -32,6 +32,9 @@ enum MainScreenSection {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Ensures modern transparent edge-to-edge system bar rendering
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   // 🔒 Lock app to landscape mode
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
@@ -105,6 +108,7 @@ class MainScreenPopupMenu extends StatelessWidget {
   void _showPrivacyDialog(BuildContext context) {
     showDialog(
       context: context,
+      useSafeArea: true,
       builder: (BuildContext context) {
         // Registers this dialog as a listener for screen size changes (it does nothing else)
         MediaQuery.sizeOf(context);
@@ -112,8 +116,8 @@ class MainScreenPopupMenu extends StatelessWidget {
         return AlertDialog(
           title: const Text('Privacy Policy'),
           content: SizedBox(
-            height: AppDisplay.height * 0.7,
-            width: AppDisplay.width * 0.8,
+            height: AppDisplay.safeHeight * 0.7,
+            width: AppDisplay.safeWidth * 0.8,
             child: Column(
               children: [
                 // 1. SCROLLABLE TEXT AREA
@@ -169,7 +173,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close', style: TextStyle(fontSize: 16)),
+                    child: Text('Close', style: gBuildArcadeTextStyle(12)),
                   ),
                 ),
               ],
@@ -187,6 +191,7 @@ class MainScreenPopupMenu extends StatelessWidget {
 
     showDialog(
       context: context,
+      useSafeArea: true,
       builder: (BuildContext context) {
         // Registers this dialog as a listener for screen size changes (it does nothing else)
         MediaQuery.sizeOf(context);
@@ -194,11 +199,10 @@ class MainScreenPopupMenu extends StatelessWidget {
         ImageConfig imageConfig = getInformationDialogImageConfig();
 
         return AlertDialog(
-          title: Text('Information [${AppDisplay.displayMode.name}] : ${imageConfig.assetPath}'),
           content: SizedBox(
             // Set a fixed height so the dialog doesn't jump around
-            height: AppDisplay.height * 0.7,
-            width: AppDisplay.width * 0.8,
+            height: AppDisplay.safeHeight * 0.8,
+            width: AppDisplay.safeWidth * 0.8,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -280,7 +284,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                       ),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close', style: TextStyle(fontSize: 16)),
+                    child: Text('Close', style: gBuildArcadeTextStyle(12)),
                   ),
                 ),
               ],
@@ -316,7 +320,8 @@ class MainScreenPopupMenu extends StatelessWidget {
   PopupMenuItem<String> _buildMenuItem(String value, String text) {
     return PopupMenuItem<String>(
       value: value,
-      child: Text(text, style: const TextStyle(color: Colors.white)),
+      child: Text(text, style: gBuildArcadeTextStyle(10)),
+      //child: Text(text, style: const TextStyle(color: Colors.white)),
     );
   }
 }
@@ -541,12 +546,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             ),
-            Text(
-              widget.title,              
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
+            Text(widget.title, style: gBuildArcadeTextStyle(20)),
           ]          
         ),
         actions: [
@@ -571,54 +571,54 @@ class _MainScreenState extends State<MainScreen> {
       ),
       
       // The body starts right under the AppBar      
-      body: Column(
-        children: [
-          // 1. TOP SEGMENTED TOGGLE BAR (GAMES | SETTINGS Side-by-Side)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-            color: Colors.grey.shade900,
-            child: Row(
-              children: [
-                _buildSectionToggleButton(
-                  sectionCode: 'games',
-                  section: MainScreenSection.section05Games,
-                ),
-                const SizedBox(width: 12),
-                _buildSectionToggleButton(
-                  sectionCode: 'settings',
-                  section: MainScreenSection.section10Settings,
-                ),
-              ],
-            ),
-          ),
-
-          // 2. FIXED CAROUSEL DISPLAY AREA (Takes remaining vertical screen space)
-          Expanded(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                height: AppDisplay.carouselTileSize,
-                child: CarouselView(
-                  itemExtent: AppDisplay.carouselTileSize,
-                  shrinkExtent: 80,
-                  backgroundColor: Colors.transparent,
-                  overlayColor: WidgetStateProperty.all(Colors.transparent),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 1. TOP SEGMENTED TOGGLE BAR (GAMES | SETTINGS Side-by-Side)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              color: Colors.grey.shade900,
+              child: Row(
+                children: [
+                  _buildSectionToggleButton(
+                    sectionCode: 'games',
+                    section: MainScreenSection.section05Games,
                   ),
-                  // Tap lookup directly uses the active list index!
-                  onTap: (int index) {
-                    _onTileTapped(context, activeTiles[index]);
-                  },
-                  // Dynamically map active list to Tile Widgets
-                  children: activeTiles
-                      .map((tileData) => _buildMainScreenTile(context, tileData))
-                      .toList(),
+                  const SizedBox(width: 12),
+                  _buildSectionToggleButton(
+                    sectionCode: 'settings',
+                    section: MainScreenSection.section10Settings,
+                  ),
+                ],
+              ),
+            ),
+
+            // 2. FIXED CAROUSEL DISPLAY AREA (Takes remaining vertical screen space)
+            Expanded(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  height: AppDisplay.carouselTileSize,
+                  child: CarouselView(
+                    itemExtent: AppDisplay.carouselTileSize,
+                    shrinkExtent: 80,
+                    backgroundColor: Colors.transparent,
+                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    onTap: (int index) {
+                      _onTileTapped(context, activeTiles[index]);
+                    },
+                    children: activeTiles
+                        .map((tileData) => _buildMainScreenTile(context, tileData))
+                        .toList(),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -701,15 +701,16 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 void _showDebugCarouselImageDialog(BuildContext context) {
-  final ImageConfig config = getCarouselTileImageConfig('game', 'frame');
+  final ImageConfig config = getCarouselTileImageConfig('settings', 'players');
 
   // Dynamic scale factor derived directly from dialog viewport height
-  final double dialogHeight = AppDisplay.height * 0.7;
+  final double dialogHeight = AppDisplay.safeHeight * 0.7;
   final double baseFontSize = (dialogHeight * 0.045).clamp(14.0, 22.0);
   final double titleFontSize = baseFontSize * 1.25;
 
   showDialog(
     context: context,
+    useSafeArea: true,
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: Colors.grey.shade900,
@@ -723,7 +724,7 @@ void _showDebugCarouselImageDialog(BuildContext context) {
         ),
         content: SizedBox(
           height: dialogHeight,
-          width: AppDisplay.width * 0.8,
+          width: AppDisplay.safeWidth * 0.8,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -739,12 +740,12 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Screen Width: ${AppDisplay.width.toStringAsFixed(1)} dp',
+                        'Safe Screen Width: ${AppDisplay.safeWidth.toStringAsFixed(1)} dp',
                         style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Screen Height: ${AppDisplay.height.toStringAsFixed(1)} dp',
+                        'Safe Screen Height: ${AppDisplay.safeHeight.toStringAsFixed(1)} dp',
                         style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
                       ),
                       const Divider(color: Colors.white24, height: 24),
@@ -784,20 +785,7 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                       borderRadius: BorderRadius.circular(6),
                       child: Image.asset(
                         config.assetPath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              'Asset Not Found!',
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                                fontSize: baseFontSize,
-                              ),
-                            ),
-                          );
-                        },
+                        fit: BoxFit.contain,                        
                       ),
                     ),
                   ),
@@ -809,10 +797,7 @@ void _showDebugCarouselImageDialog(BuildContext context) {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Close',
-              style: TextStyle(color: Colors.white, fontSize: baseFontSize),
-            ),
+            child: Text('Close', style: gBuildArcadeTextStyle(baseFontSize)),
           ),
         ],
       );

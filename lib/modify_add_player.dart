@@ -7,6 +7,7 @@ import 'package:darts_101/database/tbl_avatar.dart';
 import 'package:darts_101/database/tbl_player.dart';
 
 // Backend Logic
+import 'package:darts_101/global_be.dart';
 import 'package:darts_101/modify_add_player_be.dart';
 
 enum FormMode{
@@ -126,6 +127,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
 
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: widget.tileColor,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
@@ -133,48 +135,41 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        final double screenWidth = MediaQuery.sizeOf(context).width;
-
-        return Container(
-          width: screenWidth * 0.8,
-          height: pickerConfig.renderSize + 80.0, // Scales sheet height dynamically with picker size
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Column(
-            children: [
-              const Text(
-                'Select Avatar',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+        return SafeArea(
+          child: Container(
+            width: AppDisplay.safeWidth * 0.775,
+            height: (pickerConfig.renderSize + 80.0).clamp(0.0, AppDisplay.safeHeight * 0.9),
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Column(
+              children: [
+                Text('SELECT AN AVATAR', style: gBuildArcadeTextStyle(18)),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: CarouselView(
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    itemExtent: pickerConfig.renderSize + 16.0,
+                    shrinkExtent: pickerConfig.renderSize * 0.8,
+                    // Native CarouselView callback receives the tapped item index directly
+                    onTap: (int index) {
+                      final selectedAvatar = avatarList[index];
+                      setState(() {
+                        _selectedAvatarCode = selectedAvatar.fldAvatarCode;
+                      });
+                      Navigator.pop(context);
+                    },
+                    children: avatarList.map((avatar) {
+                      return Center(
+                        child: _buildAvatarPicker(
+                          avatar: avatar,
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: CarouselView(
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  overlayColor: WidgetStateProperty.all(Colors.transparent),
-                  itemExtent: pickerConfig.renderSize + 16.0,
-                  shrinkExtent: pickerConfig.renderSize * 0.8,
-                  // Native CarouselView callback receives the tapped item index directly
-                  onTap: (int index) {
-                    final selectedAvatar = avatarList[index];
-                    setState(() {
-                      _selectedAvatarCode = selectedAvatar.fldAvatarCode;
-                    });
-                    Navigator.pop(context);
-                  },
-                  children: avatarList.map((avatar) {
-                    return Center(
-                      child: _buildAvatarPicker(
-                        avatar: avatar,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -203,76 +198,73 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 ),
               ),
             ),
-            Text(
-              _getTextByMode(TextType.title),
-              style: const TextStyle(color: Colors.white),
-            ),
+            Text(_getTextByMode(TextType.title), style: gBuildArcadeTextStyle(20)),
           ],
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              // SIDE-BY-SIDE MAIN CONTAINER
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // LEFT COLUMN: TEXT FIELDS
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _buildTextField(_firstNameController, 'First Name'),
-                        const SizedBox(height: 12),
-                        _buildTextField(_lastNameController, 'Last Name'),
-                        const SizedBox(height: 12),
-                        _buildTextField(_nickNameController, 'Nickname'),
-                      ],
+      
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // SIDE-BY-SIDE MAIN CONTAINER
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // LEFT COLUMN: TEXT FIELDS
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildTextField(_firstNameController, 'First Name'),
+                          const SizedBox(height: 12),
+                          _buildTextField(_lastNameController, 'Last Name'),
+                          const SizedBox(height: 12),
+                          _buildTextField(_nickNameController, 'Nickname'),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(width: 24), // Spacing between columns
+                    const SizedBox(width: 24), // Spacing between columns
 
-                  // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildAvatarMainUI(),
-                        const SizedBox(height: 12),
-                        // Trigger button for the upcoming avatar picker dialog/pop-up
-                        ElevatedButton.icon(
-                          onPressed: _showAvatarPicker,
-                          icon: const Icon(Icons.style, color: Colors.white),
-                          label: const Text(
-                            'Select Avatar',
-                            style: TextStyle(color: Colors.white),
+                    // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildAvatarMainUI(),
+                          const SizedBox(height: 12),
+                          // Trigger button for the upcoming avatar picker dialog/pop-up
+                          ElevatedButton.icon(
+                            onPressed: _showAvatarPicker,
+                            icon: const Icon(Icons.style, color: Colors.white),
+                            label: Text('SELECT AN AVATAR', style: gBuildArcadeTextStyle(12)),                            
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: widget.tileColor,
+                            ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: widget.tileColor,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-
-              // MAIN SAVE ACTION BUTTON
-              FloatingActionButton.extended(
-                backgroundColor: widget.tileColor,
-                label: Text(
-                  _getTextByMode(TextType.button),
-                  style: const TextStyle(color: Colors.white),
+                  ],
                 ),
-                icon: Image.asset(_getTextByMode(TextType.icon)),
-                onPressed: _savePlayer,
-              ),
-            ],
+
+                const SizedBox(height: 32),
+
+                // MAIN SAVE ACTION BUTTON
+                FloatingActionButton.extended(
+                  backgroundColor: widget.tileColor,
+                  label: Text(
+                    _getTextByMode(TextType.button),
+                    style: gBuildArcadeTextStyle(14),// TextStyle(color: Colors.white),
+                  ),
+                  icon: Image.asset(_getTextByMode(TextType.icon)),
+                  onPressed: _savePlayer,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -280,25 +272,66 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   }
 
   Widget _buildTextField(TextEditingController controller, String label) {
-    return TextFormField(
-      controller: controller,      
-      textCapitalization: TextCapitalization.words,
-      // Improves UX: Shows "Next" on keyboard until the last field
-      textInputAction: label == 'Nickname' ? TextInputAction.done : TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: label, 
-        filled: true,
-        fillColor: Colors.white,
-        border:  UnderlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      validator: (value) {
-        if ((label == 'Nickname') && (value == null || value.trim().isEmpty)) {
-          return '$label is required';
-        }
-        return null;
+  final double responsiveTile = AppDisplay.carouselTileSize;
+  final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 60.0);
+  bool isFocused = false;
+
+  return SizedBox(
+    height: (responsiveTile * 0.12).clamp(40.0, 200.0),
+    child: StatefulBuilder(
+      builder: (context, setState) {
+        return Focus(
+          onFocusChange: (hasFocus) {
+            setState(() {
+              isFocused = hasFocus;
+            });
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: responsiveTile * 0.045,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade800,
+              borderRadius: BorderRadius.circular(responsiveTile * 0.04),
+              border: Border.all(
+                color: isFocused ? Colors.purpleAccent.shade700 : Colors.grey.shade700,
+                width: isFocused ? (responsiveTile * 0.008).clamp(2.0, 4.0) : 1.5,
+              ),
+            ),
+            child: TextFormField(
+              controller: controller,
+              style: gBuildArcadeTextStyle(responsiveFontSize),
+              textCapitalization: TextCapitalization.words,
+              textInputAction: label == 'Nickname' ? TextInputAction.done : TextInputAction.next,
+              decoration: InputDecoration(
+                isDense: true,
+                labelText: label,
+                labelStyle: gBuildArcadeTextStyle(
+                  (responsiveFontSize * 0.70).clamp(10.0, 60.0),
+                  gTextColor: Colors.grey.shade400,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: responsiveTile * 0.02,
+                ),
+              ),
+              validator: (value) {
+                if ((label == 'Nickname') && (value == null || value.trim().isEmpty)) {
+                  return '$label is required';
+                }
+                return null;
+              },
+            ),
+          ),
+        );
       },
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildAvatarMainUI() {
     final ImageConfig frameImageConfig = getAvatarFrameMainImageConfig();

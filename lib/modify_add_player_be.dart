@@ -66,12 +66,12 @@ ImageConfig getAvatarFramePickerImageConfig() {
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
-    case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:
       return ImageConfig(        
         assetPath: 'assets/png/mechanics/player_avatar_128x128.png',
         renderSize: 128,
       );
+    case DisplayMode.display15MediumTablet:
+    case DisplayMode.display20LargeLapDesk:      
     case DisplayMode.display25Ultra4K:
       return ImageConfig(        
         assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
@@ -85,12 +85,12 @@ ImageConfig getAvatarPlayerPickerImageConfig(String avatarCode) {
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
-    case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:
       return ImageConfig(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
         renderSize: 128,
       );
+    case DisplayMode.display15MediumTablet:
+    case DisplayMode.display20LargeLapDesk:      
     case DisplayMode.display25Ultra4K:
       return ImageConfig(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
