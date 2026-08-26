@@ -1,12 +1,15 @@
 // Flutter basics
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 // Database Models
 import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
+import 'package:darts_101/ui_helpers.dart';
 import 'package:darts_101/settings_players_be.dart';
 
 // UI Screens
@@ -35,6 +38,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
+  final CarouselController _carouselController = CarouselController();
+
   @override
   void initState() {
     super.initState();
@@ -43,17 +48,23 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         _searchQuery = _searchController.text.trim().toLowerCase();
       });
     });
+
+    // Check database status right after the screen renders
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndPromptPlayerSeeding();
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _carouselController.dispose();
     super.dispose();
   }
 
   // Fonctions de navigation when a button is pressed
-  void _addPlayer(BuildContext context) {
-    Navigator.push(
+  void _addPlayer(BuildContext context) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         // The add_player.dart page will be created and shown
@@ -64,6 +75,24 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         ),
       ),
     );
+
+    if (result == true && mounted) {
+      if (_searchQuery.isNotEmpty) {
+        _searchController.clear();
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final activePlayers = Hive.box<TblPlayer>('playersBox').values.where((p) => !p.fldIsDeleted).toList();
+        
+        if (activePlayers.isNotEmpty && _carouselController.hasClients) {
+          _carouselController.animateTo(
+            activePlayers.length * getCarouselCardFrameImageConfig().renderWidth,
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
   }
 
   void _onPlayerTapped(BuildContext context, TblPlayer player) {    
@@ -78,6 +107,134 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
           tileBackgroundColor: widget.tileBackgroundColor,
         ),
       ),
+    );
+  }
+
+  void _checkAndPromptPlayerSeeding() {
+    final playersBox = Hive.box<TblPlayer>('playersBox').values.where((player) => !player.fldIsDeleted);
+
+    if (playersBox.isEmpty) {
+      if (kDebugMode) {
+        _showLeagueSeedDialog();
+      } else {
+        _showGenericSeedDialog();
+      }
+    }
+  }
+
+  // 1. LEAGUE SEED DIALOG (kDebugMode only)
+  void _showLeagueSeedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF212121),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+            side: const BorderSide(color: Colors.white24, width: 1.0),
+          ),
+          title: Text(
+            'DEBUG: LEAGUE DATA',
+            textAlign: TextAlign.center,
+            style: gBuildArcadeTextStyle(18.0, gTextColor: Colors.amberAccent),
+          ),
+          content: Text(
+            'No players found. Would you like to seed default LEAGUE players and teams for testing?',
+            textAlign: TextAlign.center,
+            style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.white),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            // NO -> FALLBACK TO GENERIC AUTO-GENERATION QUESTION
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _showGenericSeedDialog();
+              },
+              child: Text(
+                'NO',
+                style: gBuildArcadeTextStyle(14.0, gTextColor: Colors.redAccent),
+              ),
+            ),
+            
+            // YES -> SEED REAL LEAGUE DATA
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: widget.tileColor),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                // Only seeds players from my league if we are in Debug Mode AND the database is empty
+                final playersBox = Hive.box<TblPlayer>('playersBox');
+                final teamsBox = Hive.box<TblTeam>('teamsBox');
+
+                await seedHiveLeaguePlayers(playersBox);
+                await seedHiveLeagueTeams(playersBox, teamsBox);
+                
+                setState(() {});
+              },
+              child: Text(
+                'YES (LEAGUE)',
+                style: gBuildArcadeTextStyle(14.0, gTextColor: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 2. GENERIC AUTO-GENERATED SEED DIALOG (Release Mode OR Declined League Data)
+  void _showGenericSeedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF212121),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+            side: const BorderSide(color: Colors.white24, width: 1.0),
+          ),
+          title: Text(
+            'SAMPLE PLAYERS',
+            textAlign: TextAlign.center,
+            style: gBuildArcadeTextStyle(18.0, gTextColor: Colors.cyanAccent),
+          ),
+          content: Text(
+            'No players found. Would you like to auto-generate sample default players?',
+            textAlign: TextAlign.center,
+            style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.white),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            // NO -> LEAVE EMPTY FOR MANUAL CREATION
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'NO, I\'LL ADD BY HAND',
+                style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.redAccent),
+              ),
+            ),
+            
+            // YES -> SEED FAKE / GENERIC PLAYERS
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: widget.tileColor),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                final playersBox = Hive.box<TblPlayer>('playersBox');
+    
+                await seedHiveGenericPlayers(playersBox);
+
+                setState(() {});
+              },
+              child: Text(
+                'YES (AUTO-GENERATE)',
+                style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -132,65 +289,133 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 vertical: imageCardFrameConfig.renderHeight * 0.02,
               ),
               color: Colors.grey.shade900,
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: imageCardFrameConfig.renderHeight * 0.12,
-                      child: TextField(
-                        controller: _searchController,
-                        style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035),
-                        decoration: InputDecoration(
-                          hintText: 'Search player name or nickname...',
-                          hintStyle: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.amber,
-                            size: imageCardFrameConfig.renderHeight * 0.09,
-                          ),
-                          suffixIcon: _searchQuery.isNotEmpty
-                            ? Padding(
-                                padding: EdgeInsets.only(
-                                  right: imageCardFrameConfig.renderHeight * 0.025, // Pulls the 'X' inward on larger cards
-                                ),
-                                child: IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(
-                                    Icons.clear,
-                                    color: Colors.white54,
-                                    size: imageCardFrameConfig.renderHeight * 0.065,
+                  // 1.1 Add Player Banner
+                  gBuildArcadeActionBanner(
+                    context: context,
+                    leadingText: 'ADD NEW',
+                    trailingText: 'PLAYER',
+                    formMode: FormMode.formAdd,
+                    onTap: () => _addPlayer(context),
+                  ),
+
+                  SizedBox(height: imageCardFrameConfig.renderHeight * 0.015),
+
+                  // 1.2 Seach Bar
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: imageCardFrameConfig.renderHeight * 0.12,
+                          child: TextField(
+                            controller: _searchController,
+                            style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035),
+                            decoration: InputDecoration(
+                              hintText: 'Search player name or nickname...',
+                              hintStyle: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.amber,
+                                size: imageCardFrameConfig.renderHeight * 0.09,
+                              ),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // 1. Clear Button (Only shows when search is active)
+                                  if (_searchQuery.isNotEmpty)
+                                    IconButton(
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      icon: Icon(
+                                        Icons.clear,
+                                        color: Colors.white54,
+                                        size: imageCardFrameConfig.renderHeight * 0.065,
+                                      ),
+                                      onPressed: () => _searchController.clear(),
+                                    ),
+
+                                  // Gap between clear button and counter pill
+                                  SizedBox(width: imageCardFrameConfig.renderHeight * 0.015),
+
+                                  // 2. Embedded Arcade Counter Pill
+                                  ValueListenableBuilder<Box<TblPlayer>>(
+                                    valueListenable: playersBox.listenable(),
+                                    builder: (context, box, _) {
+                                      final activePlayers = box.values.where((p) => !p.fldIsDeleted).toList();
+                                      final filteredCount = _searchQuery.isEmpty
+                                          ? activePlayers.length
+                                          : activePlayers.where((player) {
+                                              final query = _searchQuery.toLowerCase();
+                                              return player.fldFirstName.toLowerCase().contains(query) ||
+                                                  player.fldLastName.toLowerCase().contains(query) ||
+                                                  player.fldNickName.toLowerCase().contains(query);
+                                            }).length;
+
+                                      return Container(
+                                        margin: EdgeInsets.only(
+                                          right: imageCardFrameConfig.renderHeight * 0.015,
+                                          top: imageCardFrameConfig.renderHeight * 0.015,
+                                          bottom: imageCardFrameConfig.renderHeight * 0.015,
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: imageCardFrameConfig.renderHeight * 0.025,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade900,
+                                          borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.02),
+                                          border: Border.all(
+                                            color: Colors.amber,
+                                            width: (imageCardFrameConfig.renderHeight * 0.005).clamp(1.0, 2.0),
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Text(
+                                              _searchQuery.isEmpty 
+                                                  ? '$filteredCount' 
+                                                  : '$filteredCount/${activePlayers.length}',
+                                              style: gBuildArcadeTextStyle(
+                                                imageCardFrameConfig.renderHeight * 0.035,
+                                                gTextColor: Colors.amber,
+                                                gFontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  onPressed: () => _searchController.clear(),
+                                ],
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 0,
+                                horizontal: imageCardFrameConfig.renderHeight * 0.045,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade800,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
+                                borderSide: BorderSide(
+                                  color: Colors.amber,
+                                  width: (imageCardFrameConfig.renderHeight * 0.008).clamp(1.5, 4.0),
                                 ),
-                              )
-                            : null,
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: imageCardFrameConfig.renderHeight * 0.045,
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade800,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
-                            borderSide: BorderSide(
-                              color: Colors.amber,
-                              width: (imageCardFrameConfig.renderHeight * 0.008).clamp(1.5, 4.0),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ),
-
-            _buildAddPlayerTriangleBanner(context, widget.tileColor, widget.tileBackgroundColor),
+            ),            
 
             // 2. LIVE PLAYER CAROUSEL DISPLAY AREA
             Expanded(
@@ -201,12 +426,12 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                   child: ValueListenableBuilder<Box<TblPlayer>>(
                     valueListenable: playersBox.listenable(),
                     builder: (context, box, _) {
-                      final allPlayers = box.values.toList();
+                      final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
 
                       // Filter by First Name, Last Name, or Nickname
                       final players = _searchQuery.isEmpty
-                          ? allPlayers
-                          : allPlayers.where((player) {
+                          ? activePlayers
+                          : activePlayers.where((player) {
                               final firstName = player.fldFirstName.toLowerCase();
                               final lastName = player.fldLastName.toLowerCase();
                               final nickName = player.fldNickName.toLowerCase();
@@ -226,6 +451,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                       }
 
                       return CarouselView(
+                        controller: _carouselController,
                         itemExtent: imageCardFrameConfig.renderWidth,
                         shrinkExtent: 80,
                         backgroundColor: Colors.transparent,
@@ -399,68 +625,4 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       ),
     );
   }
-
-  Widget _buildAddPlayerTriangleBanner(BuildContext context, Color tileColor, Color tileBackgroundColor) {
-  final double responsiveTile = AppDisplay.carouselTileSize;
-  final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 40.0);
-  final double iconSize = (responsiveTile * 0.08).clamp(28.0, 48.0);
-
-  return InkWell(
-    onTap: () {
-      _addPlayer(context);
-    },
-    child: ClipPath(
-      clipper: ArcadeTriangleClipper(),
-      child: Container(
-        width: double.infinity,
-        height: (responsiveTile * 0.15).clamp(50.0, 90.0),
-        color: Colors.grey.shade900,
-        alignment: Alignment.topCenter,
-        padding: EdgeInsets.only(top: responsiveTile * 0.015),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'ADD NEW',
-              style: gBuildArcadeTextStyle(
-                responsiveFontSize,
-                gTextColor: Colors.lightBlueAccent,
-              ),
-            ),
-            SizedBox(width: responsiveTile * 0.02),
-            Image.asset(
-              'assets/png/ui_buttons/player_team_add_48x48.png',
-              width: iconSize,
-              height: iconSize,
-              fit: BoxFit.contain,
-            ),
-            SizedBox(width: responsiveTile * 0.02),
-            Text(
-              'PLAYER',
-              style: gBuildArcadeTextStyle(
-                responsiveFontSize,
-                gTextColor: Colors.lightBlueAccent,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-}
-// Custom Clipper that draws a shallow downward triangle banner
-class ArcadeTriangleClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 0); // Top-left
-    path.lineTo(size.width, 0); // Top-right
-    path.lineTo(size.width * 0.5, size.height); // Bottom-center apex
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

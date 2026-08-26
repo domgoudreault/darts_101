@@ -1,33 +1,29 @@
 import 'package:darts_101/global_be.dart';
 
-class ImageConfig {
+class ImageConfigAvatar {
   final String assetPath;
   final double renderSize;
 
-  const ImageConfig({required this.assetPath, required this.renderSize});
+  const ImageConfigAvatar({required this.assetPath, required this.renderSize});
 }
 
 // Returns Framing image for Main UI based on screen width
-ImageConfig getAvatarFrameMainImageConfig() {  
+ImageConfigAvatar getAvatarFrameMainImageConfig() {  
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_128x128.png',
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
-      return ImageConfig(        
-        assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
-        renderSize: 256,
-      );
     case DisplayMode.display20LargeLapDesk:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
         renderSize: 256,
       );
     case DisplayMode.display25Ultra4K:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_512x512.png',
         renderSize: 512,
       );
@@ -35,26 +31,22 @@ ImageConfig getAvatarFrameMainImageConfig() {
 }
 
 // Returns Player image for Main UI based on screen width
-ImageConfig getAvatarPlayerMainImageConfig(String avatarCode) {
+ImageConfigAvatar getAvatarPlayerMainImageConfig(String avatarCode) {
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
-      return ImageConfig(        
-        assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
-        renderSize: 256,
-      );
     case DisplayMode.display20LargeLapDesk:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
         renderSize: 256,
       );
     case DisplayMode.display25Ultra4K:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_512x512.png',
         renderSize: 512,
       );
@@ -62,39 +54,47 @@ ImageConfig getAvatarPlayerMainImageConfig(String avatarCode) {
 }
 
 // Returns Framing image for Avatars Picker based on screen width
-ImageConfig getAvatarFramePickerImageConfig() {  
+ImageConfigAvatar getAvatarFramePickerImageConfig() {  
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_128x128.png',
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:      
-    case DisplayMode.display25Ultra4K:
-      return ImageConfig(        
+    case DisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
         renderSize: 256,
+      );   
+    case DisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_512x512.png',
+        renderSize: 512,
       );
   }
 }
 
 // Returns Player image for Avatars Picker based on screen width
-ImageConfig getAvatarPlayerPickerImageConfig(String avatarCode) {
+ImageConfigAvatar getAvatarPlayerPickerImageConfig(String avatarCode) {
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:
-      return ImageConfig(        
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:      
-    case DisplayMode.display25Ultra4K:
-      return ImageConfig(        
+    case DisplayMode.display20LargeLapDesk:  
+      return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
         renderSize: 256,
+      );    
+    case DisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_512x512.png',
+        renderSize: 512,
       );
   }
 }

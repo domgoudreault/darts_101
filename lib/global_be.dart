@@ -1,5 +1,5 @@
+// Flutter basics
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // Global enum representing device display tiers
 enum DisplayMode {
@@ -54,24 +54,4 @@ class AppDisplay {
   } else {
     return (DisplayMode.display25Ultra4K, 1024.0);
   }
-}
-
-// Returns a retro arcade Text widget with a hard pixel drop shadow.
-TextStyle gBuildArcadeTextStyle(
-  double gFontSize, {
-  FontWeight gFontWeight = FontWeight.normal,
-  Color gTextColor = Colors.white,
-  Color gShadowColor = Colors.black,
-}) {
-  return GoogleFonts.pressStart2p(
-    fontSize: gFontSize,
-    color: gTextColor,
-    shadows: [
-      Shadow(
-        offset: const Offset(-2.0, 2.0),
-        color: gShadowColor,
-        blurRadius: 0.0,
-      ),
-    ],
-  );
 }

@@ -1,6 +1,7 @@
 // Flutter basics
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // Database Models
 import 'package:darts_101/database/tbl_avatar.dart';
@@ -8,18 +9,8 @@ import 'package:darts_101/database/tbl_player.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
+import 'package:darts_101/ui_helpers.dart';
 import 'package:darts_101/modify_add_player_be.dart';
-
-enum FormMode{
-  formAdd,
-  formModify
-}
-
-enum TextType{
-  title,
-  button,
-  icon
-}
 
 class ModifyAddPlayerForm extends StatefulWidget {  
   final FormMode enuFormMode;
@@ -50,6 +41,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
 
   late String _selectedAvatarCode;
 
+  double get _responsiveTile => AppDisplay.carouselTileSize;
+  double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(10.0, 60.0);
+
   // 2. Clean up controllers when the widget is destroyed
   @override
   void dispose() {
@@ -74,48 +68,147 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     }    
   }
 
-  String _getTextByMode(TextType textType) {
-    final isAdd = widget.enuFormMode == FormMode.formAdd;
+  void _savePlayer() {
+    // 1. Check if an avatar was selected (block if still placeholder 'question')
+    if (_selectedAvatarCode == 'question') {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red.shade800,
+          behavior: SnackBarBehavior.floating,
+          // Uses purely AppDisplay ratios to keep the SnackBar above safe boundaries
+          margin: EdgeInsets.only(
+            left: AppDisplay.safeWidth * 0.05,
+            right: AppDisplay.safeWidth * 0.05,
+            bottom: AppDisplay.safeHeight * 0.05,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          content: Center(
+            child: Text(
+              'PLEASE SELECT AN AVATAR!',
+              style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
+            ),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
-    switch (textType){
-      case TextType.title:  return isAdd ? 'Add a player' : 'Modify a player';
-      case TextType.button: return isAdd ? 'Add Player' : 'Modify Player';
-      case TextType.icon:   return isAdd ? 'assets/png/ui_buttons/player_team_add_36x36.png' : 'assets/png/ui_buttons/player_team_edit_24x24.png';
-    }    
+    // 2. Validate form fields
+    if (_nickNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red.shade800,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(
+            left: AppDisplay.safeWidth * 0.05,
+            right: AppDisplay.safeWidth * 0.05,
+            bottom: AppDisplay.safeHeight * 0.05,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          content: Center(
+            child: Text(
+              'NICKNAME IS REQUIRED!',
+              style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
+            ),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // 3. Save to Hive database if everything is ok
+    // Get the playersBox from Hive
+    final playersBox = Hive.box<TblPlayer>('playersBox');
+
+    if (widget.enuFormMode == FormMode.formAdd){
+      // Create the player object
+      final player = TblPlayer(
+        fldFirstName: _firstNameController.text.trim(),
+        fldLastName: _lastNameController.text.trim(),
+        fldNickName: _nickNameController.text.trim(),
+        fldIsDeleted: false,
+        fldIsLeagueMember: false,
+        fldAvatarCode: _selectedAvatarCode,
+      );
+
+      // Add to Hive        
+      playersBox.add(player);
+      
+      // Return to previous screen
+      Navigator.pop(context, true);    
+
+    } else {
+        widget.modifyPlayer?.fldFirstName = _firstNameController.text.trim();
+        widget.modifyPlayer?.fldLastName = _lastNameController.text.trim();
+        widget.modifyPlayer?.fldNickName = _nickNameController.text.trim();
+        widget.modifyPlayer?.fldAvatarCode = _selectedAvatarCode;
+
+        // Save to Hive        
+        widget.modifyPlayer?.save();
+
+        // Return to previous screen
+        Navigator.pop(context, false);
+    }
   }
 
-  void _savePlayer() {
-    if (_formKey.currentState!.validate()) {      
-      // Get the playersBox from Hive
-      final playersBox = Hive.box<TblPlayer>('playersBox');
+  void _deletePlayer() {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          backgroundColor: Colors.grey.shade900,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: const BorderSide(color: Colors.redAccent, width: 1.5),
+          ),
+          title: Text(
+            'DELETE PLAYER?',
+            style: gBuildArcadeTextStyle(18, gTextColor: Colors.redAccent),
+          ),
+          content: Text(
+            'Are you sure you want to remove ${_nickNameController.text}?',
+            style: TextStyle(
+              color: Colors.white, 
+              fontSize: (_responsiveFontSize * 0.90).clamp(10.0, 60.0),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(
+                'CANCEL',
+                style: gBuildArcadeTextStyle(14, gTextColor: Colors.grey.shade400),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade800,
+              ),
+              onPressed: () {
+                // Soft delete: set flag to true and save to Hive
+                widget.modifyPlayer?.fldIsDeleted = true;
+                widget.modifyPlayer?.save();
 
-      if (widget.enuFormMode == FormMode.formAdd){
-        // Create the player object
-        final player = TblPlayer(
-          fldFirstName: _firstNameController.text.trim(),
-          fldLastName: _lastNameController.text.trim(),
-          fldNickName: _nickNameController.text.trim(),
-          fldIsDeleted: false,
-          fldIsLeagueMember: false,
-          fldAvatarCode: _selectedAvatarCode,
+                Navigator.of(ctx).pop();    // Close dialog
+                Navigator.of(context).pop(); // Return to previous screen
+              },
+              child: Text(
+                'DELETE',
+                style: gBuildArcadeTextStyle(14, gTextColor: Colors.white),
+              ),
+            ),
+          ],
         );
-
-        // Add to Hive        
-        playersBox.add(player);        
-
-      } else {
-          widget.modifyPlayer?.fldFirstName = _firstNameController.text.trim();
-          widget.modifyPlayer?.fldLastName = _lastNameController.text.trim();
-          widget.modifyPlayer?.fldNickName = _nickNameController.text.trim();
-          widget.modifyPlayer?.fldAvatarCode = _selectedAvatarCode;
-
-          // Save to Hive        
-          widget.modifyPlayer?.save();
-      }
-            
-      // Return to previous screen
-      Navigator.pop(context);
-    }
+      },
+    );
   }
 
   void _showAvatarPicker() {
@@ -123,7 +216,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     final List<TblAvatar> avatarList = avatarsBox.values
       .where((avatar) => avatar.fldAvatarCode != 'question')
       .toList();
-    final ImageConfig pickerConfig = getAvatarFramePickerImageConfig();
+    final ImageConfigAvatar pickerConfig = getAvatarFramePickerImageConfig();
 
     showModalBottomSheet(
       context: context,
@@ -139,17 +232,40 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           child: Container(
             width: AppDisplay.safeWidth * 0.775,
             height: (pickerConfig.renderSize + 80.0).clamp(0.0, AppDisplay.safeHeight * 0.9),
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: Column(
               children: [
-                Text('SELECT AN AVATAR', style: gBuildArcadeTextStyle(18)),
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  decoration: BoxDecoration(
+                    color: Colors.deepOrange.shade600,
+                    border: Border.all(
+                      color: Colors.white, // Or widget.tileColor / whatever border color you want
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(18.0), // Matches outer 20px sheet curve perfectly
+                      bottom: Radius.zero,       // Sharp, edgy straight cut at the bottom
+                    ),
+                  ),
+                  child: Text(
+                    'SELECT AN AVATAR',
+                    textAlign: TextAlign.center,
+                    style: gBuildArcadeTextStyle(
+                      (_responsiveFontSize * 0.70).clamp(10.0, 60.0)
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 12),
-                Expanded(
+                SizedBox(
+                  height: pickerConfig.renderSize,
                   child: CarouselView(
                     elevation: 0,
                     backgroundColor: Colors.transparent,
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
-                    itemExtent: pickerConfig.renderSize + 16.0,
+                    itemExtent: pickerConfig.renderSize + 4.0,
                     shrinkExtent: pickerConfig.renderSize * 0.8,
                     // Native CarouselView callback receives the tapped item index directly
                     onTap: (int index) {
@@ -198,144 +314,216 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 ),
               ),
             ),
-            Text(_getTextByMode(TextType.title), style: gBuildArcadeTextStyle(20)),
+            Text(widget.enuFormMode == FormMode.formAdd ? 'Add a player' : 'Modify a player', style: gBuildArcadeTextStyle(20)),
           ],
         ),
       ),
       
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                // SIDE-BY-SIDE MAIN CONTAINER
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // LEFT COLUMN: TEXT FIELDS
-                    Expanded(
-                      child: Column(
-                        children: [
-                          _buildTextField(_firstNameController, 'First Name'),
-                          const SizedBox(height: 12),
-                          _buildTextField(_lastNameController, 'Last Name'),
-                          const SizedBox(height: 12),
-                          _buildTextField(_nickNameController, 'Nickname'),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(width: 24), // Spacing between columns
-
-                    // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildAvatarMainUI(),
-                          const SizedBox(height: 12),
-                          // Trigger button for the upcoming avatar picker dialog/pop-up
-                          ElevatedButton.icon(
-                            onPressed: _showAvatarPicker,
-                            icon: const Icon(Icons.style, color: Colors.white),
-                            label: Text('SELECT AN AVATAR', style: gBuildArcadeTextStyle(12)),                            
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: widget.tileColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+        child: Column(
+          children: [
+            // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDisplay.carouselTileSize * 0.06,
+                vertical: AppDisplay.carouselTileSize * 0.02,
+              ),
+              color: Colors.grey.shade900,
+              child: 
+                // 1.1 Save Player Banner
+                gBuildArcadeActionBanner(
+                  context: context,
+                  leadingText: 'SAVE',
+                  trailingText: 'PLAYER',
+                  formMode: FormMode.formModify,
+                  onTap: () => _savePlayer(),
                 ),
-
-                const SizedBox(height: 32),
-
-                // MAIN SAVE ACTION BUTTON
-                FloatingActionButton.extended(
-                  backgroundColor: widget.tileColor,
-                  label: Text(
-                    _getTextByMode(TextType.button),
-                    style: gBuildArcadeTextStyle(14),// TextStyle(color: Colors.white),
-                  ),
-                  icon: Image.asset(_getTextByMode(TextType.icon)),
-                  onPressed: _savePlayer,
-                ),
-              ],
             ),
-          ),
+
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: 
+                    // SIDE-BY-SIDE MAIN CONTAINER
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // LEFT COLUMN: TEXT FIELDS
+                        Expanded(
+                          child: Column(
+                            children: [
+                              _buildTextField(_firstNameController, 'First Name'),
+                              const SizedBox(height: 12),
+                              _buildTextField(_lastNameController, 'Last Name'),
+                              const SizedBox(height: 12),
+                              _buildTextField(_nickNameController, 'Nickname'),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 12), // Spacing between columns
+
+                        // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildAvatarMainUI(),
+                                  const SizedBox(height: 12),
+                                  // Trigger button for the upcoming avatar picker dialog/pop-up
+                                  MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: GestureDetector(
+                                      onTap: _showAvatarPicker,
+                                      child: Container(                                        
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: (_responsiveTile * 0.02).clamp(8.0, 24.0),
+                                          vertical: (_responsiveTile * 0.015).clamp(6.0, 20.0),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: widget.tileColor,
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'SELECT AVATAR', 
+                                          style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0))
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              if (widget.enuFormMode == FormMode.formModify &&
+                                    widget.modifyPlayer != null &&
+                                    !widget.modifyPlayer!.fldIsLeagueMember) ...[
+                                
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: GestureDetector(
+                                        onTap: _deletePlayer,
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: (_responsiveTile * 0.005).clamp(4.0, 24.0),
+                                            vertical: (_responsiveTile * 0.005).clamp(4.0, 24.0),
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade800,
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/svg/ui_buttons/player_team_delete.svg',
+                                                width: (_responsiveTile * 0.13).clamp(48.0, 160.0),
+                                                height: (_responsiveTile * 0.13).clamp(48.0, 160.0),
+                                                fit: BoxFit.contain,
+                                              ),
+                                              //const SizedBox(width: 2),
+                                              Text(
+                                                'DELETE',
+                                                style: gBuildArcadeTextStyle(
+                                                  (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
+                                                  gTextColor: Colors.lightBlueAccent,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                ),
+              ),
+            ),
+          ]
         ),
       ),
     );
   }
 
   Widget _buildTextField(TextEditingController controller, String label) {
-  final double responsiveTile = AppDisplay.carouselTileSize;
-  final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 60.0);
-  bool isFocused = false;
+    bool isFocused = false;
 
-  return SizedBox(
-    height: (responsiveTile * 0.12).clamp(40.0, 200.0),
-    child: StatefulBuilder(
-      builder: (context, setState) {
-        return Focus(
-          onFocusChange: (hasFocus) {
-            setState(() {
-              isFocused = hasFocus;
-            });
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: responsiveTile * 0.045,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade800,
-              borderRadius: BorderRadius.circular(responsiveTile * 0.04),
-              border: Border.all(
-                color: isFocused ? Colors.purpleAccent.shade700 : Colors.grey.shade700,
-                width: isFocused ? (responsiveTile * 0.008).clamp(2.0, 4.0) : 1.5,
+    return SizedBox(
+      height: (_responsiveTile * 0.12).clamp(40.0, 200.0),
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          return Focus(
+            onFocusChange: (hasFocus) {
+              setState(() {
+                isFocused = hasFocus;
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: _responsiveTile * 0.045,
               ),
-            ),
-            child: TextFormField(
-              controller: controller,
-              style: gBuildArcadeTextStyle(responsiveFontSize),
-              textCapitalization: TextCapitalization.words,
-              textInputAction: label == 'Nickname' ? TextInputAction.done : TextInputAction.next,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: label,
-                labelStyle: gBuildArcadeTextStyle(
-                  (responsiveFontSize * 0.70).clamp(10.0, 60.0),
-                  gTextColor: Colors.grey.shade400,
-                ),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: responsiveTile * 0.02,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade800,
+                borderRadius: BorderRadius.circular(_responsiveTile * 0.04),
+                border: Border.all(
+                  color: isFocused ? Colors.purpleAccent.shade700 : Colors.grey.shade700,
+                  width: isFocused ? (_responsiveTile * 0.008).clamp(2.0, 4.0) : 1.5,
                 ),
               ),
-              validator: (value) {
-                if ((label == 'Nickname') && (value == null || value.trim().isEmpty)) {
-                  return '$label is required';
-                }
-                return null;
-              },
+              child: TextFormField(
+                controller: controller,
+                style: gBuildArcadeTextStyle(_responsiveFontSize),
+                textCapitalization: TextCapitalization.words,
+                textInputAction: label == 'Nickname' ? TextInputAction.done : TextInputAction.next,
+                decoration: InputDecoration(
+                  isDense: true,
+                  labelText: label,
+                  labelStyle: gBuildArcadeTextStyle(
+                    (_responsiveFontSize * 0.70).clamp(10.0, 60.0),
+                    gTextColor: Colors.grey.shade400,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: _responsiveTile * 0.02,
+                  ),
+                ),
+              ),
             ),
-          ),
-        );
-      },
-    ),
-  );
-}
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildAvatarMainUI() {
-    final ImageConfig frameImageConfig = getAvatarFrameMainImageConfig();
-    final ImageConfig playerImageConfig = getAvatarPlayerMainImageConfig(_selectedAvatarCode);
+    final ImageConfigAvatar frameImageConfig = getAvatarFrameMainImageConfig();
+    final ImageConfigAvatar playerImageConfig = getAvatarPlayerMainImageConfig(_selectedAvatarCode);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -383,8 +571,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   Widget _buildAvatarPicker({
     required TblAvatar avatar,
   }) {
-    final ImageConfig frameImageConfig = getAvatarFramePickerImageConfig();
-    final ImageConfig playerImageConfig = getAvatarPlayerPickerImageConfig(avatar.fldAvatarCode);
+    final ImageConfigAvatar frameImageConfig = getAvatarFramePickerImageConfig();
+    final ImageConfigAvatar playerImageConfig = getAvatarPlayerPickerImageConfig(avatar.fldAvatarCode);
 
     return SizedBox(
       width: frameImageConfig.renderSize,
@@ -406,7 +594,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
             child: Image.asset(
               playerImageConfig.assetPath,
               fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
+              //filterQuality: FilterQuality.none,
             ),
           ),
 
@@ -415,7 +603,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
             child: Image.asset(
               frameImageConfig.assetPath,
               fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
+              //filterQuality: FilterQuality.none,
             ),
           ),
         ],

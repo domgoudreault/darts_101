@@ -1,10 +1,10 @@
 // Flutter basics
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Database Models
 import 'package:darts_101/database/tbl_avatar.dart';
@@ -16,12 +16,13 @@ import 'package:darts_101/database/tbl_game_build_up.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
+import 'package:darts_101/ui_helpers.dart';
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/main_be.dart';
 
 // UI Screens
 import 'package:darts_101/settings_players.dart';
-import 'package:darts_101/manage_teams.dart';
+import 'package:darts_101/settings_teams.dart';
 import 'package:darts_101/game_selection.dart';
 
 enum MainScreenSection {
@@ -44,7 +45,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapters(); // Register all adapters automatically in one line:
   
-  // Open ALL 5 boxes concurrently
+  // Open ALL 6 boxes concurrently
   final results = await Future.wait([
     Hive.openBox<TblAvatar>('avatarsBox'),
     Hive.openBox<TblPlayer>('playersBox'),
@@ -56,21 +57,10 @@ void main() async {
 
   // Extract the box references you need for seeding:
   final avatarsBox = results[0] as Box<TblAvatar>;
-  final playersBox = results[1] as Box<TblPlayer>;
-  final teamsBox = results[2] as Box<TblTeam>;
   
   // Only seeds avatars if the database is empty
   if (avatarsBox.isEmpty){
     await seedHiveAvatars(avatarsBox);
-  }
-  
-  // Only seeds players from my league if we are in Debug Mode AND the database is empty
-  if (kDebugMode) {
-    // AutoFill for testing           
-    if (playersBox.isEmpty){
-      await seedHivePlayers(playersBox);
-      await seedHiveTeams(playersBox, teamsBox);
-    }
   }
 
   // Wrap runApp with DevicePreview
@@ -114,7 +104,7 @@ class MainScreenPopupMenu extends StatelessWidget {
         MediaQuery.sizeOf(context);
         
         return AlertDialog(
-          title: const Text('Privacy Policy'),
+          title: const Text('Darts 101 - Privacy Policy'),
           content: SizedBox(
             height: AppDisplay.safeHeight * 0.7,
             width: AppDisplay.safeWidth * 0.8,
@@ -126,37 +116,59 @@ class MainScreenPopupMenu extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          child: Text("Overview", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
                         Text(getPrivacyPolicySection(1), style: const TextStyle(fontSize: 14)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Information Collection and Use", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                         Text(getPrivacyPolicySection(2)),
-                        // List of services
-                        ...['Google Play Services', 'AdMob', 'Fabric', 'Firebase Analytics', 'Crashlytics']
-                            .map((service) => Padding(
-                                  padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
-                                  child: Text("• $service", style: const TextStyle(fontWeight: FontWeight.w500)),
-                                )),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          child: Text("Third-Party Services & Analytics", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
+                        
                         Text(getPrivacyPolicySection(3)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text("Log Data and Error Reporting",
+                          child: Text("Log Data & Device Permissions",
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                         Text(getPrivacyPolicySection(4)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text("Cookies",
+                          child: Text("Data Retention & Account Deletion",
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                         Text(getPrivacyPolicySection(5)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
-                          child: Text("Security",
+                          child: Text("Contact Us",
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                         Text(getPrivacyPolicySection(6)),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () async {
+                              final Uri url = Uri.parse(getPrivacyPolicySection(7));
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                              }
+                            },
+                            child: Text(
+                              getPrivacyPolicySection(7),
+                              style: TextStyle(
+                                color: Colors.blueAccent,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.blueAccent,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -384,7 +396,6 @@ class _MainScreenState extends State<MainScreen> {
       tileCode: 'all-fives',
       tileColor: Colors.purple.shade200,
       tileBackgroundColor: Colors.purple.shade100,
-      
       tileDescription: 'Game All Fives / 51 by 5''s',
     ),
     CarouselTileData(
@@ -449,7 +460,7 @@ class _MainScreenState extends State<MainScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ManageTeams(
+            builder: (context) => SettingsTeams(
               tileType: tile.tileType,
               tileColor: tile.tileColor,
               tileBackgroundColor: tile.tileBackgroundColor,

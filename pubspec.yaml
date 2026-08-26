@@ -42,6 +42,8 @@ dependencies:
   flutter_svg: ^2.2.3
   lottie: ^3.5.1
   device_preview: ^1.3.1
+  gif_view: ^1.0.3
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -85,8 +87,9 @@ flutter:
     - assets/png/logos/
     - assets/png/mechanics/
     - assets/png/tiles/
-    - assets/png/ui_buttons/
     - assets/svg/
+    - assets/svg/ui_buttons/
+    - assets/svg/games/
     - assets/lottie/
     - assets/google_fonts/
 
