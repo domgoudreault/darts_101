@@ -369,7 +369,7 @@ class _MainScreenState extends State<MainScreen> {
   MainScreenSection _activeSection = MainScreenSection.section05Games;
 
   // Single Source of Truth for Game Tiles
-  static final List<CarouselTileData> _gameTiles = [
+  List<CarouselTileData> get _gamesTiles => [
     CarouselTileData(
       tileType: 'game',
       tileCode: 'half-it',
@@ -422,7 +422,7 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   // Single Source of Truth for Settings Tiles
-  static final List<CarouselTileData> _settingsTiles = [
+  List<CarouselTileData> get _settingsTiles => [
     CarouselTileData(
       tileType: 'settings',
       tileCode: 'players',
@@ -433,7 +433,7 @@ class _MainScreenState extends State<MainScreen> {
     CarouselTileData(
       tileType: 'settings',
       tileCode: 'teams',
-      tileColor: Colors.indigo.shade600,
+      tileColor: Colors.indigo.shade400,
       tileBackgroundColor: Colors.indigo.shade200,
       tileDescription: 'Teams Management',
     ),
@@ -441,94 +441,58 @@ class _MainScreenState extends State<MainScreen> {
 
   // Fonction de navigation when a button is pressed
   void _onTileTapped(BuildContext context, CarouselTileData tile) {    
-    switch (tile.tileCode){
-      case 'players':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SettingsPlayers(
-              tileType: tile.tileType,
-              tileColor: tile.tileColor,
-              tileBackgroundColor: tile.tileBackgroundColor,
-              tileDescription: tile.tileDescription,
-            ),
-          ),
-        );
-        break;
+    final destination = switch ((tile.tileType, tile.tileCode)) {
+      // Games Routes
+      ('games', 'half-it') => GameSelection(
+          tileType: tile.tileType,
+          tileColor: tile.tileColor,
+          tileBackgroundColor: tile.tileBackgroundColor,
+          tileDescription: tile.tileDescription,
+          enuGameMode: GameMode.gamePlayers,
+          enuGameType: GameType.gameHalfIt,
+        ),
+      ('games', 'build-up') => GameSelection(
+          tileType: tile.tileType,
+          tileColor: tile.tileColor,
+          tileBackgroundColor: tile.tileBackgroundColor,
+          tileDescription: tile.tileDescription,
+          enuGameMode: GameMode.gamePlayers,
+          enuGameType: GameType.gameBuildUp,
+        ),
 
-      case 'manage_teams':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SettingsTeams(
-              tileType: tile.tileType,
-              tileColor: tile.tileColor,
-              tileBackgroundColor: tile.tileBackgroundColor,
-              tileDescription: tile.tileDescription,
-            ),
-          ),
-        );
-        break;
+      // Settings Routes
+      ('settings', 'players') => SettingsPlayers(
+          tileType: tile.tileType,
+          tileColor: tile.tileColor,
+          tileBackgroundColor: tile.tileBackgroundColor,
+          tileDescription: tile.tileDescription,
+        ),
+      ('settings', 'teams') => SettingsTeams(
+          tileType: tile.tileType,
+          tileColor: tile.tileColor,
+          tileBackgroundColor: tile.tileBackgroundColor,
+          tileDescription: tile.tileDescription,
+        ),
 
-      case 'half_it_game_teams':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GameSelection(
-              tileType: tile.tileType,
-              tileColor: tile.tileColor,
-              tileBackgroundColor: tile.tileBackgroundColor,
-              tileDescription: tile.tileDescription,
-              enuGameMode: GameMode.gameTeams,
-              enuGameType: GameType.gameHalfIt,
-            ),
-          ),
-        );
-        break;
-      
-      case 'half_it_game_players':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GameSelection(
-              tileType: tile.tileType,
-              tileColor: tile.tileColor,
-              tileBackgroundColor: tile.tileBackgroundColor,
-              tileDescription: tile.tileDescription,
-              enuGameMode: GameMode.gamePlayers,
-              enuGameType: GameType.gameHalfIt,
-            ),
-          ),
-        );
-        break;
+      // Default Fallback
+      _ => null,
+    };
 
-      case 'team_build_up':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GameSelection(
-              tileType: tile.tileType,
-              tileColor: tile.tileColor,
-              tileBackgroundColor: tile.tileBackgroundColor,
-              tileDescription: tile.tileDescription,
-              enuGameMode: GameMode.gamePlayers,
-              enuGameType: GameType.gameBuildUp,
-            ),
-          ),
-        );
-        break;
-
-      default:
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${tile.tileDescription} was clicked!'),
-            duration: const Duration(milliseconds: 800),
-          ),
-        );
-        break;
+    if (destination != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => destination),
+      );
+    } else {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${tile.tileDescription} was clicked!'),
+          duration: const Duration(milliseconds: 800),
+        ),
+      );
     }
-  }  
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -537,7 +501,7 @@ class _MainScreenState extends State<MainScreen> {
     // Select active dataset based on section toggle
     final List<CarouselTileData> activeTiles = 
         _activeSection == MainScreenSection.section05Games 
-            ? _gameTiles 
+            ? _gamesTiles 
             : _settingsTiles;
 
     return Scaffold(

@@ -99,32 +99,31 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
 
     // 2. Validate form fields
     if (_nickNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red.shade800,
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-            left: AppDisplay.safeWidth * 0.05,
-            right: AppDisplay.safeWidth * 0.05,
-            bottom: AppDisplay.safeHeight * 0.05,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          content: Center(
-            child: Text(
-              'NICKNAME IS REQUIRED!',
-              style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
-            ),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      _showArcadeErrorSnackBar('NICKNAME IS REQUIRED!');
       return;
     }
 
-    // 3. Save to Hive database if everything is ok
+    // 3. Validate duplicate nickname in Hive Database
+    final Iterable<TblPlayer> activePlayers;
+
+    if (widget.enuFormMode == FormMode.formAdd) {
+      activePlayers = Hive.box<TblPlayer>('playersBox').values
+        .where((player) => !player.fldIsDeleted);
+    } else {
+      activePlayers = Hive.box<TblPlayer>('playersBox').values
+        .where((player) => !player.fldIsDeleted && player.key != widget.modifyPlayer?.key);
+    }
+    
+    final bool isDuplicateNickName = activePlayers.any(
+      (player) => player.fldNickName.trim().toLowerCase() == _nickNameController.text.trim().toLowerCase(),
+    );
+
+    if (isDuplicateNickName) {
+      _showArcadeErrorSnackBar('NICKNAME ALREADY EXISTS!');
+      return;
+    }
+
+    // 4. Save to Hive database if everything is ok
     // Get the playersBox from Hive
     final playersBox = Hive.box<TblPlayer>('playersBox');
 
@@ -157,6 +156,31 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         // Return to previous screen
         Navigator.pop(context, false);
     }
+  }
+
+  void _showArcadeErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red.shade800,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          left: AppDisplay.safeWidth * 0.05,
+          right: AppDisplay.safeWidth * 0.05,
+          bottom: AppDisplay.safeHeight * 0.05,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        content: Center(
+          child: Text(
+            message,
+            style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
+          ),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _deletePlayer() {

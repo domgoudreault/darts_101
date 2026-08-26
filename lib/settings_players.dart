@@ -82,7 +82,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final activePlayers = Hive.box<TblPlayer>('playersBox').values.where((p) => !p.fldIsDeleted).toList();
+        final activePlayers = Hive.box<TblPlayer>('playersBox').values.where((player) => !player.fldIsDeleted).toList();
         
         if (activePlayers.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
@@ -270,7 +270,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Players Management',
+                  widget.tileDescription,
                   style: gBuildArcadeTextStyle(20),
                 ),
               ),
@@ -343,7 +343,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                   ValueListenableBuilder<Box<TblPlayer>>(
                                     valueListenable: playersBox.listenable(),
                                     builder: (context, box, _) {
-                                      final activePlayers = box.values.where((p) => !p.fldIsDeleted).toList();
+                                      final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
                                       final filteredCount = _searchQuery.isEmpty
                                           ? activePlayers.length
                                           : activePlayers.where((player) {
