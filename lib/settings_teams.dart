@@ -39,6 +39,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
   String _searchQuery = '';
 
   final CarouselController _carouselController = CarouselController();
+  bool _isDummyFilterActive = false;
 
   @override
   void initState() {
@@ -105,6 +106,62 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     );
   }
 
+  bool _matchesTeamQuery(TblTeam team, String query) {
+    final p1 = team.fldPlayers[0];
+    final p2 = team.fldPlayers[1];
+
+    // 1. DUMMY FILTER CHECK
+    if (_isDummyFilterActive) {
+      // Check if team is a dummy team (both players share avatar code)
+      final bool isDummyTeam = p1.fldAvatarCode == p2.fldAvatarCode;
+      
+      // If the toggle is ON and this isn't a dummy team, exclude it immediately
+      if (!isDummyTeam) return false;
+    }
+
+    // 2. SEARCH BAR TEXT CHECK
+    if (query.isEmpty) return true;
+
+    // Split query into individual search terms and remove empty spaces
+    final terms = query.split(' ').where((term) => term.isNotEmpty).toList();
+    if (terms.isEmpty) return true;
+
+    // Helper function to check if a single term matches a player
+    bool matchesPlayer(dynamic player, String term) {
+      return player.fldFirstName.toLowerCase().contains(term) ||
+            player.fldLastName.toLowerCase().contains(term) ||
+            player.fldNickName.toLowerCase().contains(term);
+    }
+
+    // EVERY term must match either Player 1 or Player 2
+    return terms.every((term) => matchesPlayer(p1, term) || matchesPlayer(p2, term));
+  }
+
+  void _showArcadeFilterSnackBar(String message, int timer) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Color.fromRGBO(247, 120, 9, 1.0),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          left: AppDisplay.safeWidth * 0.05,
+          right: AppDisplay.safeWidth * 0.05,
+          bottom: AppDisplay.safeHeight * 0.05,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        content: Center(
+          child: Text(
+            message,
+            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.025).clamp(10.0, 60.0)),
+          ),
+        ),
+        duration: Duration(seconds: timer),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context);
@@ -112,6 +169,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     // 1. Access the Hive box opened during initialization
     final teamsBox = Hive.box<TblTeam>('teamsBox');
     final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
+    final ImageConfig imageConfig = getFilterDummyImageConfig();
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -159,12 +217,77 @@ class _SettingsTeamsState extends State<SettingsTeams> {
               child: Column(
                 children: [
                   // 1.1 Add Team Banner
-                  gBuildArcadeActionBanner(
-                    context: context,
-                    leadingText: 'ADD NEW',
-                    trailingText: 'TEAM',
-                    formMode: FormMode.formAdd,
-                    onTap: () => _addTeam(context),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: gBuildArcadeActionBanner(
+                          context: context,
+                          leadingText: 'ADD NEW',
+                          trailingText: 'TEAM',
+                          formMode: FormMode.formAdd,
+                          onTap: () => _addTeam(context),
+                        ),
+                      ),
+                      SizedBox(width: imageCardFrameConfig.renderHeight * 0.02),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isDummyFilterActive = !_isDummyFilterActive;
+                            });
+
+                            if (_isDummyFilterActive) {
+                              _showArcadeFilterSnackBar('FILTER DUMMY TEAMS ACTIVATED', 3);
+                            }
+                          },
+                          child: SizedBox(
+                            width: imageConfig.renderSize,
+                            height: imageConfig.renderSize,
+                            child: Stack(
+                              children: [
+                                // 1. Bottom Layer: Dynamic Solid Fill Background
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _isDummyFilterActive
+                                          ? Color.fromRGBO(247, 120, 9, 1.0)
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                ),
+
+                                // 2. Middle Layer: Crisp PNG Icon Asset
+                                Positioned.fill(
+                                  child: Image.asset(
+                                    imageConfig.assetPath,
+                                    width: imageConfig.renderSize,
+                                    height: imageConfig.renderSize,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+
+                                // 3. Top Overlay Layer: Circular Border Ring
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: _isDummyFilterActive
+                                            ? Color.fromRGBO(247, 120, 9, 1.0)
+                                            : Colors.amber,
+                                        width: (imageConfig.renderSize * 0.03),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   SizedBox(height: imageCardFrameConfig.renderHeight * 0.015),
@@ -179,7 +302,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                             controller: _searchController,
                             style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035),
                             decoration: InputDecoration(
-                              hintText: 'Search player name, nickname or team surname...',
+                              hintText: 'Search names or nicknames (space separated)...',
                               hintStyle: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
                               prefixIcon: Icon(
                                 Icons.search,
@@ -211,12 +334,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                     valueListenable: teamsBox.listenable(),
                                     builder: (context, box, _) {
                                       final activeTeams = box.values.where((p) => !p.fldIsDeleted).toList();
-                                      final filteredCount = _searchQuery.isEmpty
-                                          ? activeTeams.length
-                                          : activeTeams.where((team) {
-                                              final query = _searchQuery.toLowerCase();
-                                              return team.fldSurName.toLowerCase().contains(query);
-                                            }).length;
+                                      final filteredCount = activeTeams.where((team) => _matchesTeamQuery(team, _searchQuery)).length;
 
                                       return Container(
                                         margin: EdgeInsets.only(
@@ -239,9 +357,9 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                           child: FittedBox(
                                             fit: BoxFit.scaleDown,
                                             child: Text(
-                                              _searchQuery.isEmpty 
-                                                  ? '$filteredCount' 
-                                                  : '$filteredCount/${activeTeams.length}',
+                                              (_searchQuery.isEmpty && !_isDummyFilterActive)
+                                                ? '$filteredCount' 
+                                                : '$filteredCount/${activeTeams.length}',
                                               style: gBuildArcadeTextStyle(
                                                 imageCardFrameConfig.renderHeight * 0.035,
                                                 gTextColor: Colors.amber,
@@ -294,13 +412,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                       final activeTeams = box.values.where((team) => !team.fldIsDeleted).toList();
 
                       // Filter by First Name, Last Name, or Nickname
-                      final teams = _searchQuery.isEmpty
-                          ? activeTeams
-                          : activeTeams.where((team) {
-                              final surName = team.fldSurName.toLowerCase();
-
-                              return surName.contains(_searchQuery);
-                            }).toList();
+                      final teams = activeTeams.where((team) => _matchesTeamQuery(team, _searchQuery)).toList();
 
                       if (teams.isEmpty) {
                         return Center(
@@ -344,6 +456,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     TblTeam team,
   ) {
     final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
+    final bool isDummyTeam = team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode;
 
     return Center(
       child: AspectRatio(
@@ -355,26 +468,73 @@ class _SettingsTeamsState extends State<SettingsTeams> {
             height: imageCardFrameConfig.renderHeight,
             child: Stack(
               children: [
-                // 1. PNG Frame Background
-                Positioned.fill(
-                  child: Image.asset(
-                    imageCardFrameConfig.assetPathBackground,
-                    fit: BoxFit.fill,
+                // 1. Top Dynamic Circle Background Layer
+                Positioned(
+                  top: imageCardFrameConfig.renderHeight * 0.03, // Positions inside top metallic ring
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      width: imageCardFrameConfig.renderWidth * 0.72,
+                      height: imageCardFrameConfig.renderWidth * 0.72,
+                      decoration: BoxDecoration(
+                        color: widget.tileColor, // Or gender color for Player 1
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
                 ),
 
-                // 2. Avatar Layer
-                /* Positioned.fill(
-                  child: Image.asset(
-                    getCarouselTeamImageConfig(team.fldAvatarCode).assetPath,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.account_circle,
-                      size: 64,
-                      color: Colors.white38,
+                // 2. Bottom Dynamic Circle Background Layer
+                Positioned(
+                  bottom: imageCardFrameConfig.renderHeight * 0.03, // Positions inside bottom metallic ring
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      width: imageCardFrameConfig.renderWidth * 0.72,
+                      height: imageCardFrameConfig.renderWidth * 0.72,
+                      decoration: BoxDecoration(
+                        color: widget.tileColor, // Or gender color for Player 2
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
-                ), */
+                ),
+                
+                // 3. Top Player Avatar Layer
+                Positioned(
+                  top: imageCardFrameConfig.renderHeight * 0.01,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: ClipOval(
+                      child: Image.asset(
+                        getCarouselPlayerImageConfig(team.fldPlayers[0].fldAvatarCode).assetPath,
+                        width: imageCardFrameConfig.renderWidth * 0.72,
+                        height: imageCardFrameConfig.renderWidth * 0.72,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 4. Bottom Player Avatar Layer
+                Positioned(
+                  bottom: imageCardFrameConfig.renderHeight * 0.01,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: ClipOval(
+                      child: Image.asset(
+                        getCarouselPlayerImageConfig(team.fldPlayers[1].fldAvatarCode).assetPath,
+                        width: imageCardFrameConfig.renderWidth * 0.72,
+                        height: imageCardFrameConfig.renderWidth * 0.72,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
 
                 // 3. PNG Frame Overlay
                 Positioned.fill(
@@ -383,91 +543,79 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                     fit: BoxFit.fill,
                   ),
                 ),
-                
-                // 4. Team Data Text Overlay Layer (On top of white card area)
+
+                // 3. Dummy Player Layer
+                if (isDummyTeam)
+                  Positioned.fill(
+                    child: Image.asset(
+                      imageCardFrameConfig.assetPathIsDummyPlayer,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+
+                // 5. Player 1 Nickname Pill (Centered Top)
                 Positioned(
-                  top: imageCardFrameConfig.renderHeight * 0.52,
-                  left: imageCardFrameConfig.renderHeight * 0.08,
-                  right: imageCardFrameConfig.renderHeight * 0.08,
-                  bottom: imageCardFrameConfig.renderHeight * 0.06,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      // Gap 1: Picture bottom -> First Name
-                      SizedBox(height: imageCardFrameConfig.renderHeight * 0.015),
-                      
-                      /* // First Name
-                      FittedBox(
+                  top: imageCardFrameConfig.renderHeight * 0.01,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: imageCardFrameConfig.renderHeight * 0.035,
+                        vertical: imageCardFrameConfig.renderHeight * 0.006,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(
+                          imageCardFrameConfig.renderHeight * 0.04,
+                        ),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: imageCardFrameConfig.renderHeight * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          team.fldFirstName.toUpperCase(),
+                          team.fldPlayers[0].fldNickName.toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF111111),
-                            fontSize: imageCardFrameConfig.renderHeight * 0.035,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.5,
-                          ),
+                          style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.032,gFontWeight: FontWeight.w800),
                         ),
                       ),
+                    ),
+                  ),
+                ),
 
-                      // Gap 2: First Name -> Last Name
-                      SizedBox(height: imageCardFrameConfig.renderHeight * 0.010),
-
-                      // Last Name
-                      FittedBox(
+                // 6. Player 2 Nickname Pill (Centered Bottom)
+                Positioned(
+                  bottom: imageCardFrameConfig.renderHeight * 0.01,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: imageCardFrameConfig.renderHeight * 0.035,
+                        vertical: imageCardFrameConfig.renderHeight * 0.006,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(
+                          imageCardFrameConfig.renderHeight * 0.04,
+                        ),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: imageCardFrameConfig.renderHeight * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          team.fldLastName.toUpperCase(),
+                          team.fldPlayers[1].fldNickName.toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: const Color(0xFF111111),
-                            fontSize: imageCardFrameConfig.renderHeight * 0.048,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
+                          style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.032, gFontWeight: FontWeight.w800),
                         ),
                       ),
-
-                      // Gap 3: Last Name -> Divider
-                      SizedBox(height: imageCardFrameConfig.renderHeight * 0.024),
-
-                      // Divider Accent
-                      Container(
-                        height: (imageCardFrameConfig.renderHeight * 0.009),
-                        width: imageCardFrameConfig.renderHeight * 0.50,
-                        color: widget.tileColor,
-                      ),
-                      
-                      // Gap 4: Divider -> Nickname
-                      SizedBox(height: imageCardFrameConfig.renderHeight * 0.022), */
-
-                      // Elliptic Arcade Badge around Nickname
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: imageCardFrameConfig.renderHeight * 0.035,
-                          vertical: imageCardFrameConfig.renderHeight * 0.006,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.purpleAccent.shade100,
-                          borderRadius: BorderRadius.circular(
-                            imageCardFrameConfig.renderHeight * 0.04,
-                          ),
-                          border: Border.all(
-                            color: Colors.purpleAccent.shade700,
-                            width: imageCardFrameConfig.renderHeight * 0.006,
-                          ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            team.fldSurName.toUpperCase(),
-                            textAlign: TextAlign.center,
-                            style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.032, gFontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],

@@ -82,7 +82,7 @@ class _GameSelectionState extends State<GameSelection> {
       }
     } else {
       switch (textType){
-        case TextType.title: return teamsBox.get(id)!.fldSurName;
+        case TextType.title: return 'TODO'; //return teamsBox.get(id)!.fldSurName;
         case TextType.subtitle:
           if (teamsBox.get(id)!.fldPlayers[0] == teamsBox.get(id)!.fldPlayers[1]) {
             return '${playersBox.get(teamsBox.get(id)!.fldPlayers[0])?.fldNickName}, ${playersBox.get(teamsBox.get(id)!.fldPlayers[1])?.fldNickName} (Dummy)';

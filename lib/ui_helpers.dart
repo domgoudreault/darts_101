@@ -86,27 +86,30 @@ Widget gBuildArcadeActionBanner({
 
   return Material(
     color: Colors.transparent,
-    child: InkWell(
-      onTap: onTap,
-      hoverColor: Colors.transparent,
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: responsiveTile * 0.02),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Right Arrow on left side
-            GifView.asset(
-              rightArrowConfig.assetPath,
-              height: rightArrowConfig.renderSize,
-              fit: BoxFit.contain,
-            ),
-            SizedBox(width: responsiveTile * 0.015),
-            Container(
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: responsiveTile * 0.02),
+      alignment: Alignment.center,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Right Arrow on left side
+          GifView.asset(
+            rightArrowConfig.assetPath,
+            height: rightArrowConfig.renderSize,
+            fit: BoxFit.contain,
+          ),
+          SizedBox(width: responsiveTile * 0.015),
+          
+          // INKWELL WRAPS ONLY THE PILL NOW
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(responsiveTile * 0.04),
+            hoverColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: responsiveTile * 0.035,
                 vertical: responsiveTile * 0.01,
@@ -147,15 +150,16 @@ Widget gBuildArcadeActionBanner({
                 ],
               ),
             ),
-            SizedBox(width: responsiveTile * 0.015),
-            // Left Arrow on right side
-            GifView.asset(
-              leftArrowConfig.assetPath,
-              height: leftArrowConfig.renderSize,
-              fit: BoxFit.contain,
-            ),
-          ],
-        ),
+          ),
+          
+          SizedBox(width: responsiveTile * 0.015),
+          // Left Arrow on right side
+          GifView.asset(
+            leftArrowConfig.assetPath,
+            height: leftArrowConfig.renderSize,
+            fit: BoxFit.contain,
+          ),
+        ],
       ),
     ),
   );

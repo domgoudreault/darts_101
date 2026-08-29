@@ -128,15 +128,9 @@ Future<void> seedHiveLeagueTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBo
       final p1 = players[i];
       final p2 = players[j];
 
-      // Format surName based on whether it's a self-team or normal team
-      final String teamName = (i == j)
-          ? '${p1.fldNickName} Twice'
-          : '${p1.fldNickName}, ${p2.fldNickName}';
-
       listTeams.add(
         TblTeam(
           fldPlayers: [p1, p2],
-          fldSurName: teamName,
           fldIsDeleted: false,
         ),
       );

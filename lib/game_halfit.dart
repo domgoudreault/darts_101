@@ -153,7 +153,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         final player2 = team?.fldPlayers[1].fldNickName;
         rankings.add({
           'name': "$player1, $player2",
-          'team_name': team?.fldSurName ?? "Team",
+          //'team_name': team?.fldSurName ?? "Team",
           'score': _getLatestTeamScore(tId),
           'color': _getTeamColor(i),
           'id': tId,
@@ -433,10 +433,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     if (isTeamMode) {
       // TEAM MODE
       for (int tId in widget.game.teamsIDs!) {
-        final team = teamsBox.get(tId);
+        //final team = teamsBox.get(tId);
         final score = _getLatestTeamScore(tId);
         finalResults.add({
-          'name': team?.fldSurName,
+          //'name': team?.fldSurName,
           'id': tId,
           'score': score,
           'color': _getTeamColor(tId),
@@ -1005,7 +1005,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
             ...widget.game.playersIDs.map((pId) {
               final player = playersBox.get(pId);
               String teamName = "";
-              int teamID = -1; // Store the ID for the color function
+              //int teamID = -1; // Store the ID for the color function
               int teamIndex = 0;
               final int currentSeat = seatCounter++;
 
@@ -1014,10 +1014,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       
                 // The seat dictates the team rotation
                 teamIndex = currentSeat % totalTeams;
-                teamID = widget.game.teamsIDs![teamIndex];
+                //teamID = widget.game.teamsIDs![teamIndex];
                 
-                final team = teamsBox.get(teamID);
-                teamName = team?.fldSurName ?? "";
+                //final team = teamsBox.get(teamID);
+                //teamName = team?.fldSurName ?? "";
               }
 
               return Padding(

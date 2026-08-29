@@ -53,7 +53,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     super.initState();
     // If we are modifying, fill the controllers with existing data
     if (widget.enuFormMode == FormMode.formModify && widget.modifyTeam != null) {
-      _surNameController.text = widget.modifyTeam!.fldSurName;
+      _surNameController.text = 'widget.modifyTeam!.fldSurName';
     }
     else {
       //_selectedAvatarCode = 'question';
@@ -134,7 +134,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
       Navigator.pop(context, true);    
 
     } else {
-        widget.modifyTeam?.fldSurName = _surNameController.text.trim();
+        //widget.modifyTeam?.fldSurName = _surNameController.text.trim();
         
         // Save to Hive        
         widget.modifyTeam?.save();

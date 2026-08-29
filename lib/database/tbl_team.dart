@@ -8,15 +8,11 @@ class TblTeam extends HiveObject {
   @HiveField(0)
   List<TblPlayer> fldPlayers;
 
-  @HiveField(1)
-  String fldSurName;
-
-  @HiveField(2, defaultValue: false)
+  @HiveField(1, defaultValue: false)
   bool fldIsDeleted;
 
   TblTeam({
     required this.fldPlayers, 
-    required this.fldSurName, 
     this.fldIsDeleted = false,
   });
 
