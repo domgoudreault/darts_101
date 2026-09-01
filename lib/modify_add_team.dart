@@ -632,7 +632,37 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                           ),
                         ],
 
-                        const SizedBox(width: 12), // Spacing between columns
+                        SizedBox(width: _responsiveTile * 0.08), // Spacing between columns
+                        
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(50.0), // Pill shape
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50.0),
+                            child: SizedBox(
+                              width: _responsiveTile * 0.01,
+                              height: _responsiveTile * 0.75,
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: LinearProgressIndicator(
+                                  value: 1,
+                                  backgroundColor: Colors.transparent,
+                                  color: widget.tileColor,
+                                  minHeight: 4.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        SizedBox(width: _responsiveTile * 0.08),
 
                         // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
                         Row(
@@ -706,8 +736,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
 
   Widget _buildTeamCardMainUI() {
     final ImageConfigTeamCardFrame teamCardFrameImageConfig = getMainUITeamCardHFrameImage();
-    final ImageConfigAvatar avatarPlayer1ImageConfig = getAvatarPlayerHImageConfig(_selectedAvatarCodePlayer1);
-    final ImageConfigAvatar avatarPlayer2ImageConfig = getAvatarPlayerHImageConfig(_selectedAvatarCodePlayer2);
+    final ImageConfigAvatar avatarPlayer1ImageConfig = getAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1);
+    final ImageConfigAvatar avatarPlayer2ImageConfig = getAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2);
 
     return SizedBox(
       width: teamCardFrameImageConfig.renderWidth,

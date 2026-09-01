@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 // Database Models
 import 'package:darts_101/database/tbl_avatar.dart';
 import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
@@ -184,9 +185,21 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 backgroundColor: Colors.red.shade800,
               ),
               onPressed: () {
-                // Soft delete: set flag to true and save to Hive
-                widget.modifyPlayer?.fldIsDeleted = true;
-                widget.modifyPlayer?.save();
+                // 1. Soft delete the player
+                final player = widget.modifyPlayer;
+                if (player != null) {
+                  player.fldIsDeleted = true;
+                  player.save();
+
+                  // 2. Cascade delete: Soft-delete all teams containing this player
+                  final teamsBox = Hive.box<TblTeam>('teamsBox');
+                  for (final team in teamsBox.values) {
+                    if (!team.fldIsDeleted && team.fldPlayers.contains(player)) {
+                      team.fldIsDeleted = true;
+                      team.save();
+                    }
+                  }
+                }
 
                 Navigator.of(ctx).pop();    // Close dialog
                 Navigator.of(context).pop(); // Return to previous screen

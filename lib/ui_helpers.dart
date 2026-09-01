@@ -485,7 +485,7 @@ ImageConfigTeamCardFrame getMainUITeamCardHFrameImage() {
 }
 
 // Returns Player image for Avatars for TeamCard Horizontal based on screen width
-ImageConfigAvatar getAvatarPlayerHImageConfig(String avatarCode) {
+ImageConfigAvatar getAvatarPlayerCardImageConfig(String avatarCode) {
   switch (AppDisplay.displayMode) {
     case DisplayMode.display05SmallPhone:
     case DisplayMode.display10CompactPhone:

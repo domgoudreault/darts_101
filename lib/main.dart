@@ -681,8 +681,8 @@ Future<void> _clearHiveDatabase(BuildContext context) async {
   
   if (context.mounted) {
     gShowArcadeErrorSnackBar(
-      gContext: context, 
-      gFontSize: 16, 
+      gContext: context,
+      gFontSize: 16,
       gMessage: 'PLAYERS & TEAMS CLEARED!',
       gDuration: 2
     );

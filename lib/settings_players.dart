@@ -307,103 +307,106 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                       Expanded(
                         child: SizedBox(
                           height: playerCardFrameImageConfig.renderHeight * 0.12,
-                          child: TextField(
-                            controller: _searchController,
-                            style: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035),
-                            decoration: InputDecoration(
-                              hintText: 'Search player name or nickname...',
-                              hintStyle: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.amber,
-                                size: playerCardFrameImageConfig.renderHeight * 0.09,
-                              ),
-                              suffixIcon: Row(
-                                mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  // 1. Clear Button (Only shows when search is active)
-                                  if (_searchQuery.isNotEmpty)
-                                    IconButton(
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      icon: Icon(
-                                        Icons.clear,
-                                        color: Colors.white54,
-                                        size: playerCardFrameImageConfig.renderHeight * 0.065,
+                          child: FocusScope(
+                            node: FocusScopeNode(),
+                            child: TextField(
+                              controller: _searchController,
+                              style: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035),
+                              decoration: InputDecoration(
+                                hintText: 'Search player name or nickname...',
+                                hintStyle: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.amber,
+                                  size: playerCardFrameImageConfig.renderHeight * 0.09,
+                                ),
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    // 1. Clear Button (Only shows when search is active)
+                                    if (_searchQuery.isNotEmpty)
+                                      IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        icon: Icon(
+                                          Icons.clear,
+                                          color: Colors.white54,
+                                          size: playerCardFrameImageConfig.renderHeight * 0.065,
+                                        ),
+                                        onPressed: () => _searchController.clear(),
                                       ),
-                                      onPressed: () => _searchController.clear(),
-                                    ),
 
-                                  // Gap between clear button and counter pill
-                                  SizedBox(width: playerCardFrameImageConfig.renderHeight * 0.015),
+                                    // Gap between clear button and counter pill
+                                    SizedBox(width: playerCardFrameImageConfig.renderHeight * 0.015),
 
-                                  // 2. Embedded Arcade Counter Pill
-                                  ValueListenableBuilder<Box<TblPlayer>>(
-                                    valueListenable: playersBox.listenable(),
-                                    builder: (context, box, _) {
-                                      final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
-                                      final filteredCount = _searchQuery.isEmpty
-                                          ? activePlayers.length
-                                          : activePlayers.where((player) {
-                                              final query = _searchQuery.toLowerCase();
-                                              return player.fldFirstName.toLowerCase().contains(query) ||
-                                                  player.fldLastName.toLowerCase().contains(query) ||
-                                                  player.fldNickName.toLowerCase().contains(query);
-                                            }).length;
+                                    // 2. Embedded Arcade Counter Pill
+                                    ValueListenableBuilder<Box<TblPlayer>>(
+                                      valueListenable: playersBox.listenable(),
+                                      builder: (context, box, _) {
+                                        final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
+                                        final filteredCount = _searchQuery.isEmpty
+                                            ? activePlayers.length
+                                            : activePlayers.where((player) {
+                                                final query = _searchQuery.toLowerCase();
+                                                return player.fldFirstName.toLowerCase().contains(query) ||
+                                                    player.fldLastName.toLowerCase().contains(query) ||
+                                                    player.fldNickName.toLowerCase().contains(query);
+                                              }).length;
 
-                                      return Container(
-                                        margin: EdgeInsets.only(
-                                          right: playerCardFrameImageConfig.renderHeight * 0.015,
-                                          top: playerCardFrameImageConfig.renderHeight * 0.015,
-                                          bottom: playerCardFrameImageConfig.renderHeight * 0.015,
-                                        ),
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: playerCardFrameImageConfig.renderHeight * 0.025,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade900,
-                                          borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.02),
-                                          border: Border.all(
-                                            color: Colors.amber,
-                                            width: (playerCardFrameImageConfig.renderHeight * 0.005).clamp(1.0, 2.0),
+                                        return Container(
+                                          margin: EdgeInsets.only(
+                                            right: playerCardFrameImageConfig.renderHeight * 0.015,
+                                            top: playerCardFrameImageConfig.renderHeight * 0.015,
+                                            bottom: playerCardFrameImageConfig.renderHeight * 0.015,
                                           ),
-                                        ),
-                                        child: Center(
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              _searchQuery.isEmpty 
-                                                  ? '$filteredCount' 
-                                                  : '$filteredCount/${activePlayers.length}',
-                                              style: gBuildArcadeTextStyle(
-                                                playerCardFrameImageConfig.renderHeight * 0.035,
-                                                gTextColor: Colors.amber,
-                                                gFontWeight: FontWeight.bold,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: playerCardFrameImageConfig.renderHeight * 0.025,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade900,
+                                            borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.02),
+                                            border: Border.all(
+                                              color: Colors.amber,
+                                              width: (playerCardFrameImageConfig.renderHeight * 0.005).clamp(1.0, 2.0),
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Text(
+                                                _searchQuery.isEmpty 
+                                                    ? '$filteredCount' 
+                                                    : '$filteredCount/${activePlayers.length}',
+                                                style: gBuildArcadeTextStyle(
+                                                  playerCardFrameImageConfig.renderHeight * 0.035,
+                                                  gTextColor: Colors.amber,
+                                                  gFontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      );
-                                    },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 0,
+                                  horizontal: playerCardFrameImageConfig.renderHeight * 0.045,
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade800,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.03),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.03),
+                                  borderSide: BorderSide(
+                                    color: Colors.amber,
+                                    width: (playerCardFrameImageConfig.renderHeight * 0.008).clamp(1.5, 4.0),
                                   ),
-                                ],
-                              ),
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 0,
-                                horizontal: playerCardFrameImageConfig.renderHeight * 0.045,
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade800,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.03),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.03),
-                                borderSide: BorderSide(
-                                  color: Colors.amber,
-                                  width: (playerCardFrameImageConfig.renderHeight * 0.008).clamp(1.5, 4.0),
                                 ),
                               ),
                             ),
