@@ -10,7 +10,6 @@ import 'package:darts_101/database/tbl_player.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/ui_helpers.dart';
-import 'package:darts_101/modify_add_player_be.dart';
 
 class ModifyAddPlayerForm extends StatefulWidget {  
   final FormMode enuFormMode;
@@ -240,7 +239,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     final List<TblAvatar> avatarList = avatarsBox.values
       .where((avatar) => avatar.fldAvatarCode != 'question')
       .toList();
-    final ImageConfigAvatar pickerConfig = getAvatarFramePickerImageConfig();
+    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
 
     showModalBottomSheet(
       context: context,
@@ -255,7 +254,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         return SafeArea(
           child: Container(
             width: AppDisplay.safeWidth * 0.775,
-            height: (pickerConfig.renderSize + 80.0).clamp(0.0, AppDisplay.safeHeight * 0.9),
+            height: (avatarFrameImageConfig.renderSize + 80.0).clamp(0.0, AppDisplay.safeHeight * 0.9),
             padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: Column(
               children: [
@@ -284,13 +283,13 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: pickerConfig.renderSize,
+                  height: avatarFrameImageConfig.renderSize,
                   child: CarouselView(
                     elevation: 0,
                     backgroundColor: Colors.transparent,
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
-                    itemExtent: pickerConfig.renderSize + 4.0,
-                    shrinkExtent: pickerConfig.renderSize * 0.8,
+                    itemExtent: avatarFrameImageConfig.renderSize + 4.0,
+                    shrinkExtent: avatarFrameImageConfig.renderSize * 0.8,
                     // Native CarouselView callback receives the tapped item index directly
                     onTap: (int index) {
                       final selectedAvatar = avatarList[index];
@@ -546,16 +545,16 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   }
 
   Widget _buildAvatarMainUI() {
-    final ImageConfigAvatar frameImageConfig = getAvatarFrameMainImageConfig();
-    final ImageConfigAvatar playerImageConfig = getAvatarPlayerMainImageConfig(_selectedAvatarCode);
+    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarPlayerImageConfig = getAvatarPlayerImageConfig(_selectedAvatarCode);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: _showAvatarPicker,
         child: SizedBox(
-          width: frameImageConfig.renderSize,
-          height: frameImageConfig.renderSize,
+          width: avatarFrameImageConfig.renderSize,
+          height: avatarFrameImageConfig.renderSize,
           child: Stack(
             children: [
               // 1. Solid Color Circle (Bottom-most layer behind the avatar)
@@ -571,7 +570,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               // 2. Avatar Artwork (Transparent PNG)
               Positioned.fill(
                 child: Image.asset(
-                  playerImageConfig.assetPath,
+                  avatarPlayerImageConfig.assetPath,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
                 ),
@@ -580,7 +579,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               // 3. Metallic Frame Overlay (Top-most layer)
               Positioned.fill(
                 child: Image.asset(
-                  frameImageConfig.assetPath,
+                  avatarFrameImageConfig.assetPath,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
                 ),
@@ -595,12 +594,12 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   Widget _buildAvatarPicker({
     required TblAvatar avatar,
   }) {
-    final ImageConfigAvatar frameImageConfig = getAvatarFramePickerImageConfig();
-    final ImageConfigAvatar playerImageConfig = getAvatarPlayerPickerImageConfig(avatar.fldAvatarCode);
+    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarPlayerImageConfig = getAvatarPlayerImageConfig(avatar.fldAvatarCode);
 
     return SizedBox(
-      width: frameImageConfig.renderSize,
-      height: frameImageConfig.renderSize,
+      width: avatarFrameImageConfig.renderSize,
+      height: avatarFrameImageConfig.renderSize,
       child: Stack(
         children: [
           // 1. Dynamic Circle Background Layer
@@ -616,7 +615,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           // 2. Avatar Artwork
           Positioned.fill(
             child: Image.asset(
-              playerImageConfig.assetPath,
+              avatarPlayerImageConfig.assetPath,
               fit: BoxFit.contain,
               //filterQuality: FilterQuality.none,
             ),
@@ -625,7 +624,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           // 3. Metallic Frame Overlay
           Positioned.fill(
             child: Image.asset(
-              frameImageConfig.assetPath,
+              avatarFrameImageConfig.assetPath,
               fit: BoxFit.contain,
               //filterQuality: FilterQuality.none,
             ),

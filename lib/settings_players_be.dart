@@ -1,99 +1,9 @@
 // Flutter basics
-import 'package:darts_101/global_be.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 // Database Models
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
-
-class ImageConfig {
-  final String assetPath;
-  final double renderSize;
-
-  const ImageConfig({required this.assetPath, required this.renderSize});
-}
-
-class ImageCardFrameConfig {
-  final String assetPathFrame;
-  final String assetPathBackground;
-  final String assetPathIsLeagueMember;
-  final double renderWidth;
-  final double renderHeight;
-
-  const ImageCardFrameConfig({
-    required this.assetPathFrame,
-    required this.assetPathBackground,
-    required this.assetPathIsLeagueMember,
-    required this.renderWidth,
-    required this.renderHeight,
-  });
-}
-
-// Returns CarouselView tile configuration based on screen width
-ImageCardFrameConfig getCarouselCardFrameImageConfig() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
-      return ImageCardFrameConfig(        
-        assetPathFrame: 'assets/png/mechanics/player_card_frame_175x256.png',
-        assetPathBackground: 'assets/png/mechanics/player_card_bg_175x256.png',
-        assetPathIsLeagueMember: 'assets/png/mechanics/player_league_member_175x256.png',
-        renderWidth: 175,
-        renderHeight: 256,
-      );
-    case DisplayMode.display15MediumTablet:
-      return ImageCardFrameConfig(        
-        assetPathFrame: 'assets/png/mechanics/player_card_frame_350x512.png',
-        assetPathBackground: 'assets/png/mechanics/player_card_bg_350x512.png',
-        assetPathIsLeagueMember: 'assets/png/mechanics/player_league_member_350x512.png',
-        renderWidth: 350,
-        renderHeight: 512,
-      );
-    case DisplayMode.display20LargeLapDesk:
-      return ImageCardFrameConfig(        
-        assetPathFrame: 'assets/png/mechanics/player_card_frame_525x768.png',
-        assetPathBackground: 'assets/png/mechanics/player_card_bg_525x768.png',
-        assetPathIsLeagueMember: 'assets/png/mechanics/player_league_member_525x768.png',
-        renderWidth: 525,
-        renderHeight: 768,
-      );
-    case DisplayMode.display25Ultra4K:
-      return ImageCardFrameConfig(        
-        assetPathFrame: 'assets/png/mechanics/player_card_frame_700x1024.png',
-        assetPathBackground: 'assets/png/mechanics/player_card_bg_700x1024.png',
-        assetPathIsLeagueMember: 'assets/png/mechanics/player_league_member_700x1024.png',
-        renderWidth: 700,
-        renderHeight: 1024,
-      );
-  }
-}
-
-// Returns Player image based on screen width
-ImageConfig getCarouselPlayerImageConfig(String avatarCode) {
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
-      return ImageConfig(        
-        assetPath: 'assets/png/avatars/avatar_${avatarCode}_175x256.png',
-        renderSize: 256,
-      );
-    case DisplayMode.display15MediumTablet:
-      return ImageConfig(        
-        assetPath: 'assets/png/avatars/avatar_${avatarCode}_350x512.png',
-        renderSize: 512,
-      );
-    case DisplayMode.display20LargeLapDesk:
-      return ImageConfig(        
-        assetPath: 'assets/png/avatars/avatar_${avatarCode}_525x768.png',
-        renderSize: 768,
-      );
-    case DisplayMode.display25Ultra4K:
-      return ImageConfig(        
-        assetPath: 'assets/png/avatars/avatar_${avatarCode}_700x1024.png',
-        renderSize: 1024,
-      );
-  }
-}
 
 Future<void> seedHiveLeaguePlayers(Box<TblPlayer> playersBox) async {
   // seed Players
@@ -111,7 +21,7 @@ Future<void> seedHiveLeaguePlayers(Box<TblPlayer> playersBox) async {
     TblPlayer(fldFirstName: 'Michel', fldLastName: 'Deschênes', fldNickName: 'Papy', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'papy'),
     TblPlayer(fldFirstName: 'Charles', fldLastName: 'Lirette', fldNickName: 'Charles', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'charles'),
     TblPlayer(fldFirstName: 'Bryan', fldLastName: 'Bryan', fldNickName: 'Bryan', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'bryan'),
-    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Girard', fldNickName: 'Le Livreur', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: '06'),
+    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Dubé', fldNickName: 'Le Livreur', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'carl'),
     TblPlayer(fldFirstName: 'Carmel', fldLastName: 'Fortin', fldNickName: 'Carmel', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'carmel'),
   ];
 
@@ -143,7 +53,7 @@ Future<void> seedHiveLeagueTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBo
 Future<void> seedHiveGenericPlayers(Box<TblPlayer> playersBox) async {
   // seed Players
   List<TblPlayer> listPlayers = [
-    TblPlayer(fldFirstName: 'Don Juan', fldLastName: 'Charm', fldNickName: 'Bow Tie', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'domi'),
+    TblPlayer(fldFirstName: 'Don Juan', fldLastName: 'De Marco', fldNickName: 'Bow Tie', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'domi'),
     TblPlayer(fldFirstName: 'Viktor', fldLastName: 'Vance', fldNickName: 'Lucky', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'ricky'),
     TblPlayer(fldFirstName: 'Stella', fldLastName: 'Rogue', fldNickName: 'Sniper', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '02'),
     TblPlayer(fldFirstName: 'Diesel', fldLastName: 'Nitro', fldNickName: 'War Hawk', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'christo'),
@@ -156,11 +66,11 @@ Future<void> seedHiveGenericPlayers(Box<TblPlayer> playersBox) async {
     TblPlayer(fldFirstName: 'Jimmy', fldLastName: 'Swift', fldNickName: 'Outlaw', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'marco'),
     TblPlayer(fldFirstName: 'Roxie', fldLastName: 'Razor', fldNickName: 'Vixen', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '08'),
     TblPlayer(fldFirstName: 'Duke', fldLastName: 'Sterling', fldNickName: 'Jackpot', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'ludo'),
-    TblPlayer(fldFirstName: 'Dizzy', fldLastName: 'Thrower', fldNickName: 'Dr. Darts', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'max'),
+    TblPlayer(fldFirstName: 'Dizzy', fldLastName: 'Blowgun', fldNickName: 'Dr. Darts', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'max'),
     TblPlayer(fldFirstName: 'Charlotte', fldLastName: 'Purrfect', fldNickName: 'Catnip', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '07'),
     TblPlayer(fldFirstName: 'Earl', fldLastName: 'Montgomery', fldNickName: 'Pops', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'papy'),
     TblPlayer(fldFirstName: 'Roman', fldLastName: 'Vortex', fldNickName: 'The Wizard', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'charles'),
-    TblPlayer(fldFirstName: 'Amber', fldLastName: 'Ember', fldNickName: 'Supernova', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '10'),
+    TblPlayer(fldFirstName: 'Pamela', fldLastName: 'Pennyworth', fldNickName: 'Gold Digger', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '10'),
     TblPlayer(fldFirstName: 'Clay', fldLastName: 'Bentonite', fldNickName: 'Pixie', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '04'),
     TblPlayer(fldFirstName: 'Leo', fldLastName: 'Pawfur', fldNickName: 'Magic Paws', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '05'),
     TblPlayer(fldFirstName: 'Siren', fldLastName: 'Scream', fldNickName: 'Banshee', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '09'),
@@ -168,6 +78,8 @@ Future<void> seedHiveGenericPlayers(Box<TblPlayer> playersBox) async {
     TblPlayer(fldFirstName: 'Ronald', fldLastName: 'Cummings', fldNickName: 'Preacher', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '06'),
     TblPlayer(fldFirstName: 'Bonnie', fldLastName: 'Banks', fldNickName: 'Cashflow', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '11'),
     TblPlayer(fldFirstName: 'Johnny', fldLastName: 'Danger', fldNickName: 'Bullseye', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'carmel'),
+    TblPlayer(fldFirstName: 'Mario', fldLastName: 'Crustini', fldNickName: 'The Slice', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'carl'),
+    TblPlayer(fldFirstName: 'Harley', fldLastName: 'Stitcher', fldNickName: 'Fatal Sting', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '12'),
   ];
 
   await playersBox.addAll(listPlayers);

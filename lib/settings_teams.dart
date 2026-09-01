@@ -10,7 +10,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/ui_helpers.dart';
-import 'package:darts_101/settings_teams_be.dart';
 
 // UI Screens
 import 'package:darts_101/modify_add_team.dart';
@@ -36,9 +35,9 @@ class SettingsTeams extends StatefulWidget {
 
 class _SettingsTeamsState extends State<SettingsTeams> {
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-
   final CarouselController _carouselController = CarouselController();
+  
+  String _searchQuery = '';
   bool _isDummyFilterActive = false;
 
   @override
@@ -82,7 +81,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         
         if (activeTeams.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
-            activeTeams.length * getCarouselCardFrameImageConfig().renderWidth,
+            activeTeams.length * getCarouselTeamCardVFrameImage().renderWidth,
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
           );
@@ -168,8 +167,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
     // 1. Access the Hive box opened during initialization
     final teamsBox = Hive.box<TblTeam>('teamsBox');
-    final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
-    final ImageConfig imageConfig = getFilterDummyImageConfig();
+    final ImageConfigTeamCardFrame teamCardFrameImageConfig = getCarouselTeamCardVFrameImage();
+    final ImageConfigDummy dummyImageConfig = getDummyImageConfig();
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -210,8 +209,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
             // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: imageCardFrameConfig.renderHeight * 0.06,
-                vertical: imageCardFrameConfig.renderHeight * 0.02,
+                horizontal: teamCardFrameImageConfig.renderHeight * 0.06,
+                vertical: teamCardFrameImageConfig.renderHeight * 0.02,
               ),
               color: Colors.grey.shade900,
               child: Column(
@@ -228,7 +227,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                           onTap: () => _addTeam(context),
                         ),
                       ),
-                      SizedBox(width: imageCardFrameConfig.renderHeight * 0.02),
+                      SizedBox(width: teamCardFrameImageConfig.renderHeight * 0.02),
                       MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
@@ -242,8 +241,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                             }
                           },
                           child: SizedBox(
-                            width: imageConfig.renderSize,
-                            height: imageConfig.renderSize,
+                            width: dummyImageConfig.renderSize,
+                            height: dummyImageConfig.renderSize,
                             child: Stack(
                               children: [
                                 // 1. Bottom Layer: Dynamic Solid Fill Background
@@ -261,9 +260,9 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                 // 2. Middle Layer: Crisp PNG Icon Asset
                                 Positioned.fill(
                                   child: Image.asset(
-                                    imageConfig.assetPath,
-                                    width: imageConfig.renderSize,
-                                    height: imageConfig.renderSize,
+                                    dummyImageConfig.assetPath,
+                                    width: dummyImageConfig.renderSize,
+                                    height: dummyImageConfig.renderSize,
                                     fit: BoxFit.contain,
                                   ),
                                 ),
@@ -277,7 +276,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                         color: _isDummyFilterActive
                                             ? Color.fromRGBO(247, 120, 9, 1.0)
                                             : Colors.amber,
-                                        width: (imageConfig.renderSize * 0.03),
+                                        width: (dummyImageConfig.renderSize * 0.03),
                                       ),
                                     ),
                                   ),
@@ -290,24 +289,24 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                     ],
                   ),
 
-                  SizedBox(height: imageCardFrameConfig.renderHeight * 0.015),
+                  SizedBox(height: teamCardFrameImageConfig.renderHeight * 0.015),
 
                   // 1.2 Seach Bar
                   Row(
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: imageCardFrameConfig.renderHeight * 0.12,
+                          height: teamCardFrameImageConfig.renderHeight * 0.12,
                           child: TextField(
                             controller: _searchController,
-                            style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035),
+                            style: gBuildArcadeTextStyle(teamCardFrameImageConfig.renderHeight * 0.035),
                             decoration: InputDecoration(
                               hintText: 'Search names or nicknames (space separated)...',
-                              hintStyle: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
+                              hintStyle: gBuildArcadeTextStyle(teamCardFrameImageConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
                               prefixIcon: Icon(
                                 Icons.search,
                                 color: Colors.amber,
-                                size: imageCardFrameConfig.renderHeight * 0.09,
+                                size: teamCardFrameImageConfig.renderHeight * 0.09,
                               ),
                               suffixIcon: Row(
                                 mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
@@ -321,13 +320,13 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                       icon: Icon(
                                         Icons.clear,
                                         color: Colors.white54,
-                                        size: imageCardFrameConfig.renderHeight * 0.065,
+                                        size: teamCardFrameImageConfig.renderHeight * 0.065,
                                       ),
                                       onPressed: () => _searchController.clear(),
                                     ),
 
                                   // Gap between clear button and counter pill
-                                  SizedBox(width: imageCardFrameConfig.renderHeight * 0.015),
+                                  SizedBox(width: teamCardFrameImageConfig.renderHeight * 0.015),
 
                                   // 2. Embedded Arcade Counter Pill
                                   ValueListenableBuilder<Box<TblTeam>>(
@@ -338,19 +337,19 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
                                       return Container(
                                         margin: EdgeInsets.only(
-                                          right: imageCardFrameConfig.renderHeight * 0.015,
-                                          top: imageCardFrameConfig.renderHeight * 0.015,
-                                          bottom: imageCardFrameConfig.renderHeight * 0.015,
+                                          right: teamCardFrameImageConfig.renderHeight * 0.015,
+                                          top: teamCardFrameImageConfig.renderHeight * 0.015,
+                                          bottom: teamCardFrameImageConfig.renderHeight * 0.015,
                                         ),
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: imageCardFrameConfig.renderHeight * 0.025,
+                                          horizontal: teamCardFrameImageConfig.renderHeight * 0.025,
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.grey.shade900,
-                                          borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.02),
+                                          borderRadius: BorderRadius.circular(teamCardFrameImageConfig.renderHeight * 0.02),
                                           border: Border.all(
                                             color: Colors.amber,
-                                            width: (imageCardFrameConfig.renderHeight * 0.005).clamp(1.0, 2.0),
+                                            width: (teamCardFrameImageConfig.renderHeight * 0.005).clamp(1.0, 2.0),
                                           ),
                                         ),
                                         child: Center(
@@ -361,7 +360,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                                 ? '$filteredCount' 
                                                 : '$filteredCount/${activeTeams.length}',
                                               style: gBuildArcadeTextStyle(
-                                                imageCardFrameConfig.renderHeight * 0.035,
+                                                teamCardFrameImageConfig.renderHeight * 0.035,
                                                 gTextColor: Colors.amber,
                                                 gFontWeight: FontWeight.bold,
                                               ),
@@ -375,19 +374,19 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                               ),
                               contentPadding: EdgeInsets.symmetric(
                                 vertical: 0,
-                                horizontal: imageCardFrameConfig.renderHeight * 0.045,
+                                horizontal: teamCardFrameImageConfig.renderHeight * 0.045,
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade800,
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
+                                borderRadius: BorderRadius.circular(teamCardFrameImageConfig.renderHeight * 0.03),
                                 borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(imageCardFrameConfig.renderHeight * 0.03),
+                                borderRadius: BorderRadius.circular(teamCardFrameImageConfig.renderHeight * 0.03),
                                 borderSide: BorderSide(
                                   color: Colors.amber,
-                                  width: (imageCardFrameConfig.renderHeight * 0.008).clamp(1.5, 4.0),
+                                  width: (teamCardFrameImageConfig.renderHeight * 0.008).clamp(1.5, 4.0),
                                 ),
                               ),
                             ),
@@ -425,7 +424,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
                       return CarouselView(
                         controller: _carouselController,
-                        itemExtent: imageCardFrameConfig.renderWidth,
+                        itemExtent: teamCardFrameImageConfig.renderWidth,
                         shrinkExtent: 80,
                         backgroundColor: Colors.transparent,
                         overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -455,28 +454,28 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     BuildContext context,
     TblTeam team,
   ) {
-    final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
+    final ImageConfigTeamCardFrame teamCardFrameImageConfig = getCarouselTeamCardVFrameImage();
     final bool isDummyTeam = team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode;
 
     return Center(
       child: AspectRatio(
-        aspectRatio: imageCardFrameConfig.renderWidth / imageCardFrameConfig.renderHeight,
+        aspectRatio: teamCardFrameImageConfig.renderWidth / teamCardFrameImageConfig.renderHeight,
         child: FittedBox(
           fit: BoxFit.contain, // Forces height and width to scale down together proportionally
           child: SizedBox(
-            width: imageCardFrameConfig.renderWidth,
-            height: imageCardFrameConfig.renderHeight,
+            width: teamCardFrameImageConfig.renderWidth,
+            height: teamCardFrameImageConfig.renderHeight,
             child: Stack(
               children: [
                 // 1. Top Dynamic Circle Background Layer
                 Positioned(
-                  top: imageCardFrameConfig.renderHeight * 0.03, // Positions inside top metallic ring
+                  top: teamCardFrameImageConfig.renderHeight * 0.03, // Positions inside top metallic ring
                   left: 0,
                   right: 0,
                   child: Center(
                     child: Container(
-                      width: imageCardFrameConfig.renderWidth * 0.72,
-                      height: imageCardFrameConfig.renderWidth * 0.72,
+                      width: teamCardFrameImageConfig.renderWidth * 0.72,
+                      height: teamCardFrameImageConfig.renderWidth * 0.72,
                       decoration: BoxDecoration(
                         color: widget.tileColor, // Or gender color for Player 1
                         shape: BoxShape.circle,
@@ -487,13 +486,13 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
                 // 2. Bottom Dynamic Circle Background Layer
                 Positioned(
-                  bottom: imageCardFrameConfig.renderHeight * 0.03, // Positions inside bottom metallic ring
+                  bottom: teamCardFrameImageConfig.renderHeight * 0.03, // Positions inside bottom metallic ring
                   left: 0,
                   right: 0,
                   child: Center(
                     child: Container(
-                      width: imageCardFrameConfig.renderWidth * 0.72,
-                      height: imageCardFrameConfig.renderWidth * 0.72,
+                      width: teamCardFrameImageConfig.renderWidth * 0.72,
+                      height: teamCardFrameImageConfig.renderWidth * 0.72,
                       decoration: BoxDecoration(
                         color: widget.tileColor, // Or gender color for Player 2
                         shape: BoxShape.circle,
@@ -504,15 +503,16 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                 
                 // 3. Top Player Avatar Layer
                 Positioned(
-                  top: imageCardFrameConfig.renderHeight * 0.01,
+                  top: teamCardFrameImageConfig.renderHeight * 0.01,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: ClipOval(
                       child: Image.asset(
-                        getCarouselPlayerImageConfig(team.fldPlayers[0].fldAvatarCode).assetPath,
-                        width: imageCardFrameConfig.renderWidth * 0.72,
-                        height: imageCardFrameConfig.renderWidth * 0.72,
+                        getAvatarPlayerImageConfig(team.fldPlayers[0].fldAvatarCode).assetPath,
+                        //TODO ?? should be .renderSize non ??
+                        width: teamCardFrameImageConfig.renderWidth * 0.72,
+                        height: teamCardFrameImageConfig.renderWidth * 0.72,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -521,57 +521,58 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
                 // 4. Bottom Player Avatar Layer
                 Positioned(
-                  bottom: imageCardFrameConfig.renderHeight * 0.01,
+                  bottom: teamCardFrameImageConfig.renderHeight * 0.01,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: ClipOval(
                       child: Image.asset(
-                        getCarouselPlayerImageConfig(team.fldPlayers[1].fldAvatarCode).assetPath,
-                        width: imageCardFrameConfig.renderWidth * 0.72,
-                        height: imageCardFrameConfig.renderWidth * 0.72,
+                        getAvatarPlayerImageConfig(team.fldPlayers[1].fldAvatarCode).assetPath,
+                        //TODO ?? should be .renderSize non ??
+                        width: teamCardFrameImageConfig.renderWidth * 0.72,
+                        height: teamCardFrameImageConfig.renderWidth * 0.72,
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                 ),
 
-                // 3. PNG Frame Overlay
+                // 5. PNG Frame Overlay
                 Positioned.fill(
                   child: Image.asset(
-                    imageCardFrameConfig.assetPathFrame,
+                    teamCardFrameImageConfig.assetPathFrame,
                     fit: BoxFit.fill,
                   ),
                 ),
 
-                // 3. Dummy Player Layer
+                // 6. Dummy Player Layer
                 if (isDummyTeam)
                   Positioned.fill(
                     child: Image.asset(
-                      imageCardFrameConfig.assetPathIsDummyPlayer,
+                      teamCardFrameImageConfig.assetPathIsDummyPlayer,
                       fit: BoxFit.fill,
                     ),
                   ),
 
-                // 5. Player 1 Nickname Pill (Centered Top)
+                // 7. Player 1 Nickname Pill (Centered Top)
                 Positioned(
-                  top: imageCardFrameConfig.renderHeight * 0.01,
+                  top: teamCardFrameImageConfig.renderHeight * 0.01,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: imageCardFrameConfig.renderHeight * 0.035,
-                        vertical: imageCardFrameConfig.renderHeight * 0.006,
+                        horizontal: teamCardFrameImageConfig.renderHeight * 0.035,
+                        vertical: teamCardFrameImageConfig.renderHeight * 0.006,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
                         borderRadius: BorderRadius.circular(
-                          imageCardFrameConfig.renderHeight * 0.04,
+                          teamCardFrameImageConfig.renderHeight * 0.04,
                         ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
-                          width: imageCardFrameConfig.renderHeight * 0.006,
+                          width: teamCardFrameImageConfig.renderHeight * 0.006,
                         ),
                       ),
                       child: FittedBox(
@@ -579,32 +580,32 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                         child: Text(
                           team.fldPlayers[0].fldNickName.toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.032,gFontWeight: FontWeight.w800),
+                          style: gBuildArcadeTextStyle(teamCardFrameImageConfig.renderHeight * 0.032,gFontWeight: FontWeight.w800),
                         ),
                       ),
                     ),
                   ),
                 ),
 
-                // 6. Player 2 Nickname Pill (Centered Bottom)
+                // 8. Player 2 Nickname Pill (Centered Bottom)
                 Positioned(
-                  bottom: imageCardFrameConfig.renderHeight * 0.01,
+                  bottom: teamCardFrameImageConfig.renderHeight * 0.01,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: imageCardFrameConfig.renderHeight * 0.035,
-                        vertical: imageCardFrameConfig.renderHeight * 0.006,
+                        horizontal: teamCardFrameImageConfig.renderHeight * 0.035,
+                        vertical: teamCardFrameImageConfig.renderHeight * 0.006,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
                         borderRadius: BorderRadius.circular(
-                          imageCardFrameConfig.renderHeight * 0.04,
+                          teamCardFrameImageConfig.renderHeight * 0.04,
                         ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
-                          width: imageCardFrameConfig.renderHeight * 0.006,
+                          width: teamCardFrameImageConfig.renderHeight * 0.006,
                         ),
                       ),
                       child: FittedBox(
@@ -612,7 +613,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                         child: Text(
                           team.fldPlayers[1].fldNickName.toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(imageCardFrameConfig.renderHeight * 0.032, gFontWeight: FontWeight.w800),
+                          style: gBuildArcadeTextStyle(teamCardFrameImageConfig.renderHeight * 0.032, gFontWeight: FontWeight.w800),
                         ),
                       ),
                     ),

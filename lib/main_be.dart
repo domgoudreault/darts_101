@@ -35,6 +35,8 @@ Future<void> seedHiveAvatars(Box<TblAvatar> avatarsBox) async {
     TblAvatar(fldAvatarCode: '06', fldIsMale: true),
     TblAvatar(fldAvatarCode: '11', fldIsMale: false),
     TblAvatar(fldAvatarCode: 'carmel', fldIsMale: true),
+    TblAvatar(fldAvatarCode: 'carl', fldIsMale: true),
+    TblAvatar(fldAvatarCode: '12', fldIsMale: false),
     TblAvatar(fldAvatarCode: 'question', fldIsMale: true),
   ];
 

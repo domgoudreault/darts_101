@@ -208,7 +208,7 @@ class MainScreenPopupMenu extends StatelessWidget {
         // Registers this dialog as a listener for screen size changes (it does nothing else)
         MediaQuery.sizeOf(context);
 
-        ImageConfig imageConfig = getInformationDialogImageConfig();
+        ImageConfig leagueLogoImageConfig = getInformationDialogImageConfig();
 
         return AlertDialog(
           content: SizedBox(
@@ -272,9 +272,9 @@ class MainScreenPopupMenu extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8), // Optional: rounded corners
                           child: Image.asset(
-                            imageConfig.assetPath,
-                            width: imageConfig.renderSize,
-                            height: imageConfig.renderSize,
+                            leagueLogoImageConfig.assetPath,
+                            width: leagueLogoImageConfig.renderSize,
+                            height: leagueLogoImageConfig.renderSize,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -599,7 +599,7 @@ class _MainScreenState extends State<MainScreen> {
   }
   
   Widget _buildMainScreenTile(BuildContext context, CarouselTileData tile) {
-    ImageConfig imageConfig = getCarouselTileImageConfig(tile.tileType, tile.tileCode);
+    ImageConfig gameTileImageConfig = getCarouselTileImageConfig(tile.tileType, tile.tileCode);
 
     return Center(
       child: AspectRatio(
@@ -607,21 +607,21 @@ class _MainScreenState extends State<MainScreen> {
         child: FittedBox(
           fit: BoxFit.contain, // Forces BOTH the color box and the image to scale down TOGETHER
           child: SizedBox(
-            width: imageConfig.renderSize,
-            height: imageConfig.renderSize,
+            width: gameTileImageConfig.renderSize,
+            height: gameTileImageConfig.renderSize,
             child: Stack(
               children: [
                 // 1. Color fill tucked inside fixed canvas dimensions
                 Positioned.fill(
                   child: Padding(
-                    padding: EdgeInsets.all(imageConfig.renderSize * 0.03),
+                    padding: EdgeInsets.all(gameTileImageConfig.renderSize * 0.03),
                     child: Container(color: tile.tileColor),
                   ),
                 ),
                 // 2. PNG frame overlaid on top
                 Positioned.fill(
                   child: Image.asset(
-                    imageConfig.assetPath,
+                    gameTileImageConfig.assetPath,
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -638,7 +638,7 @@ class _MainScreenState extends State<MainScreen> {
     required MainScreenSection section,
   }) {
     final bool isSelected = _activeSection == section;
-    final ImageConfig imageConfig = getSectionHeaderImageConfig(sectionCode);
+    final ImageConfig sectionImageConfig = getSectionHeaderImageConfig(sectionCode);
 
     return Expanded(
       child: InkWell(
@@ -661,15 +661,38 @@ class _MainScreenState extends State<MainScreen> {
             ),
             child: Center(
               child: SizedBox(
-                height: imageConfig.renderSize / 2,
+                height: sectionImageConfig.renderSize / 2,
                 child: Image.asset(
-                  imageConfig.assetPath,
+                  sectionImageConfig.assetPath,
                   fit: BoxFit.contain,
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+Future<void> _clearHiveDatabase(BuildContext context) async {
+  // Clear primary user data and game logs
+  await Hive.box<TblPlayer>('playersBox').clear();
+  await Hive.box<TblTeam>('teamsBox').clear();
+  
+  if (context.mounted) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red.shade900,
+        behavior: SnackBarBehavior.floating,
+        content: Center(
+          child: Text(
+            'PLAYERS & TEAMS CLEARED!',
+            style: gBuildArcadeTextStyle(12),
+          ),
+        ),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -739,6 +762,34 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                           color: Colors.amber,
                           fontSize: baseFontSize,
                           fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        'Database Utilities:',
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: baseFontSize,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade800,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                            await _clearHiveDatabase(context);
+                          },
+                          icon: const Icon(Icons.delete_sweep, size: 16),
+                          label: Text(
+                            'CLEAR PLAYERS & TEAMS',
+                            style: gBuildArcadeTextStyle((baseFontSize * 0.60).clamp(10.0, 16.0)),
+                          ),
                         ),
                       ),
                     ],
