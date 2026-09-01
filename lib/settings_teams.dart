@@ -136,31 +136,6 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     return terms.every((term) => matchesPlayer(p1, term) || matchesPlayer(p2, term));
   }
 
-  void _showArcadeFilterSnackBar(String message, int timer) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Color.fromRGBO(247, 120, 9, 1.0),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          left: AppDisplay.safeWidth * 0.05,
-          right: AppDisplay.safeWidth * 0.05,
-          bottom: AppDisplay.safeHeight * 0.05,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        content: Center(
-          child: Text(
-            message,
-            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.025).clamp(10.0, 60.0)),
-          ),
-        ),
-        duration: Duration(seconds: timer),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context);
@@ -220,11 +195,10 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                     children: [
                       Expanded(
                         child: gBuildArcadeActionBanner(
-                          context: context,
-                          leadingText: 'ADD NEW',
-                          trailingText: 'TEAM',
-                          formMode: FormMode.formAdd,
-                          onTap: () => _addTeam(context),
+                          gLeadingText: 'ADD NEW',
+                          gTrailingText: 'TEAM',
+                          gFormMode: FormMode.formAdd,
+                          gOnTap: () => _addTeam(context),
                         ),
                       ),
                       SizedBox(width: teamCardFrameImageConfig.renderHeight * 0.02),
@@ -237,7 +211,13 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                             });
 
                             if (_isDummyFilterActive) {
-                              _showArcadeFilterSnackBar('FILTER DUMMY TEAMS ACTIVATED', 3);
+                              gShowArcadeErrorSnackBar(
+                                gContext: context, 
+                                gFontSize: (AppDisplay.carouselTileSize * 0.025).clamp(10.0, 60.0), 
+                                gMessage: 'FILTER DUMMY TEAMS ACTIVATED', 
+                                gDuration: 3,
+                                gBbackgroundColor: Color.fromRGBO(247, 120, 9, 1.0)
+                              );
                             }
                           },
                           child: SizedBox(

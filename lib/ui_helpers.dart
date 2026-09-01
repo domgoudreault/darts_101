@@ -69,18 +69,17 @@ ImageConfigArrow getArrowImageConfig(bool isLeft) {
 }
 
 Widget gBuildArcadeActionBanner({
-  required BuildContext context,
-  required String leadingText,
-  required String trailingText,
-  required FormMode formMode,
-  required VoidCallback onTap,
+  required String gLeadingText,
+  required String gTrailingText,
+  required FormMode gFormMode,
+  required VoidCallback gOnTap,
 }) {
   final double responsiveTile = AppDisplay.carouselTileSize;
   final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 40.0);
 
   final ImageConfigArrow leftArrowConfig = getArrowImageConfig(true);
   final ImageConfigArrow rightArrowConfig = getArrowImageConfig(false);
-  final String svgAssetPath = (formMode == FormMode.formAdd)
+  final String svgAssetPath = (gFormMode == FormMode.formAdd)
       ? 'assets/svg/ui_buttons/player_team_add.svg'
       : 'assets/svg/ui_buttons/player_team_save.svg';
 
@@ -103,7 +102,7 @@ Widget gBuildArcadeActionBanner({
           
           // INKWELL WRAPS ONLY THE PILL NOW
           InkWell(
-            onTap: onTap,
+            onTap: gOnTap,
             borderRadius: BorderRadius.circular(responsiveTile * 0.04),
             hoverColor: Colors.transparent,
             splashColor: Colors.transparent,
@@ -126,7 +125,7 @@ Widget gBuildArcadeActionBanner({
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    leadingText,
+                    gLeadingText,
                     style: gBuildArcadeTextStyle(
                       responsiveFontSize,
                       gTextColor: Colors.lightBlueAccent,
@@ -141,7 +140,7 @@ Widget gBuildArcadeActionBanner({
                   ),
                   SizedBox(width: responsiveTile * 0.02),
                   Text(
-                    trailingText,
+                    gTrailingText,
                     style: gBuildArcadeTextStyle(
                       responsiveFontSize,
                       gTextColor: Colors.lightBlueAccent,
@@ -161,6 +160,37 @@ Widget gBuildArcadeActionBanner({
           ),
         ],
       ),
+    ),
+  );
+}
+
+void gShowArcadeErrorSnackBar({
+  required BuildContext gContext,
+  required double gFontSize,
+  required String gMessage,
+  required int gDuration,
+  Color? gBbackgroundColor,
+}){
+  ScaffoldMessenger.of(gContext).hideCurrentSnackBar();
+  ScaffoldMessenger.of(gContext).showSnackBar(
+    SnackBar(
+      backgroundColor: gBbackgroundColor ?? Colors.red.shade800,
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.only(
+        left: AppDisplay.safeWidth * 0.05,
+        right: AppDisplay.safeWidth * 0.05,
+        bottom: AppDisplay.safeHeight * 0.05,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      content: Center(
+        child: Text(
+          gMessage,
+          style: gBuildArcadeTextStyle((gFontSize * 0.70).clamp(10.0, 60.0)),
+        ),
+      ),
+      duration: Duration(seconds: gDuration),
     ),
   );
 }

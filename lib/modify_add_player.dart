@@ -70,35 +70,23 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   void _savePlayer() {
     // 1. Check if an avatar was selected (block if still placeholder 'question')
     if (_selectedAvatarCode == 'question') {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red.shade800,
-          behavior: SnackBarBehavior.floating,
-          // Uses purely AppDisplay ratios to keep the SnackBar above safe boundaries
-          margin: EdgeInsets.only(
-            left: AppDisplay.safeWidth * 0.05,
-            right: AppDisplay.safeWidth * 0.05,
-            bottom: AppDisplay.safeHeight * 0.05,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          content: Center(
-            child: Text(
-              'PLEASE SELECT AN AVATAR!',
-              style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
-            ),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
+      gShowArcadeErrorSnackBar(
+        gContext: context, 
+        gFontSize: (_responsiveFontSize * 0.70).clamp(10.0, 60.0), 
+        gMessage: 'PLEASE SELECT AN AVATAR!',
+        gDuration: 2
       );
       return;
     }
 
     // 2. Validate form fields
     if (_nickNameController.text.trim().isEmpty) {
-      _showArcadeErrorSnackBar('NICKNAME IS REQUIRED!');
+      gShowArcadeErrorSnackBar(
+        gContext: context, 
+        gMessage: 'NICKNAME IS REQUIRED!', 
+        gFontSize: _responsiveFontSize,
+        gDuration: 2
+      );
       return;
     }
 
@@ -118,7 +106,12 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     );
 
     if (isDuplicateNickName) {
-      _showArcadeErrorSnackBar('NICKNAME ALREADY EXISTS!');
+      gShowArcadeErrorSnackBar(
+        gContext: context, 
+        gMessage: 'NICKNAME ALREADY EXISTS!', 
+        gFontSize: _responsiveFontSize,
+        gDuration: 2
+      );
       return;
     }
 
@@ -155,31 +148,6 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         // Return to previous screen
         Navigator.pop(context, false);
     }
-  }
-
-  void _showArcadeErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.red.shade800,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          left: AppDisplay.safeWidth * 0.05,
-          right: AppDisplay.safeWidth * 0.05,
-          bottom: AppDisplay.safeHeight * 0.05,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        content: Center(
-          child: Text(
-            message,
-            style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
-          ),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   void _deletePlayer() {
@@ -355,11 +323,10 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               child: 
                 // 1.1 Save Player Banner
                 gBuildArcadeActionBanner(
-                  context: context,
-                  leadingText: 'SAVE',
-                  trailingText: 'PLAYER',
-                  formMode: FormMode.formModify,
-                  onTap: () => _savePlayer(),
+                  gLeadingText: 'SAVE',
+                  gTrailingText: 'PLAYER',
+                  gFormMode: FormMode.formModify,
+                  gOnTap: () => _savePlayer(),
                 ),
             ),
 

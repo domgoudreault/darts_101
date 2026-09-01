@@ -137,12 +137,12 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
           title: Text(
             'DEBUG: LEAGUE DATA',
             textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle(18.0, gTextColor: Colors.amberAccent),
+            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.amberAccent),
           ),
           content: Text(
             'No players found. Would you like to seed default LEAGUE players and teams for testing?',
             textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.white),
+            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
           ),
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
@@ -154,7 +154,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
               },
               child: Text(
                 'NO',
-                style: gBuildArcadeTextStyle(14.0, gTextColor: Colors.redAccent),
+                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.redAccent),
               ),
             ),
             
@@ -174,7 +174,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
               },
               child: Text(
                 'YES (LEAGUE)',
-                style: gBuildArcadeTextStyle(14.0, gTextColor: Colors.white),
+                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
               ),
             ),
           ],
@@ -198,12 +198,12 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
           title: Text(
             'SAMPLE PLAYERS',
             textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle(18.0, gTextColor: Colors.cyanAccent),
+            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.cyanAccent),
           ),
           content: Text(
             'No players found. Would you like to auto-generate sample default players?',
             textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.white),
+            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
           ),
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
@@ -212,7 +212,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
               onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'NO, I\'LL ADD BY HAND',
-                style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.redAccent),
+                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.redAccent),
               ),
             ),
             
@@ -229,7 +229,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
               },
               child: Text(
                 'YES (AUTO-GENERATE)',
-                style: gBuildArcadeTextStyle(12.0, gTextColor: Colors.white),
+                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
               ),
             ),
           ],
@@ -293,11 +293,10 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 children: [
                   // 1.1 Add Player Banner
                   gBuildArcadeActionBanner(
-                    context: context,
-                    leadingText: 'ADD NEW',
-                    trailingText: 'PLAYER',
-                    formMode: FormMode.formAdd,
-                    onTap: () => _addPlayer(context),
+                    gLeadingText: 'ADD NEW',
+                    gTrailingText: 'PLAYER',
+                    gFormMode: FormMode.formAdd,
+                    gOnTap: () => _addPlayer(context),
                   ),
 
                   SizedBox(height: playerCardFrameImageConfig.renderHeight * 0.015),
@@ -445,7 +444,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                         return Center(
                           child: Text(
                             'No players found.',
-                            style: gBuildArcadeTextStyle(18),
+                            style: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035),
                           ),
                         );
                       }

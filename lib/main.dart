@@ -484,12 +484,11 @@ class _MainScreenState extends State<MainScreen> {
         MaterialPageRoute(builder: (_) => destination),
       );
     } else {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${tile.tileDescription} was clicked!'),
-          duration: const Duration(milliseconds: 800),
-        ),
+      gShowArcadeErrorSnackBar(
+        gContext: context, 
+        gFontSize: 16, 
+        gMessage: '${tile.tileDescription} was clicked!',
+        gDuration: 2
       );
     }
   }
@@ -681,19 +680,11 @@ Future<void> _clearHiveDatabase(BuildContext context) async {
   await Hive.box<TblTeam>('teamsBox').clear();
   
   if (context.mounted) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.red.shade900,
-        behavior: SnackBarBehavior.floating,
-        content: Center(
-          child: Text(
-            'PLAYERS & TEAMS CLEARED!',
-            style: gBuildArcadeTextStyle(12),
-          ),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+    gShowArcadeErrorSnackBar(
+      gContext: context, 
+      gFontSize: 16, 
+      gMessage: 'PLAYERS & TEAMS CLEARED!',
+      gDuration: 2
     );
   }
 }
