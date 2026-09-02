@@ -443,7 +443,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                     widget.modifyPlayer != null &&
                                     !widget.modifyPlayer!.fldIsLeagueMember) ...[
                                 
-                                const SizedBox(height: 24),
+                                SizedBox(height: _responsiveTile * 0.10),
 
                                 MouseRegion(
                                   cursor: SystemMouseCursors.click,
