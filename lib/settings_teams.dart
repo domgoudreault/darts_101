@@ -1,10 +1,9 @@
 // Flutter basics
-//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 // Database Models
-//import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
@@ -47,6 +46,11 @@ class _SettingsTeamsState extends State<SettingsTeams> {
       setState(() {
         _searchQuery = _searchController.text.trim().toLowerCase();
       });
+    });
+
+    // Check database status right after the screen renders
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndPromptTeamSeeding();
     });
   }
 
@@ -102,6 +106,45 @@ class _SettingsTeamsState extends State<SettingsTeams> {
           tileBackgroundColor: widget.tileBackgroundColor,
         ),
       ),
+    );
+  }
+
+  void _checkAndPromptTeamSeeding() {
+    final teamsBox = Hive.box<TblTeam>('teamsBox').values.where((team) => !team.fldIsDeleted);
+    final playersBox = Hive.box<TblPlayer>('playersBox').values.where((player) => !player.fldIsDeleted);
+
+    if (teamsBox.isEmpty && playersBox.isNotEmpty) {
+      _showTeamsSeedDialog();
+    }
+  }
+
+  // 1. GENERIC AUTO-GENERATED SEED DIALOG (Release Mode OR Declined League Data)
+  void _showTeamsSeedDialog() {
+    gShowDatabaseSeedDialog(
+      context, 
+      tileColor: widget.tileColor,
+      tileBackgroundColor: widget.tileBackgroundColor,
+      assetFullPath: 'assets/png/tiles/settings_teams_256x256.png',
+      headerText: 'SAMPLE DEFAULT TEAMS ?',
+      titleText: 'No teams found.',
+      questionText: 'Would you like us to auto-generate sample default teams for you?',
+      noButtonText: 'NO,\nI\'LL ADD BY HAND',
+      yesButtonText: 'YES,\nGENERATE FOR ME',
+      onNoPressed: (dialogContext) {
+        Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
+      },
+      onYesPressed: (dialogContext) async {
+        Navigator.pop(dialogContext);
+        
+        final playersBox = Hive.box<TblPlayer>('playersBox');
+        final teamsBox = Hive.box<TblTeam>('teamsBox');
+        
+        // Assuming you have a generic team seeding function available, 
+        // or you can call your team creation backend logic here:
+        await seedHiveTeams(playersBox, teamsBox);
+        
+        setState(() {});
+      },
     );
   }
 

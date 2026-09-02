@@ -184,8 +184,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
             side: const BorderSide(color: Colors.redAccent, width: 1.5),
           ),
           title: Text(
-            'DELETE TEAM?',
-            style: gBuildArcadeTextStyle(18, gTextColor: Colors.redAccent),
+            'DELETE THIS TEAM?',
+            style: gBuildArcadeTextStyle(_responsiveFontSize * 1.4, gTextColor: Colors.redAccent),
           ),
           content: Text(
             'Are you sure you want to remove the team?',
@@ -199,7 +199,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(
                 'CANCEL',
-                style: gBuildArcadeTextStyle(14, gTextColor: Colors.grey.shade400),
+                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.grey.shade400),
               ),
             ),
             ElevatedButton(
@@ -216,7 +216,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
               },
               child: Text(
                 'DELETE',
-                style: gBuildArcadeTextStyle(14, gTextColor: Colors.white),
+                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.white),
               ),
             ),
           ],
@@ -267,9 +267,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                   child: Text(
                     'SELECT A PLAYER',
                     textAlign: TextAlign.center,
-                    style: gBuildArcadeTextStyle(
-                      (_responsiveFontSize * 0.70).clamp(10.0, 60.0)
-                    ),
+                    style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -706,7 +704,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                               ),
                                               //const SizedBox(width: 2),
                                               Text(
-                                                'DELETE',
+                                                'DELETE THIS TEAM',
                                                 style: gBuildArcadeTextStyle(
                                                   (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
                                                   gTextColor: Colors.lightBlueAccent,

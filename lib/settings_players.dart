@@ -10,7 +10,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/ui_helpers.dart';
-import 'package:darts_101/settings_players_be.dart';
 
 // UI Screens
 import 'package:darts_101/modify_add_player.dart';
@@ -115,125 +114,63 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
     if (playersBox.isEmpty) {
       if (kDebugMode) {
-        _showLeagueSeedDialog();
+        _showLeaguePlayersSeedDialog();
       } else {
-        _showGenericSeedDialog();
+        _showPlayersSeedDialog();
       }
     }
   }
 
   // 1. LEAGUE SEED DIALOG (kDebugMode only)
-  void _showLeagueSeedDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF212121),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-            side: const BorderSide(color: Colors.white24, width: 1.0),
-          ),
-          title: Text(
-            'DEBUG: LEAGUE DATA',
-            textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.amberAccent),
-          ),
-          content: Text(
-            'No players found. Would you like to seed default LEAGUE players and teams for testing?',
-            textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
-          ),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actions: [
-            // NO -> FALLBACK TO GENERIC AUTO-GENERATION QUESTION
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                _showGenericSeedDialog();
-              },
-              child: Text(
-                'NO',
-                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.redAccent),
-              ),
-            ),
-            
-            // YES -> SEED REAL LEAGUE DATA
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: widget.tileColor),
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                // Only seeds players from my league if we are in Debug Mode AND the database is empty
-                final playersBox = Hive.box<TblPlayer>('playersBox');
-                final teamsBox = Hive.box<TblTeam>('teamsBox');
-
-                await seedHiveLeaguePlayers(playersBox);
-                await seedHiveLeagueTeams(playersBox, teamsBox);
-                
-                setState(() {});
-              },
-              child: Text(
-                'YES (LEAGUE)',
-                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
-              ),
-            ),
-          ],
-        );
+  void _showLeaguePlayersSeedDialog() {
+    gShowDatabaseSeedDialog(
+      context, 
+      tileColor: widget.tileColor,
+      tileBackgroundColor: widget.tileBackgroundColor,
+      assetFullPath: 'assets/png/logos/LGGDS_360x360.png',
+      headerText: 'SAMPLE LGGDS LEAGUE DATA ?',
+      titleText: 'No players found.',
+      questionText: 'Would you like to seed default LEAGUE players and teams for testing?',
+      noButtonText: 'NO,\nI\'LL ADD BY HAND',
+      yesButtonText: 'YES,\nGENERATE LEAGUE FOR ME',
+      onNoPressed: (dialogContext) {
+        Navigator.pop(dialogContext);
+        _showPlayersSeedDialog();
       },
-    );
+      onYesPressed: (dialogContext) async {
+        Navigator.pop(dialogContext);
+        // Only seeds players from my league if we are in Debug Mode AND the database is empty
+        final playersBox = Hive.box<TblPlayer>('playersBox');
+        final teamsBox = Hive.box<TblTeam>('teamsBox');
+
+        await seedHiveLeaguePlayers(playersBox);
+        await seedHiveTeams(playersBox, teamsBox);
+        
+        setState(() {});
+      },
+    );     
   }
 
   // 2. GENERIC AUTO-GENERATED SEED DIALOG (Release Mode OR Declined League Data)
-  void _showGenericSeedDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF212121),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-            side: const BorderSide(color: Colors.white24, width: 1.0),
-          ),
-          title: Text(
-            'SAMPLE PLAYERS',
-            textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.cyanAccent),
-          ),
-          content: Text(
-            'No players found. Would you like to auto-generate sample default players?',
-            textAlign: TextAlign.center,
-            style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
-          ),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actions: [
-            // NO -> LEAVE EMPTY FOR MANUAL CREATION
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'NO, I\'LL ADD BY HAND',
-                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.redAccent),
-              ),
-            ),
-            
-            // YES -> SEED FAKE / GENERIC PLAYERS
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: widget.tileColor),
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                final playersBox = Hive.box<TblPlayer>('playersBox');
-    
-                await seedHiveGenericPlayers(playersBox);
-
-                setState(() {});
-              },
-              child: Text(
-                'YES (AUTO-GENERATE)',
-                style: gBuildArcadeTextStyle((AppDisplay.carouselTileSize * 0.035), gTextColor: Colors.white),
-              ),
-            ),
-          ],
-        );
+  void _showPlayersSeedDialog() {
+    gShowDatabaseSeedDialog(
+      context, 
+      tileColor: widget.tileColor,
+      tileBackgroundColor: widget.tileBackgroundColor,
+      assetFullPath: 'assets/png/tiles/settings_players_256x256.png',
+      headerText: 'SAMPLE DEFAULT PLAYERS ?',
+      titleText: 'No players found.',
+      questionText: 'Would you like us to auto-generate sample default players for you?',
+      noButtonText: 'NO,\nI\'LL ADD BY HAND',
+      yesButtonText: 'YES,\nGENERATE FOR ME',
+      onNoPressed: (dialogContext) {
+        Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
+      },
+      onYesPressed: (dialogContext) async {
+        Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
+        final playersBox = Hive.box<TblPlayer>('playersBox');
+        await seedHiveGenericPlayers(playersBox);
+        setState(() {});
       },
     );
   }

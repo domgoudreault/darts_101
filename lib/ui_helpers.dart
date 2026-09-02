@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+
+// Database Models
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
@@ -212,11 +217,15 @@ ImageConfigAvatar getAvatarFrameImageConfig() {
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
         renderSize: 256,
-      );   
+      );
+    case DisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_384x384.png',
+        renderSize: 384,
+      );
     case DisplayMode.display25Ultra4K:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_512x512.png',
@@ -235,11 +244,15 @@ ImageConfigAvatar getAvatarPlayerImageConfig(String avatarCode) {
         renderSize: 128,
       );
     case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:  
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
         renderSize: 256,
-      );    
+      );
+    case DisplayMode.display20LargeLapDesk:  
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_384x384.png',
+        renderSize: 384,
+      );
     case DisplayMode.display25Ultra4K:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_512x512.png',
@@ -509,4 +522,245 @@ ImageConfigAvatar getAvatarPlayerCardImageConfig(String avatarCode) {
         renderSize: 512,
       );
   }
+}
+
+void gShowDatabaseSeedDialog(
+  BuildContext context, {
+  required Color tileColor,
+  required Color tileBackgroundColor,
+  required String assetFullPath,
+  required String headerText,
+  required String titleText,
+  required String questionText,
+  required String noButtonText,
+  required String yesButtonText,
+  required void Function(BuildContext dialogContext) onNoPressed,
+  required void Function(BuildContext dialogContext) onYesPressed,
+}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        backgroundColor: Colors.grey.shade900,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+          side: const BorderSide(color: Colors.white24, width: 1.0),
+        ),
+        title: null,
+        content: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: AppDisplay.carouselTileSize * 0.45,
+              child: AspectRatio(
+                aspectRatio: 1.0,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Builder(
+                    builder: (context) {
+                      return SizedBox(
+                        width: AppDisplay.carouselTileSize,
+                        height: AppDisplay.carouselTileSize,
+                        child: Stack(
+                          children: [
+                            // 1. Color fill tucked inside fixed canvas dimensions
+                            Positioned.fill(
+                              child: Padding(
+                                padding: EdgeInsets.all(AppDisplay.carouselTileSize * 0.03),
+                                child: Container(color: tileColor),
+                              ),
+                            ),
+                            // 2. PNG frame overlaid on top with transparency support
+                            Positioned.fill(
+                              child: Image.asset(
+                                assetFullPath,
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            
+            SizedBox(width: AppDisplay.carouselTileSize * 0.13),
+            
+            // Column 2: Right-Side Stack (Title, Content, and Buttons)
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Styled Title Box
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      decoration: BoxDecoration(
+                        color: tileColor,
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(color: tileBackgroundColor, width: 1.5),
+                      ),
+                      child: Text(
+                        headerText,
+                        textAlign: TextAlign.center,
+                        style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035, gTextColor: Colors.amber),
+                      ),
+                    ),
+
+                    SizedBox(height: AppDisplay.carouselTileSize * 0.06),
+                    
+                    Text(
+                      titleText,
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                    ),
+                    
+                    SizedBox(height: AppDisplay.carouselTileSize * 0.06),
+
+                    // Content Question Text
+                    Text(
+                      questionText,
+                      style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                    ),
+
+                    SizedBox(height: AppDisplay.carouselTileSize * 0.03),
+                    
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.white, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              backgroundColor: Colors.red.shade800,
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                            ),
+                            onPressed: () => onNoPressed(dialogContext),
+                            child: Text(
+                              noButtonText,
+                              textAlign: TextAlign.center,
+                              style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                            ),
+                          ),
+                        ),
+                          
+                        SizedBox(width: AppDisplay.carouselTileSize * 0.02),
+                          
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.amber, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              backgroundColor: Colors.green.shade600,
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                            ),
+                            onPressed: () => onYesPressed(dialogContext),
+                            child: Text(
+                              yesButtonText,
+                              textAlign: TextAlign.center,
+                              style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: const [], // Empty since buttons are contained in the right column
+      );
+    },
+  );
+}
+
+Future<void> seedHiveLeaguePlayers(Box<TblPlayer> playersBox) async {
+  // seed Players
+  List<TblPlayer> listPlayers = [
+    TblPlayer(fldFirstName: 'Dominique', fldLastName: 'Goudreault', fldNickName: 'Domi', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'domi'),
+    TblPlayer(fldFirstName: 'Éric', fldLastName: 'St-Pierre', fldNickName: 'Ricky', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'ricky'),
+    TblPlayer(fldFirstName: 'Christopher', fldLastName: 'Lafond', fldNickName: 'Christo', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'christo'),
+    TblPlayer(fldFirstName: 'Frédéric', fldLastName: 'Gagnon', fldNickName: 'Marcel', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'marcel'),
+    TblPlayer(fldFirstName: 'Frederik', fldLastName: 'Peeters Bélanger', fldNickName: 'Fred', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'fred'),
+    TblPlayer(fldFirstName: 'Simon', fldLastName: 'Drouin', fldNickName: 'Drou', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'drou'),
+    TblPlayer(fldFirstName: 'Étienne', fldLastName: 'Lefrançois', fldNickName: 'Ti-ti', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'titi'),
+    TblPlayer(fldFirstName: 'Marc-Olivier', fldLastName: 'Fortin', fldNickName: 'Marco', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'marco'),
+    TblPlayer(fldFirstName: 'Ludovick', fldLastName: 'Gosselin', fldNickName: 'Ludo', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'ludo'),
+    TblPlayer(fldFirstName: 'Maxime', fldLastName: 'Gagnon', fldNickName: 'Max', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'max'),
+    TblPlayer(fldFirstName: 'Michel', fldLastName: 'Deschênes', fldNickName: 'Papy', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'papy'),
+    TblPlayer(fldFirstName: 'Charles', fldLastName: 'Lirette', fldNickName: 'Charles', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'charles'),
+    TblPlayer(fldFirstName: 'Bryan', fldLastName: 'Bryan', fldNickName: 'Bryan', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'bryan'),
+    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Dubé', fldNickName: 'Le Livreur', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'carl'),
+    TblPlayer(fldFirstName: 'Carmel', fldLastName: 'Fortin', fldNickName: 'Carmel', fldIsDeleted: false, fldIsLeagueMember: true, fldAvatarCode: 'carmel'),
+  ];
+
+  await playersBox.addAll(listPlayers);
+}
+
+Future<void> seedHiveGenericPlayers(Box<TblPlayer> playersBox) async {
+  // seed Players
+  List<TblPlayer> listPlayers = [
+    TblPlayer(fldFirstName: 'Don Juan', fldLastName: 'De Marco', fldNickName: 'Bow Tie', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'domi'),
+    TblPlayer(fldFirstName: 'Viktor', fldLastName: 'Vance', fldNickName: 'Lucky', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'ricky'),
+    TblPlayer(fldFirstName: 'Stella', fldLastName: 'Rogue', fldNickName: 'Sniper', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '02'),
+    TblPlayer(fldFirstName: 'Diesel', fldLastName: 'Nitro', fldNickName: 'War Hawk', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'christo'),
+    TblPlayer(fldFirstName: 'Marcel', fldLastName: 'Steele', fldNickName: 'Double Out', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'marcel'),
+    TblPlayer(fldFirstName: 'Elektra', fldLastName: 'Volt', fldNickName: 'Rebel Red', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '01'),
+    TblPlayer(fldFirstName: 'Maverick', fldLastName: 'Thunderbolt', fldNickName: 'Turbo', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'fred'),
+    TblPlayer(fldFirstName: 'Spike', fldLastName: 'Prowler', fldNickName: 'Clutch', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'drou'),
+    TblPlayer(fldFirstName: 'Anita', fldLastName: 'McGee', fldNickName: 'Bounce Out', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '03'),
+    TblPlayer(fldFirstName: 'Low', fldLastName: 'Rollings', fldNickName: 'Nerdy', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'titi'),
+    TblPlayer(fldFirstName: 'Jimmy', fldLastName: 'Swift', fldNickName: 'Outlaw', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'marco'),
+    TblPlayer(fldFirstName: 'Roxie', fldLastName: 'Razor', fldNickName: 'Vixen', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '08'),
+    TblPlayer(fldFirstName: 'Duke', fldLastName: 'Sterling', fldNickName: 'Jackpot', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'ludo'),
+    TblPlayer(fldFirstName: 'Dizzy', fldLastName: 'Blowgun', fldNickName: 'Dr. Darts', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'max'),
+    TblPlayer(fldFirstName: 'Charlotte', fldLastName: 'Purrfect', fldNickName: 'Catnip', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '07'),
+    TblPlayer(fldFirstName: 'Earl', fldLastName: 'Montgomery', fldNickName: 'Pops', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'papy'),
+    TblPlayer(fldFirstName: 'Roman', fldLastName: 'Vortex', fldNickName: 'The Wizard', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'charles'),
+    TblPlayer(fldFirstName: 'Pamela', fldLastName: 'Pennyworth', fldNickName: 'Gold Digger', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '10'),
+    TblPlayer(fldFirstName: 'Clay', fldLastName: 'Bentonite', fldNickName: 'Pixie', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '04'),
+    TblPlayer(fldFirstName: 'Leo', fldLastName: 'Pawfur', fldNickName: 'Magic Paws', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '05'),
+    TblPlayer(fldFirstName: 'Siren', fldLastName: 'Scream', fldNickName: 'Banshee', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '09'),
+    TblPlayer(fldFirstName: 'Rex', fldLastName: 'Stone', fldNickName: 'Dart Vader', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'bryan'),
+    TblPlayer(fldFirstName: 'Ronald', fldLastName: 'Cummings', fldNickName: 'Preacher', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '06'),
+    TblPlayer(fldFirstName: 'Bonnie', fldLastName: 'Banks', fldNickName: 'Cashflow', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '11'),
+    TblPlayer(fldFirstName: 'Johnny', fldLastName: 'Danger', fldNickName: 'Bullseye', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'carmel'),
+    TblPlayer(fldFirstName: 'Mario', fldLastName: 'Crustini', fldNickName: 'The Slice', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: 'carl'),
+    TblPlayer(fldFirstName: 'Harley', fldLastName: 'Stitcher', fldNickName: 'Fatal Sting', fldIsDeleted: false, fldIsLeagueMember: false, fldAvatarCode: '12'),
+  ];
+
+  await playersBox.addAll(listPlayers);
+}
+
+Future<void> seedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) async {  
+  final players = playersBox.values.toList(); // Grab all saved players from Hive
+  final List<TblTeam> listTeams = []; // List to collect teams in memory
+
+  // Dynamically Generate Unique Teams & Self Teams ---
+  for (int i = 0; i < players.length; i++) {
+    for (int j = i; j < players.length; j++) {
+      final p1 = players[i];
+      final p2 = players[j];
+
+      listTeams.add(
+        TblTeam(
+          fldPlayers: [p1, p2],
+          fldIsDeleted: false,
+        ),
+      );
+    }
+  } 
+
+  await teamsBox.addAll(listTeams);
 }

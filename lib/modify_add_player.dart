@@ -162,8 +162,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
             side: const BorderSide(color: Colors.redAccent, width: 1.5),
           ),
           title: Text(
-            'DELETE PLAYER?',
-            style: gBuildArcadeTextStyle(18, gTextColor: Colors.redAccent),
+            'DELETE THIS PLAYER?',
+            style: gBuildArcadeTextStyle(_responsiveFontSize * 1.4, gTextColor: Colors.redAccent),
           ),
           content: Text(
             'Are you sure you want to remove ${_nickNameController.text}?',
@@ -177,7 +177,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(
                 'CANCEL',
-                style: gBuildArcadeTextStyle(14, gTextColor: Colors.grey.shade400),
+                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.grey.shade400),
               ),
             ),
             ElevatedButton(
@@ -206,7 +206,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               },
               child: Text(
                 'DELETE',
-                style: gBuildArcadeTextStyle(14, gTextColor: Colors.white),
+                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.white),
               ),
             ),
           ],
@@ -353,23 +353,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // LEFT COLUMN: TEXT FIELDS
+                        // LEFT COLUMN: AVATAR PREVIEW & PICKER BUTTON
                         Expanded(
-                          child: Column(
-                            children: [
-                              _buildTextField(_firstNameController, 'First Name'),
-                              const SizedBox(height: 12),
-                              _buildTextField(_lastNameController, 'Last Name'),
-                              const SizedBox(height: 12),
-                              _buildTextField(_nickNameController, 'Nickname'),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 12), // Spacing between columns
-
-                        // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
-                        Expanded(
+                          flex: 0,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,54 +392,97 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                   ),
                                 ],
                               ),
+                            ],
+                          ),
+                        ),
 
+                        SizedBox(width: _responsiveTile * 0.08),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(50.0), // Pill shape
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50.0),
+                            child: SizedBox(
+                              width: _responsiveTile * 0.01,
+                              height: _responsiveTile * 0.75,
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: LinearProgressIndicator(
+                                  value: 1,
+                                  backgroundColor: Colors.transparent,
+                                  color: widget.tileColor,
+                                  minHeight: 4.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(width: _responsiveTile * 0.08),
+
+                        // RIGHT COLUMN: TEXT FIELDS
+                        Expanded(
+                          child: Column(
+                            children: [
+                              _buildTextField(_firstNameController, 'First Name'),
+                              const SizedBox(height: 12),
+                              _buildTextField(_lastNameController, 'Last Name'),
+                              const SizedBox(height: 12),
+                              _buildTextField(_nickNameController, 'Nickname'),
+
+                              // DELETE PLAYER BUTTON
                               if (widget.enuFormMode == FormMode.formModify &&
                                     widget.modifyPlayer != null &&
                                     !widget.modifyPlayer!.fldIsLeagueMember) ...[
                                 
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: GestureDetector(
-                                        onTap: _deletePlayer,
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: (_responsiveTile * 0.005).clamp(4.0, 24.0),
-                                            vertical: (_responsiveTile * 0.005).clamp(4.0, 24.0),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.shade800,
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              SvgPicture.asset(
-                                                'assets/svg/ui_buttons/player_team_delete.svg',
-                                                width: (_responsiveTile * 0.13).clamp(48.0, 160.0),
-                                                height: (_responsiveTile * 0.13).clamp(48.0, 160.0),
-                                                fit: BoxFit.contain,
-                                              ),
-                                              //const SizedBox(width: 2),
-                                              Text(
-                                                'DELETE',
-                                                style: gBuildArcadeTextStyle(
-                                                  (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
-                                                  gTextColor: Colors.lightBlueAccent,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                const SizedBox(height: 24),
+
+                                MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    onTap: _deletePlayer,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: (_responsiveTile * 0.005).clamp(4.0, 24.0),
+                                        vertical: (_responsiveTile * 0.005).clamp(4.0, 24.0),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.shade800,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
                                         ),
                                       ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SvgPicture.asset(
+                                            'assets/svg/ui_buttons/player_team_delete.svg',
+                                            width: (_responsiveTile * 0.13).clamp(48.0, 160.0),
+                                            height: (_responsiveTile * 0.13).clamp(48.0, 160.0),
+                                            fit: BoxFit.contain,
+                                          ),
+                                          //const SizedBox(width: 2),
+                                          Text(
+                                            'DELETE THIS PLAYER',
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
+                                              gTextColor: Colors.lightBlueAccent,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ]
                             ],
