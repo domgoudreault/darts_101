@@ -9,7 +9,9 @@ import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_assets.dart';
+import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
 import 'package:darts_101/modify_add_player.dart';
@@ -85,7 +87,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         
         if (activePlayers.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
-            activePlayers.length * getCarouselPlayerCardFrameImage().renderWidth,
+            activePlayers.length * gGetCarouselPlayerCardFrameImage().renderWidth,
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
           );
@@ -143,8 +145,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         final playersBox = Hive.box<TblPlayer>('playersBox');
         final teamsBox = Hive.box<TblTeam>('teamsBox');
 
-        await seedHiveLeaguePlayers(playersBox);
-        await seedHiveTeams(playersBox, teamsBox);
+        await gSeedHiveLeaguePlayers(playersBox);
+        await gSeedHiveTeams(playersBox, teamsBox);
         
         setState(() {});
       },
@@ -169,7 +171,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       onYesPressed: (dialogContext) async {
         Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
         final playersBox = Hive.box<TblPlayer>('playersBox');
-        await seedHiveGenericPlayers(playersBox);
+        await gSeedHiveGenericPlayers(playersBox);
         setState(() {});
       },
     );
@@ -181,7 +183,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
     // 1. Access the Hive box opened during initialization
     final playersBox = Hive.box<TblPlayer>('playersBox');
-    final ImageConfigPlayerCardFrame playerCardFrameImageConfig = getCarouselPlayerCardFrameImage();
+    final ImageConfigPlayerCardFrame playerCardFrameImageConfig = gGetCarouselPlayerCardFrameImage();
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -421,7 +423,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     BuildContext context,
     TblPlayer player,
   ) {
-    final ImageConfigPlayerCardFrame playerCardFrameImageConfig = getCarouselPlayerCardFrameImage();
+    final ImageConfigPlayerCardFrame playerCardFrameImageConfig = gGetCarouselPlayerCardFrameImage();
 
     return Center(
       child: AspectRatio(
@@ -444,7 +446,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 // 2. Avatar Layer
                 Positioned.fill(
                   child: Image.asset(
-                    getCarouselPlayerCardImage(player.fldAvatarCode).assetPath,
+                    gGetCarouselPlayerCardImage(player.fldAvatarCode).assetPath,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.account_circle,

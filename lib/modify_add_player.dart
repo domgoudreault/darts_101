@@ -10,7 +10,8 @@ import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_assets.dart';
 
 class ModifyAddPlayerForm extends StatefulWidget {  
   final FormMode enuFormMode;
@@ -220,7 +221,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     final List<TblAvatar> avatarList = avatarsBox.values
       .where((avatar) => avatar.fldAvatarCode != 'question')
       .toList();
-    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
 
     showModalBottomSheet(
       context: context,
@@ -554,8 +555,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   }
 
   Widget _buildAvatarMainUI() {
-    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = getAvatarPlayerImageConfig(_selectedAvatarCode);
+    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(_selectedAvatarCode);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -603,8 +604,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   Widget _buildAvatarPicker({
     required TblAvatar avatar,
   }) {
-    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = getAvatarPlayerImageConfig(avatar.fldAvatarCode);
+    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(avatar.fldAvatarCode);
 
     return SizedBox(
       width: avatarFrameImageConfig.renderSize,

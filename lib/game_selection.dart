@@ -6,11 +6,6 @@ import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
 
-enum GameMode{
-  gamePlayers,
-  gameTeams
-}
-
 enum GameType{
   gameHalfIt,
   gameBuildUp
@@ -28,7 +23,6 @@ class GameSelection extends StatefulWidget {
   final Color tileColor;
   final Color tileBackgroundColor;
   final String tileDescription;
-  final GameMode enuGameMode;
   final GameType enuGameType;
 
   const GameSelection({
@@ -37,7 +31,6 @@ class GameSelection extends StatefulWidget {
     required this.tileColor,
     required this.tileBackgroundColor,
     required this.tileDescription,
-    required this.enuGameMode,
     required this.enuGameType,
   });
 
@@ -74,7 +67,7 @@ class _GameSelectionState extends State<GameSelection> {
   }
 
   String _getTextByMode(TextType textType, int id) {        
-    if (widget.enuGameMode == GameMode.gamePlayers) {
+    if (1 == 1) {
       switch (textType){
         case TextType.title: return playersBox.get(id)!.fldNickName;
         case TextType.subtitle: return '${playersBox.get(id)!.fldFirstName} ${playersBox.get(id)!.fldLastName}';
@@ -126,7 +119,7 @@ class _GameSelectionState extends State<GameSelection> {
   }
 
   Future<void> _startGame(BuildContext context) async {
-    final bool isTeamGameMode = (widget.enuGameMode == GameMode.gameTeams);    
+    final bool isTeamGameMode = (1 == 1);    
     final List<int> selectedPlayersIds = [];
 
     // Get the gamesBox from Hive
@@ -222,7 +215,7 @@ class _GameSelectionState extends State<GameSelection> {
     }
 
     final gamesBox = Hive.box<TblGame>('gamesBox');
-    int currentTargetGameMode = widget.enuGameMode == GameMode.gamePlayers ? 1 : 2;
+    int currentTargetGameMode = 1;
     int currentTargetGameType = widget.enuGameType == GameType.gameHalfIt ? 1 : 2;
     final TblGame? lastActiveGame = gamesBox.values.cast<TblGame?>()
         .where((g) => g != null && g.isEnded == false && g.gameMode == currentTargetGameMode && g.gameType == currentTargetGameType)
@@ -268,9 +261,7 @@ class _GameSelectionState extends State<GameSelection> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    widget.enuGameMode == GameMode.gameTeams 
-                        ? "Teams in game (${_selectedIds.length})" 
-                        : "Players in game (${_selectedIds.length})",
+                    'test', // TODO Nbr of players or teams in game
                     style: TextStyle(
                       fontSize: 20, 
                       color: Colors.black, 
@@ -345,9 +336,7 @@ class _GameSelectionState extends State<GameSelection> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    widget.enuGameMode == GameMode.gameTeams 
-                        ? "Available Teams (${teamsBox.values.where((t) => !(t.fldIsDeleted)).length - _selectedIds.length})" 
-                        : "Available Players (${playersBox.values.where((p) => !(p.fldIsDeleted)).length - _selectedIds.length})",
+                    'Test Ava', //TODO Avalaible players or teams
                     style: TextStyle(
                       fontSize: 20, 
                       color: Colors.black, 
@@ -369,7 +358,7 @@ class _GameSelectionState extends State<GameSelection> {
   Widget _buildList({required bool isTop}) {
     List<int> allIds;
     
-    if (widget.enuGameMode == GameMode.gamePlayers) {
+    if (1 == 1) {
       allIds = playersBox.values
           .where((player) => player.fldIsDeleted == false) // Filter active players
           .map((player) => player.key as int) // Extract native Hive integer key

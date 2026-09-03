@@ -8,7 +8,9 @@ import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_assets.dart';
+import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
 import 'package:darts_101/modify_add_team.dart';
@@ -85,7 +87,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         
         if (activeTeams.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
-            activeTeams.length * getCarouselTeamCardVFrameImage().renderWidth,
+            activeTeams.length * gGetCarouselTeamCardVFrameImage().renderWidth,
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
           );
@@ -141,7 +143,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         
         // Assuming you have a generic team seeding function available, 
         // or you can call your team creation backend logic here:
-        await seedHiveTeams(playersBox, teamsBox);
+        await gSeedHiveTeams(playersBox, teamsBox);
         
         setState(() {});
       },
@@ -185,8 +187,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
     // 1. Access the Hive box opened during initialization
     final teamsBox = Hive.box<TblTeam>('teamsBox');
-    final ImageConfigTeamCardFrame teamCardFrameImageConfig = getCarouselTeamCardVFrameImage();
-    final ImageConfigDummy dummyImageConfig = getDummyImageConfig();
+    final ImageConfigTeamCardFrame teamCardFrameImageConfig = gGetCarouselTeamCardVFrameImage();
+    final ImageConfigDummy dummyImageConfig = gGetDummyImageConfig();
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
@@ -480,9 +482,9 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     BuildContext context,
     TblTeam team,
   ) {
-    final ImageConfigTeamCardFrame teamCardFrameImageConfig = getCarouselTeamCardVFrameImage();
-    final ImageConfigAvatar avatarPlayer1ImageConfig = getAvatarPlayerCardImageConfig(team.fldPlayers[0].fldAvatarCode);
-    final ImageConfigAvatar avatarPlayer2ImageConfig = getAvatarPlayerCardImageConfig(team.fldPlayers[1].fldAvatarCode);
+    final ImageConfigTeamCardFrame teamCardFrameImageConfig = gGetCarouselTeamCardVFrameImage();
+    final ImageConfigAvatar avatarPlayer1ImageConfig = gGetAvatarPlayerCardImageConfig(team.fldPlayers[0].fldAvatarCode);
+    final ImageConfigAvatar avatarPlayer2ImageConfig = gGetAvatarPlayerCardImageConfig(team.fldPlayers[1].fldAvatarCode);
     final bool isDummyTeam = team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode;
 
     return Center(

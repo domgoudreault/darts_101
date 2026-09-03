@@ -9,7 +9,8 @@ import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_assets.dart';
 
 class ModifyAddTeamForm extends StatefulWidget {  
   final FormMode enuFormMode;
@@ -230,7 +231,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     final List<TblPlayer> playerList = playersBox.values
       .where((player) => !player.fldIsDeleted && player != excludePlayer)
       .toList();
-    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
 
     return showModalBottomSheet<TblPlayer>(
       context: context,
@@ -307,8 +308,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   }
 
   Widget _buildPlayerAvatarCard(TblPlayer player) {
-    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = getAvatarPlayerImageConfig(player.fldAvatarCode);
+    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(player.fldAvatarCode);
 
     return Center(
       child: AspectRatio(
@@ -408,7 +409,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
 
     //final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
-    final ImageConfigDummy dummyImageConfig = getDummyImageConfig();
+    final ImageConfigDummy dummyImageConfig = gGetDummyImageConfig();
 
     return Scaffold(
       backgroundColor: widget.tileBackgroundColor,
@@ -733,9 +734,9 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   }
 
   Widget _buildTeamCardMainUI() {
-    final ImageConfigTeamCardFrame teamCardFrameImageConfig = getMainUITeamCardHFrameImage();
-    final ImageConfigAvatar avatarPlayer1ImageConfig = getAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1);
-    final ImageConfigAvatar avatarPlayer2ImageConfig = getAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2);
+    final ImageConfigTeamCardFrame teamCardFrameImageConfig = gGetMainUITeamCardHFrameImage();
+    final ImageConfigAvatar avatarPlayer1ImageConfig = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1);
+    final ImageConfigAvatar avatarPlayer2ImageConfig = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2);
 
     return SizedBox(
       width: teamCardFrameImageConfig.renderWidth,
@@ -894,8 +895,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     required TblPlayer? selectedPlayer,
     required VoidCallback onTap,
   }) {
-    final ImageConfigAvatar avatarFrameImageConfig = getAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = getAvatarPlayerImageConfig(selectedAvatarCodePlayer);
+    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
+    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(selectedAvatarCodePlayer);
     
     return MouseRegion(
       cursor: SystemMouseCursors.click,

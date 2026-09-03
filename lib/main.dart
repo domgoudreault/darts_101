@@ -16,9 +16,10 @@ import 'package:darts_101/database/tbl_game_build_up.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
-import 'package:darts_101/ui_helpers.dart';
+import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_assets.dart';
+import 'package:darts_101/helpers_database.dart';
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/main_be.dart';
 
 // UI Screens
 import 'package:darts_101/settings_players.dart';
@@ -60,7 +61,7 @@ void main() async {
   
   // Only seeds avatars if the database is empty
   if (avatarsBox.isEmpty){
-    await seedHiveAvatars(avatarsBox);
+    await gSeedHiveAvatars(avatarsBox);
   }
 
   // Wrap runApp with DevicePreview
@@ -120,47 +121,47 @@ class MainScreenPopupMenu extends StatelessWidget {
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Overview", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
-                        Text(getPrivacyPolicySection(1), style: const TextStyle(fontSize: 14)),
+                        Text(gGetPrivacyPolicySection(1), style: const TextStyle(fontSize: 14)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Information Collection and Use", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
-                        Text(getPrivacyPolicySection(2)),
+                        Text(gGetPrivacyPolicySection(2)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Third-Party Services & Analytics", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                         
-                        Text(getPrivacyPolicySection(3)),
+                        Text(gGetPrivacyPolicySection(3)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Log Data & Device Permissions",
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
-                        Text(getPrivacyPolicySection(4)),
+                        Text(gGetPrivacyPolicySection(4)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Data Retention & Account Deletion",
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
-                        Text(getPrivacyPolicySection(5)),
+                        Text(gGetPrivacyPolicySection(5)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.0),
                           child: Text("Contact Us",
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
-                        Text(getPrivacyPolicySection(6)),
+                        Text(gGetPrivacyPolicySection(6)),
                         MouseRegion(
                           cursor: SystemMouseCursors.click,
                           child: GestureDetector(
                             onTap: () async {
-                              final Uri url = Uri.parse(getPrivacyPolicySection(7));
+                              final Uri url = Uri.parse(gGetPrivacyPolicySection(7));
                               if (await canLaunchUrl(url)) {
                                 await launchUrl(url, mode: LaunchMode.externalApplication);
                               }
                             },
                             child: Text(
-                              getPrivacyPolicySection(7),
+                              gGetPrivacyPolicySection(7),
                               style: TextStyle(
                                 color: Colors.blueAccent,
                                 decoration: TextDecoration.underline,
@@ -208,7 +209,7 @@ class MainScreenPopupMenu extends StatelessWidget {
         // Registers this dialog as a listener for screen size changes (it does nothing else)
         MediaQuery.sizeOf(context);
 
-        ImageConfig leagueLogoImageConfig = getInformationDialogImageConfig();
+        ImageConfig leagueLogoImageConfig = gGetInformationDialogImageConfig();
 
         return AlertDialog(
           content: SizedBox(
@@ -231,7 +232,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 12.0),
                                 child: Text(
-                                  getInformationSection(1),
+                                  gGetInformationSection(1),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -252,7 +253,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Text(getInformationSection(2)),
+                              Text(gGetInformationSection(2)),
                               const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 12.0),
                                 child: Text(
@@ -263,7 +264,7 @@ class MainScreenPopupMenu extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Text(getInformationSection(3)),
+                              Text(gGetInformationSection(3)),
                             ],
                           ),
                         ),
@@ -371,49 +372,49 @@ class _MainScreenState extends State<MainScreen> {
   // Single Source of Truth for Game Tiles
   List<CarouselTileData> get _gamesTiles => [
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: 'half-it',
       tileColor: Colors.lightBlue.shade400,
       tileBackgroundColor: Colors.lightBlue.shade200,
-      tileDescription: 'Game Half-It',
+      tileDescription: 'Half-It Game',
     ),
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: 'around-clock',
       tileColor: Colors.teal.shade400,
       tileBackgroundColor: Colors.teal.shade200,
       tileDescription: 'Game Around the Clock (skip the numbers version)',
     ),
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: '7-darts',
       tileColor: Colors.green.shade400,
       tileBackgroundColor: Colors.green.shade200,
       tileDescription: 'Game 7 Darts',
     ),
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: 'all-fives',
       tileColor: Colors.purple.shade200,
       tileBackgroundColor: Colors.purple.shade100,
       tileDescription: 'Game All Fives / 51 by 5''s',
     ),
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: 'killers',
       tileColor: Colors.grey.shade500,
       tileBackgroundColor: Colors.grey.shade200,      
       tileDescription: 'Game Killers',
     ),
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: 'sudden-death',
       tileColor: Colors.red.shade900,
       tileBackgroundColor: Colors.red.shade400,
       tileDescription: 'Game Sudden Death',
     ),
     CarouselTileData(
-      tileType: 'game',
+      tileType: 'games',
       tileCode: 'build-up',
       tileColor: Colors.deepPurple.shade400,
       tileBackgroundColor: Colors.grey.shade200,
@@ -448,15 +449,13 @@ class _MainScreenState extends State<MainScreen> {
           tileColor: tile.tileColor,
           tileBackgroundColor: tile.tileBackgroundColor,
           tileDescription: tile.tileDescription,
-          enuGameMode: GameMode.gamePlayers,
           enuGameType: GameType.gameHalfIt,
         ),
-      ('games', 'build-up') => GameSelection(
+      ('game', 'build-up') => GameSelection(
           tileType: tile.tileType,
           tileColor: tile.tileColor,
           tileBackgroundColor: tile.tileBackgroundColor,
           tileDescription: tile.tileDescription,
-          enuGameMode: GameMode.gamePlayers,
           enuGameType: GameType.gameBuildUp,
         ),
 
@@ -598,7 +597,7 @@ class _MainScreenState extends State<MainScreen> {
   }
   
   Widget _buildMainScreenTile(BuildContext context, CarouselTileData tile) {
-    ImageConfig gameTileImageConfig = getCarouselTileImageConfig(tile.tileType, tile.tileCode);
+    ImageConfig gameTileImageConfig = gGetCarouselTileImageConfig(tile.tileType, tile.tileCode);
 
     return Center(
       child: AspectRatio(
@@ -637,7 +636,7 @@ class _MainScreenState extends State<MainScreen> {
     required MainScreenSection section,
   }) {
     final bool isSelected = _activeSection == section;
-    final ImageConfig sectionImageConfig = getSectionHeaderImageConfig(sectionCode);
+    final ImageConfig sectionImageConfig = gGetSectionHeaderImageConfig(sectionCode);
 
     return Expanded(
       child: InkWell(
@@ -690,7 +689,7 @@ Future<void> _clearHiveDatabase(BuildContext context) async {
 }
 
 void _showDebugCarouselImageDialog(BuildContext context) {
-  final ImageConfig config = getCarouselTileImageConfig('settings', 'players');
+  final ImageConfig config = gGetCarouselTileImageConfig('settings', 'players');
 
   // Dynamic scale factor derived directly from dialog viewport height
   final double dialogHeight = AppDisplay.safeHeight * 0.7;
