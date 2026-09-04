@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+// Database Models
+import 'package:darts_101/database/tbl_player.dart';
+
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_assets.dart';
@@ -76,7 +79,7 @@ Widget gBuildArcadeActionBanner({
   required FormMode gFormMode,
   required VoidCallback gOnTap,
 }) {
-  final double responsiveTile = AppDisplay.carouselTileSize;
+  final double responsiveTile = GlobalAppDisplay.carouselTileSize;
   final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 40.0);
 
   final ImageConfigArrow leftArrowConfig = gGetArrowImageConfig(true);
@@ -179,9 +182,9 @@ void gShowArcadeErrorSnackBar({
       backgroundColor: gBbackgroundColor ?? Colors.red.shade800,
       behavior: SnackBarBehavior.floating,
       margin: EdgeInsets.only(
-        left: AppDisplay.safeWidth * 0.05,
-        right: AppDisplay.safeWidth * 0.05,
-        bottom: AppDisplay.safeHeight * 0.05,
+        left: GlobalAppDisplay.safeWidth * 0.05,
+        right: GlobalAppDisplay.safeWidth * 0.05,
+        bottom: GlobalAppDisplay.safeHeight * 0.05,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -225,7 +228,7 @@ void gShowDatabaseSeedDialog(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: AppDisplay.carouselTileSize * 0.45,
+              width: GlobalAppDisplay.carouselTileSize * 0.45,
               child: AspectRatio(
                 aspectRatio: 1.0,
                 child: FittedBox(
@@ -233,14 +236,14 @@ void gShowDatabaseSeedDialog(
                   child: Builder(
                     builder: (context) {
                       return SizedBox(
-                        width: AppDisplay.carouselTileSize,
-                        height: AppDisplay.carouselTileSize,
+                        width: GlobalAppDisplay.carouselTileSize,
+                        height: GlobalAppDisplay.carouselTileSize,
                         child: Stack(
                           children: [
                             // 1. Color fill tucked inside fixed canvas dimensions
                             Positioned.fill(
                               child: Padding(
-                                padding: EdgeInsets.all(AppDisplay.carouselTileSize * 0.03),
+                                padding: EdgeInsets.all(GlobalAppDisplay.carouselTileSize * 0.03),
                                 child: Container(color: tileColor),
                               ),
                             ),
@@ -260,7 +263,7 @@ void gShowDatabaseSeedDialog(
               ),
             ),
             
-            SizedBox(width: AppDisplay.carouselTileSize * 0.13),
+            SizedBox(width: GlobalAppDisplay.carouselTileSize * 0.13),
             
             // Column 2: Right-Side Stack (Title, Content, and Buttons)
             Expanded(
@@ -280,27 +283,27 @@ void gShowDatabaseSeedDialog(
                       child: Text(
                         headerText,
                         textAlign: TextAlign.center,
-                        style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035, gTextColor: Colors.amber),
+                        style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035, gTextColor: Colors.amber),
                       ),
                     ),
 
-                    SizedBox(height: AppDisplay.carouselTileSize * 0.06),
+                    SizedBox(height: GlobalAppDisplay.carouselTileSize * 0.06),
                     
                     Text(
                       titleText,
                       textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                      style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
                     ),
                     
-                    SizedBox(height: AppDisplay.carouselTileSize * 0.06),
+                    SizedBox(height: GlobalAppDisplay.carouselTileSize * 0.06),
 
                     // Content Question Text
                     Text(
                       questionText,
-                      style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                      style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
                     ),
 
-                    SizedBox(height: AppDisplay.carouselTileSize * 0.03),
+                    SizedBox(height: GlobalAppDisplay.carouselTileSize * 0.03),
                     
                     // Action Buttons
                     Row(
@@ -319,12 +322,12 @@ void gShowDatabaseSeedDialog(
                             child: Text(
                               noButtonText,
                               textAlign: TextAlign.center,
-                              style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                              style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
                             ),
                           ),
                         ),
                           
-                        SizedBox(width: AppDisplay.carouselTileSize * 0.02),
+                        SizedBox(width: GlobalAppDisplay.carouselTileSize * 0.02),
                           
                         Expanded(
                           child: OutlinedButton(
@@ -340,7 +343,7 @@ void gShowDatabaseSeedDialog(
                             child: Text(
                               yesButtonText,
                               textAlign: TextAlign.center,
-                              style: gBuildArcadeTextStyle(AppDisplay.carouselTileSize * 0.035),
+                              style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
                             ),
                           ),
                         ),
@@ -355,5 +358,267 @@ void gShowDatabaseSeedDialog(
         actions: const [], // Empty since buttons are contained in the right column
       );
     },
+  );
+}
+
+Widget gBuildPlayerAvatarCard({
+  required TblPlayer player, 
+  required ImageConfigAvatar avatarFrameImageConfig,
+  required ImageConfigAvatar avatarPlayerImageConfig,
+  required GlobalSettingType enuSettingType,
+}) {
+  return Center(
+    child: AspectRatio(
+      aspectRatio: 1.0,
+      child: FittedBox(
+        fit: BoxFit.contain, // Forces artwork and text to scale together proportionally
+        child: SizedBox(
+          width: avatarFrameImageConfig.renderSize,
+          height: avatarFrameImageConfig.renderSize,
+          child: Stack(
+            children: [
+              // 1. Dynamic Circle Background Layer
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: avatarFrameImageConfig.renderSize,
+                child: Center(
+                  child: Container(
+                    width: avatarFrameImageConfig.renderSize * 0.95,
+                    height: avatarFrameImageConfig.renderSize * 0.95,
+                    decoration: BoxDecoration(
+                      color: enuSettingType.tileBackgroundColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 2. Avatar Artwork
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: avatarFrameImageConfig.renderSize,
+                child: Image.asset(
+                  avatarPlayerImageConfig.assetPath,
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              // 3. Metallic Frame Overlay
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: avatarFrameImageConfig.renderSize,
+                child: Image.asset(
+                  avatarFrameImageConfig.assetPath,
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              // 4. Player Nickname Pill
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: avatarFrameImageConfig.renderSize * 0.045,
+                      vertical: avatarFrameImageConfig.renderSize * 0.015,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.purpleAccent.shade100,
+                      borderRadius: BorderRadius.circular(avatarFrameImageConfig.renderSize * 0.04),
+                      border: Border.all(
+                        color: Colors.purpleAccent.shade700,
+                        width: avatarFrameImageConfig.renderSize * 0.006,
+                      ),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        player.fldNickName.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        style: gBuildArcadeTextStyle(
+                          avatarFrameImageConfig.renderSize * 0.062,
+                          gFontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget gBuildTeamCardMainUI({
+  required ImageConfigTeamCardFrame teamCardFrameImageConfig, // = gGetMainUITeamCardHFrameImage(),
+  required ImageConfigAvatar avatarPlayer1ImageConfig, // = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1);
+  required ImageConfigAvatar avatarPlayer2ImageConfig, // = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2);
+  required Color colorBgAvatar,
+  required bool isDummyTeam,
+  required TblPlayer? selectedPlayer1,
+  required TblPlayer? selectedPlayer2,
+}) {
+  
+
+  return SizedBox(
+    width: teamCardFrameImageConfig.renderWidth,
+    height: teamCardFrameImageConfig.renderHeight,
+    child: Stack(
+      children: [
+        // 1. Player 1 Solid Color Circle (Left Half Background)
+        Positioned(
+          top: 0,
+          bottom: 0,
+          left: teamCardFrameImageConfig.renderWidth * 0.02,
+          width: avatarPlayer1ImageConfig.renderSize,
+          child: Center(
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorBgAvatar,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+
+        // 2. Player 2 Solid Color Circle (Right Background)
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: teamCardFrameImageConfig.renderWidth * 0.02,
+          width: avatarPlayer2ImageConfig.renderSize,
+          child: Center(
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorBgAvatar,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+
+        // 3. Player 1 Avatar Artwork (Left Half)
+        Positioned(
+          top: 0,
+          bottom: 0,
+          left: teamCardFrameImageConfig.renderWidth * 0.01,
+          width: avatarPlayer1ImageConfig.renderSize,
+          child: Image.asset(
+            avatarPlayer1ImageConfig.assetPath,
+            fit: BoxFit.contain,
+          ),
+        ),
+
+        // 4. Player 2 Avatar Artwork (Right Half)
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: teamCardFrameImageConfig.renderWidth * 0.01,
+          width: avatarPlayer2ImageConfig.renderSize,
+          child: Image.asset(
+            avatarPlayer2ImageConfig.assetPath,
+            fit: BoxFit.contain,
+          ),
+        ),
+
+        // 5. Metallic Frame Overlay
+        Positioned.fill(
+          child: Image.asset(
+            teamCardFrameImageConfig.assetPathFrame,
+            fit: BoxFit.contain,
+          ),
+        ),
+
+        // 6. Dummy Player Layer
+        if (isDummyTeam) // e.g., checking if this slot is a dummy
+          Positioned.fill(
+            child: Image.asset(
+              teamCardFrameImageConfig.assetPathIsDummyPlayer,
+              fit: BoxFit.fill,
+            ),
+          ),
+
+        // 7. Player 1 Nickname Pill (Left Slot)
+        if (selectedPlayer1 != null)
+          Positioned(
+            bottom: teamCardFrameImageConfig.renderHeight * 0.13,
+            left: 0,
+            width: avatarPlayer1ImageConfig.renderSize,
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: avatarPlayer1ImageConfig.renderSize * 0.045,
+                  vertical: avatarPlayer1ImageConfig.renderSize * 0.015,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.purpleAccent.shade100,
+                  borderRadius: BorderRadius.circular(avatarPlayer1ImageConfig.renderSize * 0.04),
+                  border: Border.all(
+                    color: Colors.purpleAccent.shade700,
+                    width: avatarPlayer1ImageConfig.renderSize * 0.006,
+                  ),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    selectedPlayer1.fldNickName.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: gBuildArcadeTextStyle(
+                      avatarPlayer1ImageConfig.renderSize * 0.062,
+                      gFontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        
+        // 8. Player 2 Nickname Pill (Right Slot)
+        if (selectedPlayer2 != null)
+          Positioned(
+            bottom: teamCardFrameImageConfig.renderHeight * 0.13,
+            right: 0,
+            width: avatarPlayer2ImageConfig.renderSize,
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: avatarPlayer2ImageConfig.renderSize * 0.045,
+                  vertical: avatarPlayer2ImageConfig.renderSize * 0.015,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.purpleAccent.shade100,
+                  borderRadius: BorderRadius.circular(avatarPlayer2ImageConfig.renderSize * 0.04),
+                  border: Border.all(
+                    color: Colors.purpleAccent.shade700,
+                    width: avatarPlayer2ImageConfig.renderSize * 0.006,
+                  ),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    selectedPlayer2.fldNickName.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: gBuildArcadeTextStyle(
+                      avatarPlayer2ImageConfig.renderSize * 0.062,
+                      gFontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ]
+    ),
   );
 }

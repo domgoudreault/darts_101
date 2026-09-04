@@ -17,17 +17,11 @@ import 'package:darts_101/modify_add_team.dart';
 
 class SettingsTeams extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
-  final String tileType;
-  final Color tileColor;
-  final Color tileBackgroundColor;
-  final String tileDescription;
+  final GlobalSettingType enuSettingType;
 
   const SettingsTeams({
     super.key,
-    required this.tileType,
-    required this.tileColor,
-    required this.tileBackgroundColor,
-    required this.tileDescription,
+    required this.enuSettingType,
   });
 
   @override
@@ -71,8 +65,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         // The modify_add_team.dart page will be created and shown
         builder: (context) => ModifyAddTeamForm(
           enuFormMode: FormMode.formAdd,
-          tileColor: widget.tileColor,
-          tileBackgroundColor: widget.tileBackgroundColor,
+          enuSettingType: widget.enuSettingType,
         ),
       ),
     );
@@ -104,8 +97,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         builder: (context) => ModifyAddTeamForm(
           enuFormMode: FormMode.formModify,
           modifyTeam: team,
-          tileColor: widget.tileColor,
-          tileBackgroundColor: widget.tileBackgroundColor,
+          enuSettingType: widget.enuSettingType,
         ),
       ),
     );
@@ -124,8 +116,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
   void _showTeamsSeedDialog() {
     gShowDatabaseSeedDialog(
       context, 
-      tileColor: widget.tileColor,
-      tileBackgroundColor: widget.tileBackgroundColor,
+      tileColor: widget.enuSettingType.tileColor,
+      tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
       assetFullPath: 'assets/png/tiles/settings_teams_256x256.png',
       headerText: 'SAMPLE DEFAULT TEAMS ?',
       titleText: 'No teams found.',
@@ -192,10 +184,10 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
-      backgroundColor: widget.tileBackgroundColor,
+      backgroundColor: widget.enuSettingType.tileBackgroundColor,
       appBar: AppBar(        
         foregroundColor: Colors.white,
-        backgroundColor: widget.tileColor,
+        backgroundColor: widget.enuSettingType.tileColor,
         title: Row(
           children: [
             Padding(
@@ -214,7 +206,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  widget.tileDescription,
+                  widget.enuSettingType.tileDisplayName,
                   style: gBuildArcadeTextStyle(20),
                 ),
               ),
@@ -258,7 +250,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                             if (_isDummyFilterActive) {
                               gShowArcadeErrorSnackBar(
                                 gContext: context, 
-                                gFontSize: (AppDisplay.carouselTileSize * 0.025).clamp(10.0, 60.0), 
+                                gFontSize: (GlobalAppDisplay.carouselTileSize * 0.025).clamp(10.0, 60.0), 
                                 gMessage: 'FILTER DUMMY TEAMS ACTIVATED', 
                                 gDuration: 3,
                                 gBbackgroundColor: Color.fromRGBO(247, 120, 9, 1.0)
@@ -432,7 +424,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  height: AppDisplay.carouselTileSize,
+                  height: GlobalAppDisplay.carouselTileSize,
                   child: ValueListenableBuilder<Box<TblTeam>>(
                     valueListenable: teamsBox.listenable(),
                     builder: (context, box, _) {
@@ -507,7 +499,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                       width: avatarPlayer1ImageConfig.renderSize,
                       height: avatarPlayer1ImageConfig.renderSize,
                       decoration: BoxDecoration(
-                        color: widget.tileColor, // Or gender color for Player 1
+                        color: widget.enuSettingType.tileColor, // Or gender color for Player 1
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -524,7 +516,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                       width: avatarPlayer2ImageConfig.renderSize,
                       height: avatarPlayer2ImageConfig.renderSize,
                       decoration: BoxDecoration(
-                        color: widget.tileColor, // Or gender color for Player 2
+                        color: widget.enuSettingType.tileColor, // Or gender color for Player 2
                         shape: BoxShape.circle,
                       ),
                     ),

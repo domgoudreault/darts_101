@@ -16,15 +16,13 @@ import 'package:darts_101/helpers_assets.dart';
 class ModifyAddPlayerForm extends StatefulWidget {  
   final FormMode enuFormMode;
   final TblPlayer? modifyPlayer;
-  final Color tileColor;
-  final Color tileBackgroundColor;
+  final GlobalSettingType enuSettingType;
 
   const ModifyAddPlayerForm({
     super.key,
     required this.enuFormMode,
     this.modifyPlayer,
-    required this.tileColor,
-    required this.tileBackgroundColor,
+    required this.enuSettingType,
   });
 
   @override
@@ -42,7 +40,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
 
   late String _selectedAvatarCode;
 
-  double get _responsiveTile => AppDisplay.carouselTileSize;
+  double get _responsiveTile => GlobalAppDisplay.carouselTileSize;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(10.0, 60.0);
 
   // 2. Clean up controllers when the widget is destroyed
@@ -226,7 +224,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
-      backgroundColor: widget.tileColor,
+      backgroundColor: widget.enuSettingType.tileColor,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(
@@ -235,8 +233,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
       builder: (BuildContext context) {
         return SafeArea(
           child: Container(
-            width: AppDisplay.safeWidth * 0.775,
-            height: (avatarFrameImageConfig.renderSize + 80.0).clamp(0.0, AppDisplay.safeHeight * 0.9),
+            width: GlobalAppDisplay.safeWidth * 0.775,
+            height: (avatarFrameImageConfig.renderSize + 80.0).clamp(0.0, GlobalAppDisplay.safeHeight * 0.9),
             padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: Column(
               children: [
@@ -245,7 +243,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                   margin: const EdgeInsets.symmetric(horizontal: 3.0),
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
                   decoration: BoxDecoration(
-                    color: Colors.deepOrange.shade600,
+                    color: GlobalSettingType.players.tilePickerColor,
                     border: Border.all(
                       color: Colors.white, // Or widget.tileColor / whatever border color you want
                       width: 1.5,
@@ -302,10 +300,10 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
 
     return Scaffold(
-      backgroundColor: widget.tileBackgroundColor,
+      backgroundColor: widget.enuSettingType.tileBackgroundColor,
       appBar: AppBar(
         foregroundColor: Colors.white,
-        backgroundColor: widget.tileColor,
+        backgroundColor: widget.enuSettingType.tileColor,
         title: Row(
           children: [
             Padding(
@@ -330,8 +328,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
             // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: AppDisplay.carouselTileSize * 0.06,
-                vertical: AppDisplay.carouselTileSize * 0.02,
+                horizontal: GlobalAppDisplay.carouselTileSize * 0.06,
+                vertical: GlobalAppDisplay.carouselTileSize * 0.02,
               ),
               color: Colors.grey.shade900,
               child: 
@@ -377,7 +375,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                           vertical: (_responsiveTile * 0.015).clamp(6.0, 20.0),
                                         ),
                                         decoration: BoxDecoration(
-                                          color: widget.tileColor,
+                                          color: widget.enuSettingType.tileColor,
                                           borderRadius: BorderRadius.circular(20),
                                           border: Border.all(
                                             color: Colors.white,
@@ -419,7 +417,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                 child: LinearProgressIndicator(
                                   value: 1,
                                   backgroundColor: Colors.transparent,
-                                  color: widget.tileColor,
+                                  color: widget.enuSettingType.tileColor,
                                   minHeight: 4.0,
                                 ),
                               ),
@@ -571,7 +569,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: widget.tileColor,
+                    color: widget.enuSettingType.tileColor,
                     shape: BoxShape.circle,
                   ),
                 ),

@@ -15,15 +15,13 @@ import 'package:darts_101/helpers_assets.dart';
 class ModifyAddTeamForm extends StatefulWidget {  
   final FormMode enuFormMode;
   final TblTeam? modifyTeam;
-  final Color tileColor;
-  final Color tileBackgroundColor;
+  final GlobalSettingType enuSettingType;
 
   const ModifyAddTeamForm({
     super.key,
     required this.enuFormMode,
     this.modifyTeam,
-    required this.tileColor,
-    required this.tileBackgroundColor,
+    required this.enuSettingType,
   });
 
   @override
@@ -39,7 +37,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   late String _selectedAvatarCodePlayer1;
   late String _selectedAvatarCodePlayer2;
 
-  double get _responsiveTile => AppDisplay.carouselTileSize;
+  double get _responsiveTile => GlobalAppDisplay.carouselTileSize;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(10.0, 60.0);
 
   // 2. Clean up controllers when the widget is destroyed
@@ -236,7 +234,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     return showModalBottomSheet<TblPlayer>(
       context: context,
       useSafeArea: true,
-      backgroundColor: widget.tileColor,
+      backgroundColor: widget.enuSettingType.tileColor,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(
@@ -245,8 +243,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
       builder: (BuildContext context) {
         return SafeArea(
           child: Container(
-            width: AppDisplay.safeWidth * 0.775,
-            height: (avatarFrameImageConfig.renderSize + 80.0).clamp(0.0, AppDisplay.safeHeight * 0.9),
+            width: GlobalAppDisplay.safeWidth * 0.775,
+            height: (avatarFrameImageConfig.renderSize + 80.0).clamp(0.0, GlobalAppDisplay.safeHeight * 0.9),
             padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: Column(
               children: [
@@ -255,7 +253,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                   margin: const EdgeInsets.symmetric(horizontal: 3.0),
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
                   decoration: BoxDecoration(
-                    color: Colors.indigo.shade600,
+                    color: GlobalSettingType.teams.tilePickerColor,
                     border: Border.all(
                       color: Colors.white, // Or widget.tileColor / whatever border color you want
                       width: 1.5,
@@ -295,7 +293,11 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                           Navigator.pop(context, selectedPlayer);
                         },
                         children: playerList.map((player) {
-                          return _buildPlayerAvatarCard(player);
+                          return gBuildPlayerAvatarCard(
+                            avatarFrameImageConfig: avatarFrameImageConfig,
+                            avatarPlayerImageConfig: gGetAvatarPlayerImageConfig(player.fldAvatarCode),
+                            enuSettingType: widget.enuSettingType,
+                            player: player);
                         }).toList(),
                       ),
                 ),
@@ -307,103 +309,6 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     );
   }
 
-  Widget _buildPlayerAvatarCard(TblPlayer player) {
-    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(player.fldAvatarCode);
-
-    return Center(
-      child: AspectRatio(
-        aspectRatio: 1.0,
-        child: FittedBox(
-          fit: BoxFit.contain, // Forces artwork and text to scale together proportionally
-          child: SizedBox(
-            width: avatarFrameImageConfig.renderSize,
-            height: avatarFrameImageConfig.renderSize,
-            child: Stack(
-              children: [
-                // 1. Dynamic Circle Background Layer
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: avatarFrameImageConfig.renderSize,
-                  child: Center(
-                    child: Container(
-                      width: avatarFrameImageConfig.renderSize * 0.95,
-                      height: avatarFrameImageConfig.renderSize * 0.95,
-                      decoration: BoxDecoration(
-                        color: widget.tileBackgroundColor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 2. Avatar Artwork
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: avatarFrameImageConfig.renderSize,
-                  child: Image.asset(
-                    avatarPlayerImageConfig.assetPath,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-
-                // 3. Metallic Frame Overlay
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: avatarFrameImageConfig.renderSize,
-                  child: Image.asset(
-                    avatarFrameImageConfig.assetPath,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-
-                // 4. Player Nickname Pill
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: avatarFrameImageConfig.renderSize * 0.045,
-                        vertical: avatarFrameImageConfig.renderSize * 0.015,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(avatarFrameImageConfig.renderSize * 0.04),
-                        border: Border.all(
-                          color: Colors.purpleAccent.shade700,
-                          width: avatarFrameImageConfig.renderSize * 0.006,
-                        ),
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          player.fldNickName.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(
-                            avatarFrameImageConfig.renderSize * 0.062,
-                            gFontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
@@ -412,10 +317,10 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     final ImageConfigDummy dummyImageConfig = gGetDummyImageConfig();
 
     return Scaffold(
-      backgroundColor: widget.tileBackgroundColor,
+      backgroundColor: widget.enuSettingType.tileBackgroundColor,
       appBar: AppBar(
         foregroundColor: Colors.white,
-        backgroundColor: widget.tileColor,
+        backgroundColor: widget.enuSettingType.tileColor,
         title: Row(
           children: [
             Padding(
@@ -440,8 +345,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
             // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: AppDisplay.carouselTileSize * 0.06,
-                vertical: AppDisplay.carouselTileSize * 0.02,
+                horizontal: GlobalAppDisplay.carouselTileSize * 0.06,
+                vertical: GlobalAppDisplay.carouselTileSize * 0.02,
               ),
               color: Colors.grey.shade900,
               child: Column(
@@ -476,7 +381,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                               }
                               gShowArcadeErrorSnackBar(
                                 gContext: context,
-                                gFontSize: AppDisplay.carouselTileSize * 0.025,
+                                gFontSize: GlobalAppDisplay.carouselTileSize * 0.025,
                                 gMessage: 'DUMMY PLAYER MODE ACTIVATED',
                                 gDuration: 3,
                                 gBbackgroundColor: Color.fromRGBO(247, 120, 9, 1.0)
@@ -568,7 +473,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                     vertical: (_responsiveTile * 0.015).clamp(6.0, 20.0),
                                   ),
                                   decoration: BoxDecoration(
-                                    color: widget.tileColor,
+                                    color: widget.enuSettingType.tileColor,
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: Colors.white,
@@ -610,7 +515,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                       vertical: (_responsiveTile * 0.015).clamp(6.0, 20.0),
                                     ),
                                     decoration: BoxDecoration(
-                                      color: widget.tileColor,
+                                      color: widget.enuSettingType.tileColor,
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: Colors.white,
@@ -653,7 +558,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                 child: LinearProgressIndicator(
                                   value: 1,
                                   backgroundColor: Colors.transparent,
-                                  color: widget.tileColor,
+                                  color: widget.enuSettingType.tileColor,
                                   minHeight: 4.0,
                                 ),
                               ),
@@ -671,7 +576,15 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                _buildTeamCardMainUI(),
+                                gBuildTeamCardMainUI(
+                                  teamCardFrameImageConfig: gGetMainUITeamCardHFrameImage(),
+                                  avatarPlayer1ImageConfig: gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1),
+                                  avatarPlayer2ImageConfig: gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2),
+                                  colorBgAvatar: widget.enuSettingType.tileColor,
+                                  isDummyTeam: _isDummyTeam,
+                                  selectedPlayer1: _selectedPlayer1,
+                                  selectedPlayer2: _selectedPlayer2,
+                                ),
                                 const SizedBox(height: 12),
                                 
                                 // Delete Team button
@@ -733,163 +646,6 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     );
   }
 
-  Widget _buildTeamCardMainUI() {
-    final ImageConfigTeamCardFrame teamCardFrameImageConfig = gGetMainUITeamCardHFrameImage();
-    final ImageConfigAvatar avatarPlayer1ImageConfig = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1);
-    final ImageConfigAvatar avatarPlayer2ImageConfig = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2);
-
-    return SizedBox(
-      width: teamCardFrameImageConfig.renderWidth,
-      height: teamCardFrameImageConfig.renderHeight,
-      child: Stack(
-        children: [
-          // 1. Player 1 Solid Color Circle (Left Half Background)
-          Positioned(
-            top: 0,
-            bottom: 0,
-            left: teamCardFrameImageConfig.renderWidth * 0.02,
-            width: avatarPlayer1ImageConfig.renderSize,
-            child: Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: widget.tileColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ),
-
-          // 2. Player 2 Solid Color Circle (Right Background)
-          Positioned(
-            top: 0,
-            bottom: 0,
-            right: teamCardFrameImageConfig.renderWidth * 0.02,
-            width: avatarPlayer2ImageConfig.renderSize,
-            child: Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: widget.tileColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ),
-
-          // 3. Player 1 Avatar Artwork (Left Half)
-          Positioned(
-            top: 0,
-            bottom: 0,
-            left: teamCardFrameImageConfig.renderWidth * 0.01,
-            width: avatarPlayer1ImageConfig.renderSize,
-            child: Image.asset(
-              avatarPlayer1ImageConfig.assetPath,
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          // 4. Player 2 Avatar Artwork (Right Half)
-          Positioned(
-            top: 0,
-            bottom: 0,
-            right: teamCardFrameImageConfig.renderWidth * 0.01,
-            width: avatarPlayer2ImageConfig.renderSize,
-            child: Image.asset(
-              avatarPlayer2ImageConfig.assetPath,
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          // 5. Metallic Frame Overlay
-          Positioned.fill(
-            child: Image.asset(
-              teamCardFrameImageConfig.assetPathFrame,
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          // 6. Dummy Player Layer
-          if (_isDummyTeam) // e.g., checking if this slot is a dummy
-            Positioned.fill(
-              child: Image.asset(
-                teamCardFrameImageConfig.assetPathIsDummyPlayer,
-                fit: BoxFit.fill,
-              ),
-            ),
-
-          // 7. Player 1 Nickname Pill (Left Slot)
-          if (_selectedPlayer1 != null)
-            Positioned(
-              bottom: teamCardFrameImageConfig.renderHeight * 0.13,
-              left: 0,
-              width: avatarPlayer1ImageConfig.renderSize,
-              child: Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: avatarPlayer1ImageConfig.renderSize * 0.045,
-                    vertical: avatarPlayer1ImageConfig.renderSize * 0.015,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.purpleAccent.shade100,
-                    borderRadius: BorderRadius.circular(avatarPlayer1ImageConfig.renderSize * 0.04),
-                    border: Border.all(
-                      color: Colors.purpleAccent.shade700,
-                      width: avatarPlayer1ImageConfig.renderSize * 0.006,
-                    ),
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      _selectedPlayer1!.fldNickName.toUpperCase(),
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        avatarPlayer1ImageConfig.renderSize * 0.062,
-                        gFontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          
-          // 8. Player 2 Nickname Pill (Right Slot)
-          if (_selectedPlayer2 != null)
-            Positioned(
-              bottom: teamCardFrameImageConfig.renderHeight * 0.13,
-              right: 0,
-              width: avatarPlayer2ImageConfig.renderSize,
-              child: Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: avatarPlayer2ImageConfig.renderSize * 0.045,
-                    vertical: avatarPlayer2ImageConfig.renderSize * 0.015,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.purpleAccent.shade100,
-                    borderRadius: BorderRadius.circular(avatarPlayer2ImageConfig.renderSize * 0.04),
-                    border: Border.all(
-                      color: Colors.purpleAccent.shade700,
-                      width: avatarPlayer2ImageConfig.renderSize * 0.006,
-                    ),
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      _selectedPlayer2!.fldNickName.toUpperCase(),
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        avatarPlayer2ImageConfig.renderSize * 0.062,
-                        gFontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ]
-      ),
-    );
-  }
-
   Widget _buildPlayerAvatarMainUI({
     required String selectedAvatarCodePlayer,
     required TblPlayer? selectedPlayer,
@@ -911,7 +667,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: widget.tileColor,
+                    color: widget.enuSettingType.tileColor,
                     shape: BoxShape.circle,
                   ),
                 ),

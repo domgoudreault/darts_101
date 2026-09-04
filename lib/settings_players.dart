@@ -18,17 +18,11 @@ import 'package:darts_101/modify_add_player.dart';
 
 class SettingsPlayers extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
-  final String tileType;
-  final Color tileColor;
-  final Color tileBackgroundColor;
-  final String tileDescription;
+  final GlobalSettingType enuSettingType;
 
   const SettingsPlayers({
     super.key,
-    required this.tileType,
-    required this.tileColor,
-    required this.tileBackgroundColor,
-    required this.tileDescription,
+    required this.enuSettingType,
   });
 
   @override
@@ -71,8 +65,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         // The add_player.dart page will be created and shown
         builder: (context) => ModifyAddPlayerForm(
           enuFormMode: FormMode.formAdd,
-          tileColor: widget.tileColor,
-          tileBackgroundColor: widget.tileBackgroundColor,
+          enuSettingType: widget.enuSettingType,
         ),
       ),
     );
@@ -104,8 +97,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         builder: (context) => ModifyAddPlayerForm(
           enuFormMode: FormMode.formModify,
           modifyPlayer: player,
-          tileColor: widget.tileColor,
-          tileBackgroundColor: widget.tileBackgroundColor,
+          enuSettingType: widget.enuSettingType,
         ),
       ),
     );
@@ -127,8 +119,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   void _showLeaguePlayersSeedDialog() {
     gShowDatabaseSeedDialog(
       context, 
-      tileColor: widget.tileColor,
-      tileBackgroundColor: widget.tileBackgroundColor,
+      tileColor: widget.enuSettingType.tileColor,
+      tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
       assetFullPath: 'assets/png/logos/LGGDS_360x360.png',
       headerText: 'SAMPLE LGGDS LEAGUE DATA ?',
       titleText: 'No players found.',
@@ -157,8 +149,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   void _showPlayersSeedDialog() {
     gShowDatabaseSeedDialog(
       context, 
-      tileColor: widget.tileColor,
-      tileBackgroundColor: widget.tileBackgroundColor,
+      tileColor: widget.enuSettingType.tileColor,
+      tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
       assetFullPath: 'assets/png/tiles/settings_players_256x256.png',
       headerText: 'SAMPLE DEFAULT PLAYERS ?',
       titleText: 'No players found.',
@@ -187,10 +179,10 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
     return Scaffold(
       //pour le background color en bas du titre et pour le reste de la page
-      backgroundColor: widget.tileBackgroundColor,
+      backgroundColor: widget.enuSettingType.tileBackgroundColor,
       appBar: AppBar(        
         foregroundColor: Colors.white,
-        backgroundColor: widget.tileColor,
+        backgroundColor: widget.enuSettingType.tileColor,
         title: Row(
           children: [
             Padding(
@@ -209,7 +201,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  widget.tileDescription,
+                  widget.enuSettingType.tileDisplayName,
                   style: gBuildArcadeTextStyle(20),
                 ),
               ),
@@ -363,7 +355,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  height: AppDisplay.carouselTileSize,
+                  height: GlobalAppDisplay.carouselTileSize,
                   child: ValueListenableBuilder<Box<TblPlayer>>(
                     valueListenable: playersBox.listenable(),
                     builder: (context, box, _) {
@@ -516,7 +508,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                       Container(
                         height: (playerCardFrameImageConfig.renderHeight * 0.009),
                         width: playerCardFrameImageConfig.renderHeight * 0.50,
-                        color: widget.tileColor,
+                        color: widget.enuSettingType.tileColor,
                       ),
                       
                       // Gap 4: Divider -> Nickname

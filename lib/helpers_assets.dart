@@ -10,36 +10,36 @@ class ImageConfig {
 
 // Returns image configuration based on screen width
 ImageConfig gGetInformationDialogImageConfig() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
       // Landscape Small/Narrow Phones
       return const ImageConfig(
         assetPath: 'assets/png/logos/LGGDS_180x180.png',
         renderSize: 180,
       );
 
-    case DisplayMode.display10CompactPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       // Landscape Phones / Compact Tablets
       return const ImageConfig(
         assetPath: 'assets/png/logos/LGGDS_360x360.png',
         renderSize: 360,
       );
 
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       // 10"-11" Landscape Tablets (Your Galaxy Tab S10 Lite @ 1024dp)
       return const ImageConfig(
         assetPath: 'assets/png/logos/LGGDS_512x512.png',
         renderSize: 512,
       );
 
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       // Laptops & Desktop Displays
       return const ImageConfig(
         assetPath: 'assets/png/logos/LGGDS_720x720.png',
         renderSize: 720,
       );
 
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       // 4K & Ultra-wide Displays
       return const ImageConfig(
         assetPath: 'assets/png/logos/LGGDS_1000x1000.png',
@@ -49,27 +49,27 @@ ImageConfig gGetInformationDialogImageConfig() {
 }
 
 // Returns CarouselView tile configuration based on screen width
-ImageConfig gGetCarouselTileImageConfig(String tileType, String tileName) {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+ImageConfig gGetCarouselTileImageConfig(String tileType, String tileCode) {  
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileName}_256x256.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_256x256.png',
         renderSize: 256,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileName}_512x512.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_512x512.png',
         renderSize: 512,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileName}_768x768.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_768x768.png',
         renderSize: 768,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileName}_1024x1024.png',
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_1024x1024.png',
         renderSize: 1024,
       );
   }
@@ -77,24 +77,24 @@ ImageConfig gGetCarouselTileImageConfig(String tileType, String tileName) {
 
 // Returns Accordion Section Header configuration based on screen width
 ImageConfig gGetSectionHeaderImageConfig(String sectionCode) {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfig(        
         assetPath: 'assets/png/mechanics/section_${sectionCode}_width_128.png',
         renderSize: 128,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfig(        
         assetPath: 'assets/png/mechanics/section_${sectionCode}_width_256.png',
         renderSize: 256,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfig(        
         assetPath: 'assets/png/mechanics/section_${sectionCode}_width_256.png',
         renderSize: 256,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfig(        
         assetPath: 'assets/png/mechanics/section_${sectionCode}_width_512.png',
         renderSize: 512,
@@ -113,24 +113,24 @@ class ImageConfigArrow {
 ImageConfigArrow gGetArrowImageConfig(bool isLeft) {
   final String direction = isLeft ? 'left' : 'right';
 
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigArrow(        
         assetPath: 'assets/png/mechanics/arrow_${direction}_40x32.png',
         renderSize: 32,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigArrow(        
         assetPath: 'assets/png/mechanics/arrow_${direction}_80x64.png',
         renderSize: 64,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigArrow(        
         assetPath: 'assets/png/mechanics/arrow_${direction}_120x96.png',
         renderSize: 96,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigArrow(        
         assetPath: 'assets/png/mechanics/arrow_${direction}_160x128.png',
         renderSize: 128,
@@ -147,24 +147,24 @@ class ImageConfigAvatar {
 
 // Returns Framing image for Avatars Picker based on screen width
 ImageConfigAvatar gGetAvatarFrameImageConfig() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_128x128.png',
         renderSize: 128,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
         renderSize: 256,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_384x384.png',
         renderSize: 384,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/mechanics/player_avatar_512x512.png',
         renderSize: 512,
@@ -174,24 +174,24 @@ ImageConfigAvatar gGetAvatarFrameImageConfig() {
 
 // Returns Player image for Avatars Picker based on screen width
 ImageConfigAvatar gGetAvatarPlayerImageConfig(String avatarCode) {
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
         renderSize: 128,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
         renderSize: 256,
       );
-    case DisplayMode.display20LargeLapDesk:  
+    case GlobalEnumDisplayMode.display20LargeLapDesk:  
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_384x384.png',
         renderSize: 384,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_512x512.png',
         renderSize: 512,
@@ -208,24 +208,24 @@ class ImageConfigDummy {
 
 // Returns Player image based on screen width
 ImageConfigDummy gGetDummyImageConfig() {
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigDummy(        
         assetPath: 'assets/png/mechanics/player_dummy_icon_42x42.png',
         renderSize: 42,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigDummy(        
         assetPath: 'assets/png/mechanics/player_dummy_icon_84x84.png',
         renderSize: 84,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigDummy(        
         assetPath: 'assets/png/mechanics/player_dummy_icon_126x126.png',
         renderSize: 126,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigDummy(        
         assetPath: 'assets/png/mechanics/player_dummy_icon_168x168.png',
         renderSize: 168,
@@ -251,9 +251,9 @@ class ImageConfigPlayerCardFrame {
 
 // Returns CarouselView tile configuration based on screen width
 ImageConfigPlayerCardFrame gGetCarouselPlayerCardFrameImage() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigPlayerCardFrame(        
         assetPathFrame: 'assets/png/mechanics/player_card_frame_175x256.png',
         assetPathBackground: 'assets/png/mechanics/player_card_bg_175x256.png',
@@ -261,7 +261,7 @@ ImageConfigPlayerCardFrame gGetCarouselPlayerCardFrameImage() {
         renderWidth: 175,
         renderHeight: 256,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigPlayerCardFrame(        
         assetPathFrame: 'assets/png/mechanics/player_card_frame_350x512.png',
         assetPathBackground: 'assets/png/mechanics/player_card_bg_350x512.png',
@@ -269,7 +269,7 @@ ImageConfigPlayerCardFrame gGetCarouselPlayerCardFrameImage() {
         renderWidth: 350,
         renderHeight: 512,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigPlayerCardFrame(        
         assetPathFrame: 'assets/png/mechanics/player_card_frame_525x768.png',
         assetPathBackground: 'assets/png/mechanics/player_card_bg_525x768.png',
@@ -277,7 +277,7 @@ ImageConfigPlayerCardFrame gGetCarouselPlayerCardFrameImage() {
         renderWidth: 525,
         renderHeight: 768,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigPlayerCardFrame(        
         assetPathFrame: 'assets/png/mechanics/player_card_frame_700x1024.png',
         assetPathBackground: 'assets/png/mechanics/player_card_bg_700x1024.png',
@@ -297,24 +297,24 @@ class ImageConfigPlayerCard {
 
 // Returns Player image based on screen width
 ImageConfigPlayerCard gGetCarouselPlayerCardImage(String avatarCode) {
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigPlayerCard(
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_175x256.png',
         renderSize: 256,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigPlayerCard(
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_350x512.png',
         renderSize: 512,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigPlayerCard(
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_525x768.png',
         renderSize: 768,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigPlayerCard(
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_700x1024.png',
         renderSize: 1024,
@@ -338,30 +338,30 @@ class ImageConfigTeamCardFrame {
 
 // Returns CarouselView TeamCard Vertical based on screen width
 ImageConfigTeamCardFrame gGetCarouselTeamCardVFrameImage() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_175x256.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_175x256.png',
         renderWidth: 175,
         renderHeight: 256,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_350x512.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_350x512.png',
         renderWidth: 350,
         renderHeight: 512,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_525x768.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_525x768.png',
         renderWidth: 525,
         renderHeight: 768,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_700x1024.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_700x1024.png',
@@ -371,61 +371,32 @@ ImageConfigTeamCardFrame gGetCarouselTeamCardVFrameImage() {
   }
 }
 
-// Returns CarouselView(Game Selection) TeamCard Horizontal based on screen width
-ImageConfigTeamCardFrame gGetCarouselTeamCardHFrameImage() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
-      return ImageConfigTeamCardFrame(        
-        assetPathFrame: 'assets/png/mechanics/team_card_frame_128x87.png',
-        assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_128x87.png',
-        renderWidth: 128,
-        renderHeight: 87,
-      );
-    case DisplayMode.display15MediumTablet:
-    case DisplayMode.display20LargeLapDesk:
-      return ImageConfigTeamCardFrame(        
-        assetPathFrame: 'assets/png/mechanics/team_card_frame_512x350.png',
-        assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_512x350.png',
-        renderWidth: 256,
-        renderHeight: 175,
-      );
-    case DisplayMode.display25Ultra4K:
-      return ImageConfigTeamCardFrame(        
-        assetPathFrame: 'assets/png/mechanics/team_card_frame_768x525.png',
-        assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_768x525.png',
-        renderWidth: 512,
-        renderHeight: 350,
-      );
-  }
-}
-
 // Returns MainUI(modify_add_team) TeamCard Horizontal based on screen width
 ImageConfigTeamCardFrame gGetMainUITeamCardHFrameImage() {  
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_256x175.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_256x175.png',
         renderWidth: 256,
         renderHeight: 175,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_512x350.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_512x350.png',
         renderWidth: 512,
         renderHeight: 350,
       );
-    case DisplayMode.display20LargeLapDesk:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_768x525.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_768x525.png',
         renderWidth: 768,
         renderHeight: 525,
       );
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigTeamCardFrame(        
         assetPathFrame: 'assets/png/mechanics/team_card_frame_1024x700.png',
         assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_1024x700.png',
@@ -437,27 +408,150 @@ ImageConfigTeamCardFrame gGetMainUITeamCardHFrameImage() {
 
 // Returns Player image for Avatars for TeamCard Horizontal based on screen width
 ImageConfigAvatar gGetAvatarPlayerCardImageConfig(String avatarCode) {
-  switch (AppDisplay.displayMode) {
-    case DisplayMode.display05SmallPhone:
-    case DisplayMode.display10CompactPhone:
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
         renderSize: 128,
       );
-    case DisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display15MediumTablet:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
         renderSize: 256,
       ); 
-    case DisplayMode.display20LargeLapDesk:  
+    case GlobalEnumDisplayMode.display20LargeLapDesk:  
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_384x384.png',
         renderSize: 384,
       );    
-    case DisplayMode.display25Ultra4K:
+    case GlobalEnumDisplayMode.display25Ultra4K:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_512x512.png',
         renderSize: 512,
+      );
+  }
+}
+
+// Returns Center tile configuration based on screen width for RostersSelection
+ImageConfig gGetCenterTileImageConfigRS(String tileType, String tileCode) {  
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
+    case GlobalEnumDisplayMode.display15MediumTablet:
+      return ImageConfig(        
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_128x128.png',
+        renderSize: 128,
+      );
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfig(        
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_256x256.png',
+        renderSize: 256,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfig(        
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_512x512.png',
+        renderSize: 512,
+      );
+  }
+}
+
+// Returns Framing image for Players Picker based on screen width for RostersSelection
+ImageConfigAvatar gGetAvatarPlayerFrameImageConfigRS() {  
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
+    case GlobalEnumDisplayMode.display15MediumTablet:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_128x128.png',
+        renderSize: 128,
+      );
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
+        renderSize: 256,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_512x512.png',
+        renderSize: 512,
+      );
+  }
+}
+
+// Returns Player image for Avatars Picker based on screen width for RostersSelection
+ImageConfigAvatar gGetAvatarPlayerImageConfigRS(String avatarCode) {
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
+    case GlobalEnumDisplayMode.display15MediumTablet:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
+        renderSize: 128,
+      );
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
+        renderSize: 256,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_512x512.png',
+        renderSize: 512,
+      );
+  }
+}
+
+// Returns Framing image TeamCard Horizontal for Teams Picker based on screen width for RostersSelection
+ImageConfigTeamCardFrame gGetCarouselTeamCardHFrameImageRS() {  
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
+    
+      return ImageConfigTeamCardFrame(        
+        assetPathFrame: 'assets/png/mechanics/team_card_frame_128x87.png',
+        assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_128x87.png',
+        renderWidth: 128,
+        renderHeight: 87,
+      );
+    case GlobalEnumDisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfigTeamCardFrame(        
+        assetPathFrame: 'assets/png/mechanics/team_card_frame_256x175.png',
+        assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_256x175.png',
+        renderWidth: 256,
+        renderHeight: 175,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfigTeamCardFrame(        
+        assetPathFrame: 'assets/png/mechanics/team_card_frame_512x350.png',
+        assetPathIsDummyPlayer: 'assets/png/mechanics/player_dummy_512x350.png',
+        renderWidth: 512,
+        renderHeight: 350,
+      );
+  }
+}
+
+// Returns Player image for Avatars Picker based on screen width for RostersSelection
+ImageConfigAvatar gGetAvatarTeamCardImageConfigRS(String avatarCode) {
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
+    
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_64x64.png',
+        renderSize: 64,
+      );
+    case GlobalEnumDisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
+        renderSize: 128,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
+        renderSize: 256,
       );
   }
 }

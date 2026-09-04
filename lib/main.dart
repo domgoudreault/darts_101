@@ -16,15 +16,15 @@ import 'package:darts_101/database/tbl_game_build_up.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
+import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 import 'package:darts_101/helpers_assets.dart';
 import 'package:darts_101/helpers_database.dart';
-import 'package:darts_101/global_be.dart';
 
 // UI Screens
 import 'package:darts_101/settings_players.dart';
 import 'package:darts_101/settings_teams.dart';
-import 'package:darts_101/game_selection.dart';
+import 'package:darts_101/rosters_selection.dart';
 
 enum MainScreenSection {
   section05Games,
@@ -84,7 +84,7 @@ class Darts101App extends StatelessWidget {
       title: 'Darts 101',            
 
       builder: (context, child) {
-        AppDisplay.updateDisplayMode(context);
+        GlobalAppDisplay.updateDisplayMode(context);
 
         return child!;
       },
@@ -107,8 +107,8 @@ class MainScreenPopupMenu extends StatelessWidget {
         return AlertDialog(
           title: const Text('Darts 101 - Privacy Policy'),
           content: SizedBox(
-            height: AppDisplay.safeHeight * 0.7,
-            width: AppDisplay.safeWidth * 0.8,
+            height: GlobalAppDisplay.safeHeight * 0.7,
+            width: GlobalAppDisplay.safeWidth * 0.8,
             child: Column(
               children: [
                 // 1. SCROLLABLE TEXT AREA
@@ -214,8 +214,8 @@ class MainScreenPopupMenu extends StatelessWidget {
         return AlertDialog(
           content: SizedBox(
             // Set a fixed height so the dialog doesn't jump around
-            height: AppDisplay.safeHeight * 0.8,
-            width: AppDisplay.safeWidth * 0.8,
+            height: GlobalAppDisplay.safeHeight * 0.8,
+            width: GlobalAppDisplay.safeWidth * 0.8,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -339,22 +339,6 @@ class MainScreenPopupMenu extends StatelessWidget {
   }
 }
 
-class CarouselTileData {
-  final String tileType;
-  final String tileCode;
-  final Color tileColor;
-  final Color tileBackgroundColor;
-  final String tileDescription;
-
-  const CarouselTileData({
-    required this.tileType,
-    required this.tileCode,
-    required this.tileColor,
-    required this.tileBackgroundColor,
-    required this.tileDescription,
-  });
-}
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.title});
 
@@ -369,125 +353,37 @@ class _MainScreenState extends State<MainScreen> {
   // Accordion State: GAMES active by default
   MainScreenSection _activeSection = MainScreenSection.section05Games;
 
-  // Single Source of Truth for Game Tiles
-  List<CarouselTileData> get _gamesTiles => [
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: 'half-it',
-      tileColor: Colors.lightBlue.shade400,
-      tileBackgroundColor: Colors.lightBlue.shade200,
-      tileDescription: 'Half-It Game',
-    ),
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: 'around-clock',
-      tileColor: Colors.teal.shade400,
-      tileBackgroundColor: Colors.teal.shade200,
-      tileDescription: 'Game Around the Clock (skip the numbers version)',
-    ),
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: '7-darts',
-      tileColor: Colors.green.shade400,
-      tileBackgroundColor: Colors.green.shade200,
-      tileDescription: 'Game 7 Darts',
-    ),
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: 'all-fives',
-      tileColor: Colors.purple.shade200,
-      tileBackgroundColor: Colors.purple.shade100,
-      tileDescription: 'Game All Fives / 51 by 5''s',
-    ),
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: 'killers',
-      tileColor: Colors.grey.shade500,
-      tileBackgroundColor: Colors.grey.shade200,      
-      tileDescription: 'Game Killers',
-    ),
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: 'sudden-death',
-      tileColor: Colors.red.shade900,
-      tileBackgroundColor: Colors.red.shade400,
-      tileDescription: 'Game Sudden Death',
-    ),
-    CarouselTileData(
-      tileType: 'games',
-      tileCode: 'build-up',
-      tileColor: Colors.deepPurple.shade400,
-      tileBackgroundColor: Colors.grey.shade200,
-      tileDescription: 'Game Team Build-up',
-    ),
-  ];
-
-  // Single Source of Truth for Settings Tiles
-  List<CarouselTileData> get _settingsTiles => [
-    CarouselTileData(
-      tileType: 'settings',
-      tileCode: 'players',
-      tileColor: Colors.deepOrange.shade400,
-      tileBackgroundColor: Colors.deepOrange.shade200,
-      tileDescription: 'Players Management',
-    ),
-    CarouselTileData(
-      tileType: 'settings',
-      tileCode: 'teams',
-      tileColor: Colors.indigo.shade400,
-      tileBackgroundColor: Colors.indigo.shade200,
-      tileDescription: 'Teams Management',
-    ),
-  ];
-
   // Fonction de navigation when a button is pressed
-  void _onTileTapped(BuildContext context, CarouselTileData tile) {    
-    final destination = switch ((tile.tileType, tile.tileCode)) {
-      // Games Routes
-      ('games', 'half-it') => GameSelection(
-          tileType: tile.tileType,
-          tileColor: tile.tileColor,
-          tileBackgroundColor: tile.tileBackgroundColor,
-          tileDescription: tile.tileDescription,
-          enuGameType: GameType.gameHalfIt,
-        ),
-      ('game', 'build-up') => GameSelection(
-          tileType: tile.tileType,
-          tileColor: tile.tileColor,
-          tileBackgroundColor: tile.tileBackgroundColor,
-          tileDescription: tile.tileDescription,
-          enuGameType: GameType.gameBuildUp,
-        ),
+  void _onTileTapped(BuildContext context, dynamic tile) {    
+    Widget? destination;
 
-      // Settings Routes
-      ('settings', 'players') => SettingsPlayers(
-          tileType: tile.tileType,
-          tileColor: tile.tileColor,
-          tileBackgroundColor: tile.tileBackgroundColor,
-          tileDescription: tile.tileDescription,
-        ),
-      ('settings', 'teams') => SettingsTeams(
-          tileType: tile.tileType,
-          tileColor: tile.tileColor,
-          tileBackgroundColor: tile.tileBackgroundColor,
-          tileDescription: tile.tileDescription,
-        ),
-
-      // Default Fallback
-      _ => null,
-    };
+    if (tile is GlobalGameType) {
+      destination = RostersSelection(
+        enuGameType: tile,
+      );
+    } else if (tile is GlobalSettingType) {
+      destination = switch (tile) {
+        GlobalSettingType.players => SettingsPlayers(
+            enuSettingType: tile,
+          ),
+        GlobalSettingType.teams => SettingsTeams(
+            enuSettingType: tile,
+          ),
+      };
+    }
 
     if (destination != null) {
+      final formDestination = destination;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => destination),
+        MaterialPageRoute(builder: (_) => formDestination),
       );
     } else {
       gShowArcadeErrorSnackBar(
         gContext: context, 
         gFontSize: 16, 
-        gMessage: '${tile.tileDescription} was clicked!',
-        gDuration: 2
+        gMessage: '${tile.tileDisplayName} was clicked!',
+        gDuration: 2,
       );
     }
   }
@@ -496,11 +392,11 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context);
     
-    // Select active dataset based on section toggle
-    final List<CarouselTileData> activeTiles = 
-        _activeSection == MainScreenSection.section05Games 
-            ? _gamesTiles 
-            : _settingsTiles;
+    // Select active dataset based on section toggle    
+    final List<dynamic> activeTiles = 
+    _activeSection == MainScreenSection.section05Games 
+        ? GlobalGameType.values 
+        : GlobalSettingType.values;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade800,
@@ -531,7 +427,7 @@ class _MainScreenState extends State<MainScreen> {
             },
             icon: const Icon(Icons.aspect_ratio, color: Colors.amber, size: 18),
             label: Text(
-              '${AppDisplay.carouselTileSize.toInt()}px',
+              '${GlobalAppDisplay.carouselTileSize.toInt()}px',
               style: const TextStyle(
                 color: Colors.amber,
                 fontWeight: FontWeight.bold,
@@ -571,9 +467,9 @@ class _MainScreenState extends State<MainScreen> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  height: AppDisplay.carouselTileSize,
+                  height: GlobalAppDisplay.carouselTileSize,
                   child: CarouselView(
-                    itemExtent: AppDisplay.carouselTileSize,
+                    itemExtent: GlobalAppDisplay.carouselTileSize,
                     shrinkExtent: 80,
                     backgroundColor: Colors.transparent,
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -584,7 +480,7 @@ class _MainScreenState extends State<MainScreen> {
                       _onTileTapped(context, activeTiles[index]);
                     },
                     children: activeTiles
-                        .map((tileData) => _buildMainScreenTile(context, tileData))
+                        .map((tile) => _buildMainScreenTile(context, tile))
                         .toList(),
                   ),
                 ),
@@ -596,7 +492,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
   
-  Widget _buildMainScreenTile(BuildContext context, CarouselTileData tile) {
+  Widget _buildMainScreenTile(BuildContext context, dynamic tile) {
     ImageConfig gameTileImageConfig = gGetCarouselTileImageConfig(tile.tileType, tile.tileCode);
 
     return Center(
@@ -692,7 +588,7 @@ void _showDebugCarouselImageDialog(BuildContext context) {
   final ImageConfig config = gGetCarouselTileImageConfig('settings', 'players');
 
   // Dynamic scale factor derived directly from dialog viewport height
-  final double dialogHeight = AppDisplay.safeHeight * 0.7;
+  final double dialogHeight = GlobalAppDisplay.safeHeight * 0.7;
   final double baseFontSize = (dialogHeight * 0.045).clamp(14.0, 22.0);
   final double titleFontSize = baseFontSize * 1.25;
 
@@ -712,7 +608,7 @@ void _showDebugCarouselImageDialog(BuildContext context) {
         ),
         content: SizedBox(
           height: dialogHeight,
-          width: AppDisplay.safeWidth * 0.8,
+          width: GlobalAppDisplay.safeWidth * 0.8,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -723,17 +619,17 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Display Mode: ${AppDisplay.displayMode.name}',
+                        'Display Mode: ${GlobalAppDisplay.displayMode.name}',
                         style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Safe Screen Width: ${AppDisplay.safeWidth.toStringAsFixed(1)} dp',
+                        'Safe Screen Width: ${GlobalAppDisplay.safeWidth.toStringAsFixed(1)} dp',
                         style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Safe Screen Height: ${AppDisplay.safeHeight.toStringAsFixed(1)} dp',
+                        'Safe Screen Height: ${GlobalAppDisplay.safeHeight.toStringAsFixed(1)} dp',
                         style: TextStyle(color: Colors.white70, fontSize: baseFontSize),
                       ),
                       const Divider(color: Colors.white24, height: 24),
