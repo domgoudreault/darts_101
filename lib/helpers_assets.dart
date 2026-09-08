@@ -1,107 +1,6 @@
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 
-class ImageConfig {
-  final String assetPath;
-  final double renderSize;
-
-  const ImageConfig({required this.assetPath, required this.renderSize});
-}
-
-// Returns image configuration based on screen width
-ImageConfig gGetInformationDialogImageConfig() {  
-  switch (GlobalAppDisplay.displayMode) {
-    case GlobalEnumDisplayMode.display05SmallPhone:
-      // Landscape Small/Narrow Phones
-      return const ImageConfig(
-        assetPath: 'assets/png/logos/LGGDS_180x180.png',
-        renderSize: 180,
-      );
-
-    case GlobalEnumDisplayMode.display10CompactPhone:
-      // Landscape Phones / Compact Tablets
-      return const ImageConfig(
-        assetPath: 'assets/png/logos/LGGDS_360x360.png',
-        renderSize: 360,
-      );
-
-    case GlobalEnumDisplayMode.display15MediumTablet:
-      // 10"-11" Landscape Tablets (Your Galaxy Tab S10 Lite @ 1024dp)
-      return const ImageConfig(
-        assetPath: 'assets/png/logos/LGGDS_512x512.png',
-        renderSize: 512,
-      );
-
-    case GlobalEnumDisplayMode.display20LargeLapDesk:
-      // Laptops & Desktop Displays
-      return const ImageConfig(
-        assetPath: 'assets/png/logos/LGGDS_720x720.png',
-        renderSize: 720,
-      );
-
-    case GlobalEnumDisplayMode.display25Ultra4K:
-      // 4K & Ultra-wide Displays
-      return const ImageConfig(
-        assetPath: 'assets/png/logos/LGGDS_1000x1000.png',
-        renderSize: 1000,
-      );
-  }
-}
-
-// Returns CarouselView tile configuration based on screen width
-ImageConfig gGetCarouselTileImageConfig(String tileType, String tileCode) {  
-  switch (GlobalAppDisplay.displayMode) {
-    case GlobalEnumDisplayMode.display05SmallPhone:
-    case GlobalEnumDisplayMode.display10CompactPhone:
-      return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_256x256.png',
-        renderSize: 256,
-      );
-    case GlobalEnumDisplayMode.display15MediumTablet:
-      return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_512x512.png',
-        renderSize: 512,
-      );
-    case GlobalEnumDisplayMode.display20LargeLapDesk:
-      return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_768x768.png',
-        renderSize: 768,
-      );
-    case GlobalEnumDisplayMode.display25Ultra4K:
-      return ImageConfig(        
-        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_1024x1024.png',
-        renderSize: 1024,
-      );
-  }
-}
-
-// Returns Accordion Section Header configuration based on screen width
-ImageConfig gGetSectionHeaderImageConfig(String sectionCode) {  
-  switch (GlobalAppDisplay.displayMode) {
-    case GlobalEnumDisplayMode.display05SmallPhone:
-    case GlobalEnumDisplayMode.display10CompactPhone:
-      return ImageConfig(        
-        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_128.png',
-        renderSize: 128,
-      );
-    case GlobalEnumDisplayMode.display15MediumTablet:
-      return ImageConfig(        
-        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_256.png',
-        renderSize: 256,
-      );
-    case GlobalEnumDisplayMode.display20LargeLapDesk:
-      return ImageConfig(        
-        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_256.png',
-        renderSize: 256,
-      );
-    case GlobalEnumDisplayMode.display25Ultra4K:
-      return ImageConfig(        
-        assetPath: 'assets/png/mechanics/section_${sectionCode}_width_512.png',
-        renderSize: 512,
-      );
-  }
-}
-
 class ImageConfigArrow {
   final String assetPath;
   final double renderSize;
@@ -433,25 +332,41 @@ ImageConfigAvatar gGetAvatarPlayerCardImageConfig(String avatarCode) {
   }
 }
 
+class ImageConfigCenterRS {
+  final String assetPath;
+  final double renderSize;
+  final double scaleFactor;
+
+  const ImageConfigCenterRS({required this.assetPath, required this.renderSize, required this.scaleFactor});
+}
+
 // Returns Center tile configuration based on screen width for RostersSelection
-ImageConfig gGetCenterTileImageConfigRS(String tileType, String tileCode) {  
+ImageConfigCenterRS gGetCenterTileImageConfigRS(String tileType, String tileCode) {  
   switch (GlobalAppDisplay.displayMode) {
     case GlobalEnumDisplayMode.display05SmallPhone:
     case GlobalEnumDisplayMode.display10CompactPhone:
-    case GlobalEnumDisplayMode.display15MediumTablet:
-      return ImageConfig(        
+      return ImageConfigCenterRS(        
         assetPath: 'assets/png/tiles/${tileType}_${tileCode}_128x128.png',
         renderSize: 128,
+        scaleFactor: 0.50,
+      );
+    case GlobalEnumDisplayMode.display15MediumTablet:
+      return ImageConfigCenterRS(        
+        assetPath: 'assets/png/tiles/${tileType}_${tileCode}_128x128.png',
+        renderSize: 128,
+        scaleFactor: 1.0,
       );
     case GlobalEnumDisplayMode.display20LargeLapDesk:
-      return ImageConfig(        
+      return ImageConfigCenterRS(        
         assetPath: 'assets/png/tiles/${tileType}_${tileCode}_256x256.png',
         renderSize: 256,
+        scaleFactor: 1.0,
       );
     case GlobalEnumDisplayMode.display25Ultra4K:
-      return ImageConfig(        
+      return ImageConfigCenterRS(        
         assetPath: 'assets/png/tiles/${tileType}_${tileCode}_512x512.png',
         renderSize: 512,
+        scaleFactor: 1.0,
       );
   }
 }
@@ -479,7 +394,7 @@ ImageConfigAvatar gGetAvatarPlayerFrameImageConfigRS() {
   }
 }
 
-// Returns Player image for Avatars Picker based on screen width for RostersSelection
+// Returns Player image for Players Picker based on screen width for RostersSelection
 ImageConfigAvatar gGetAvatarPlayerImageConfigRS(String avatarCode) {
   switch (GlobalAppDisplay.displayMode) {
     case GlobalEnumDisplayMode.display05SmallPhone:
@@ -538,6 +453,52 @@ ImageConfigAvatar gGetAvatarTeamCardImageConfigRS(String avatarCode) {
     case GlobalEnumDisplayMode.display05SmallPhone:
     case GlobalEnumDisplayMode.display10CompactPhone:
     
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_64x64.png',
+        renderSize: 64,
+      );
+    case GlobalEnumDisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_128x128.png',
+        renderSize: 128,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/avatars/avatar_${avatarCode}_256x256.png',
+        renderSize: 256,
+      );
+  }
+}
+
+// Returns Framing image for Players Grid Background based on screen width for RostersSelection
+ImageConfigAvatar gGetAvatarPlayerFrameImageConfigGB() {  
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_64x64.png',
+        renderSize: 64,
+      );
+    case GlobalEnumDisplayMode.display15MediumTablet:
+    case GlobalEnumDisplayMode.display20LargeLapDesk:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_128x128.png',
+        renderSize: 128,
+      );
+    case GlobalEnumDisplayMode.display25Ultra4K:
+      return ImageConfigAvatar(        
+        assetPath: 'assets/png/mechanics/player_avatar_256x256.png',
+        renderSize: 256,
+      );
+  }
+}
+
+// Returns Player image for Players Grid Background based on screen width for RostersSelection
+ImageConfigAvatar gGetAvatarPlayerImageConfigGB(String avatarCode) {
+  switch (GlobalAppDisplay.displayMode) {
+    case GlobalEnumDisplayMode.display05SmallPhone:
+    case GlobalEnumDisplayMode.display10CompactPhone:
       return ImageConfigAvatar(        
         assetPath: 'assets/png/avatars/avatar_${avatarCode}_64x64.png',
         renderSize: 64,

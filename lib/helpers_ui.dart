@@ -1,5 +1,6 @@
 // Flutter basics
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -42,11 +43,11 @@ String gGetPrivacyPolicySection(int section) {
 String gGetInformationSection(int section) {
   switch (section) {
     case 1:
-      return "This app was created for :\nThe LGGDS Darts League\nStoneham-et-Tewkesbury, Quebec\nCanada";
+      return "This app was created for :\nThe LGGDS Darts League\nStoneham-et-Tewkesbury, Québec\nCanada";
     case 2:      
       return "1. First deployment\n";
     case 3:
-      return "Some artworks in this app are used with a license I bought from iconscout.com\n"
+      return "Some artworks in this app are used with a license I bought from openart.ai !\n"
              "The rest of artworks were created by me.";
     default:
       return "";
@@ -365,7 +366,7 @@ Widget gBuildPlayerAvatarCard({
   required TblPlayer player, 
   required ImageConfigAvatar avatarFrameImageConfig,
   required ImageConfigAvatar avatarPlayerImageConfig,
-  required GlobalSettingType enuSettingType,
+  required Color bgColor,
 }) {
   return Center(
     child: AspectRatio(
@@ -388,7 +389,7 @@ Widget gBuildPlayerAvatarCard({
                     width: avatarFrameImageConfig.renderSize * 0.95,
                     height: avatarFrameImageConfig.renderSize * 0.95,
                     decoration: BoxDecoration(
-                      color: enuSettingType.tileBackgroundColor,
+                      color: bgColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -461,16 +462,14 @@ Widget gBuildPlayerAvatarCard({
 }
 
 Widget gBuildTeamCardMainUI({
-  required ImageConfigTeamCardFrame teamCardFrameImageConfig, // = gGetMainUITeamCardHFrameImage(),
-  required ImageConfigAvatar avatarPlayer1ImageConfig, // = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer1);
-  required ImageConfigAvatar avatarPlayer2ImageConfig, // = gGetAvatarPlayerCardImageConfig(_selectedAvatarCodePlayer2);
+  required ImageConfigTeamCardFrame teamCardFrameImageConfig,
+  required ImageConfigAvatar avatarPlayer1ImageConfig,
+  required ImageConfigAvatar avatarPlayer2ImageConfig,
   required Color colorBgAvatar,
   required bool isDummyTeam,
   required TblPlayer? selectedPlayer1,
   required TblPlayer? selectedPlayer2,
 }) {
-  
-
   return SizedBox(
     width: teamCardFrameImageConfig.renderWidth,
     height: teamCardFrameImageConfig.renderHeight,
@@ -620,5 +619,65 @@ Widget gBuildTeamCardMainUI({
           ),
       ]
     ),
+  );
+}
+
+PreferredSizeWidget gBuildAppBar({
+  required double gToolbarHeight,
+  required String gAppBarTitle,
+  required Color gAppBarColorBg,
+  required bool gCallFromMainScreen,
+  required VoidCallback? gOnPressed,
+  Widget? gRightPopupMenu,
+}) {
+  return AppBar(
+    toolbarHeight: gToolbarHeight,
+    backgroundColor: gAppBarColorBg,
+    title: Row (
+      children: [
+        Padding(
+          padding: EdgeInsets.all((GlobalAppDisplay.safeHeight * 0.12).clamp(4.0, 12.0)),
+          child: SizedBox(
+            height: (GlobalAppDisplay.safeHeight * 0.08).clamp(48.0, 128.0),
+            child: AspectRatio(
+              aspectRatio: 1.0,
+              child: SvgPicture.asset(
+                'assets/svg/logos/darts_101_logo.svg', // Update with your actual SVG logo path
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              gAppBarTitle, 
+              style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.02).clamp(18.0, 60.0)),
+            ),
+          ),
+        ),
+      ]          
+    ),
+    actions: [
+      if (kDebugMode && gCallFromMainScreen) ...[
+        
+          TextButton.icon(
+            onPressed: gOnPressed,
+            icon: Icon(Icons.aspect_ratio, color: Colors.amber, size: GlobalAppDisplay.safeHeight * 0.03),
+            label: Text(
+              '${GlobalAppDisplay.carouselTileSize.toInt()}px',
+              style: TextStyle(
+                color: Colors.amber,
+                fontWeight: FontWeight.bold,
+                fontSize: GlobalAppDisplay.safeHeight * 0.022,
+              ),
+            ),
+          ),
+          
+          ?gRightPopupMenu,
+        ]
+    ],
   );
 }

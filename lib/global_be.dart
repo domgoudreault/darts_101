@@ -116,6 +116,32 @@ enum GlobalSettingType {
   }
 }
 
+// Global enum representing Players Rosters Grid Config
+enum GlobalPlayersGridConfig {
+  topLeft(position: 1, alignment: Alignment(-0.30, -0.85), bgColor: Color(0xFFFF7043)), // Vibrant Orange
+  topRight(position: 4, alignment: Alignment( 0.30, -0.85), bgColor: Color(0xFF66BB6A)), // Emerald Green
+  bottomLeft(position: 3, alignment: Alignment( -0.30,  0.85), bgColor: Color(0xFF29B6F6)), // Bright Sky Blue
+  bottomRight(position: 2, alignment: Alignment( 0.30,  0.85), bgColor: Color(0xFFFFEE58)), // Vivid Yellow
+  topCenter(position: 6, alignment: Alignment(0.00, -0.95), bgColor: Color(0xFFAB47BC)), // Electric Purple
+  bottomCenter(position: 5, alignment: Alignment(0.00, 0.95), bgColor: Color(0xFFFFA726)), // Tangerine
+  topLeftLeft(position: 9, alignment: Alignment(-0.90, -0.85), bgColor: Color(0xFF26A69A)), // Teal
+  topRightRight(position: 12, alignment: Alignment(0.90, -0.85), bgColor: Color(0xFFEC407A)), // Hot Pink
+  bottomLeftLeft(position: 11, alignment: Alignment(-0.90, 0.85), bgColor: Color(0xFF5C6BC0)), // Indigo
+  bottomRightRight(position: 10, alignment: Alignment(0.90, 0.85), bgColor: Color(0xFF9CCC65)), // Lime
+  middleLeftLeft(position: 7, alignment: Alignment(-0.60, 0.00), bgColor: Color(0xFFEF5350)), // Coral Red
+  middleRightRight(position: 8, alignment: Alignment(0.60, 0.00), bgColor: Color(0xFF26C6DA)); // Cyan
+
+  final int position;
+  final Alignment alignment;
+  final Color bgColor;
+
+  const GlobalPlayersGridConfig({
+    required this.position,
+    required this.alignment,
+    required this.bgColor,
+  });
+}
+
 // Global enum representing device display tiers
 enum GlobalEnumDisplayMode {
   display05SmallPhone,

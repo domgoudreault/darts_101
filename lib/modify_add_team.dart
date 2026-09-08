@@ -296,7 +296,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                           return gBuildPlayerAvatarCard(
                             avatarFrameImageConfig: avatarFrameImageConfig,
                             avatarPlayerImageConfig: gGetAvatarPlayerImageConfig(player.fldAvatarCode),
-                            enuSettingType: widget.enuSettingType,
+                            bgColor: widget.enuSettingType.tileBackgroundColor,
                             player: player);
                         }).toList(),
                       ),
@@ -315,28 +315,18 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
 
     //final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
     final ImageConfigDummy dummyImageConfig = gGetDummyImageConfig();
+    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
-      appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: widget.enuSettingType.tileColor,
-        title: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 48.0,
-                height: 48.0,
-                child: Image.asset(
-                  'assets/png/logos/darts_101_logo_48x48.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Text(widget.enuFormMode == FormMode.formAdd ? 'Add a team' : 'Modify a team', style: gBuildArcadeTextStyle(20)),
-          ],
-        ),
+      appBar: 
+        gBuildAppBar(
+          gToolbarHeight: toolbarHeight,
+          gAppBarTitle: widget.enuSettingType.tileDisplayName, 
+          gAppBarColorBg: widget.enuSettingType.tileColor,
+          gCallFromMainScreen: false,
+          gOnPressed: null,
+          gRightPopupMenu: null,
       ),
       
       body: SafeArea(

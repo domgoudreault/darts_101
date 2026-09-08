@@ -36,6 +36,9 @@ class RostersSelection extends StatefulWidget {
 }
 
 class _RostersSelectionState extends State<RostersSelection> {  
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   // Access boxes
   late Box<TblPlayer> playersBox;
   late Box<TblTeam> teamsBox;
@@ -50,8 +53,20 @@ class _RostersSelectionState extends State<RostersSelection> {
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim().toLowerCase();
+      });
+    });
+
     playersBox = Hive.box<TblPlayer>('playersBox');
     teamsBox = Hive.box<TblTeam>('teamsBox');
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   /* Future<void> _resumeGame(BuildContext context, TblGame game) async {
@@ -93,41 +108,23 @@ class _RostersSelectionState extends State<RostersSelection> {
     final gameCenterTileImageConfigRS = gGetCenterTileImageConfigRS(widget.enuGameType.tileType, widget.enuGameType.tileCode);
     final ImageConfigAvatar avatarPlayerFrameImageConfigRS = gGetAvatarPlayerFrameImageConfigRS();
     final teamCardFrameImageConfig = gGetCarouselTeamCardHFrameImageRS();
+    final ImageConfigAvatar avatarPlayerFrameImageConfigGB = gGetAvatarPlayerFrameImageConfigGB();
 
     final ImageConfigArrow leftArrowConfig = gGetArrowImageConfig(true);
     final ImageConfigArrow rightArrowConfig = gGetArrowImageConfig(false);
+    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
   
     
     return Scaffold(
       backgroundColor: widget.enuGameType.tileBackgroundColor,
-      appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: widget.enuGameType.tileColor,
-        title: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 48.0,
-                height: 48.0,
-                child: Image.asset(
-                  'assets/png/logos/darts_101_logo_48x48.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Rosters Selection (${widget.enuGameType.tileDisplayName})',
-                  style: gBuildArcadeTextStyle(20),
-                ),
-              ),
-            ),
-          ],
-        ),
+      appBar: 
+        gBuildAppBar(
+          gToolbarHeight: toolbarHeight,
+          gAppBarTitle: widget.enuGameType.tileDisplayName, 
+          gAppBarColorBg: widget.enuGameType.tileColor,
+          gCallFromMainScreen: false,
+          gOnPressed: null,
+          gRightPopupMenu: null,
       ),
       
       body: SafeArea(
@@ -148,113 +145,126 @@ class _RostersSelectionState extends State<RostersSelection> {
             ),
             Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 1. Toggle Button
-                      // PLAYERS BUTTON (Left side rounded, right side flat)
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (!_isPlayersSelection) {
-                              setState(() {
-                                _isPlayersSelection = true;
-                              });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            decoration: BoxDecoration(
-                              color: _isPlayersSelection ? GlobalSettingType.players.tileColor : Colors.grey.shade800,
-                              borderRadius: const BorderRadius.horizontal(
-                                left: Radius.circular(16.0),
-                                right: Radius.zero,
-                              ),
-                              border: Border.all(
-                                color: _isPlayersSelection ? Colors.amber : Colors.white, 
-                                width: (avatarPlayerFrameImageConfigRS.renderSize * 0.025).clamp(1.5, 4.0),
-                              ),
-                            ),
-                            child: Text(
-                              'PLAYERS',
-                              style: gBuildArcadeTextStyle(
-                                _responsiveFontSize * 0.85, 
-                                gTextColor: _isPlayersSelection ? Colors.amber : Colors.white,
+                // 1.2 Seach Bar
+                Center(
+                  child: SizedBox(
+                    width: GlobalAppDisplay.safeWidth * 0.85,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.02),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: GlobalAppDisplay.carouselTileSize * 0.12,
+                              child: FocusScope(
+                                node: FocusScopeNode(),
+                                child: TextField(
+                                  controller: _searchController,
+                                  style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search player name or nickname...',
+                                    hintStyle: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035, gTextColor: Colors.grey.shade400),
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      color: Colors.amber,
+                                      size: GlobalAppDisplay.carouselTileSize * 0.09,
+                                    ),
+                                    suffixIcon: Row(
+                                      mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        // 1. Clear Button (Only shows when search is active)
+                                        if (_searchQuery.isNotEmpty)
+                                          IconButton(
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            icon: Icon(
+                                              Icons.clear,
+                                              color: Colors.white54,
+                                              size: GlobalAppDisplay.carouselTileSize * 0.065,
+                                            ),
+                                            onPressed: () => _searchController.clear(),
+                                          ),
+
+                                        // Gap between clear button and counter pill
+                                        SizedBox(width: GlobalAppDisplay.carouselTileSize * 0.015),
+
+                                        // 2. Embedded Arcade Counter Pill
+                                        ValueListenableBuilder<Box<TblPlayer>>(
+                                          valueListenable: playersBox.listenable(),
+                                          builder: (context, box, _) {
+                                            final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
+                                            final filteredCount = _searchQuery.isEmpty
+                                                ? activePlayers.length
+                                                : activePlayers.where((player) {
+                                                    final query = _searchQuery.toLowerCase();
+                                                    return player.fldFirstName.toLowerCase().contains(query) ||
+                                                        player.fldLastName.toLowerCase().contains(query) ||
+                                                        player.fldNickName.toLowerCase().contains(query);
+                                                  }).length;
+
+                                            return Container(
+                                              margin: EdgeInsets.only(
+                                                right: GlobalAppDisplay.carouselTileSize * 0.015,
+                                                top: GlobalAppDisplay.carouselTileSize * 0.015,
+                                                bottom: GlobalAppDisplay.carouselTileSize * 0.015,
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: GlobalAppDisplay.carouselTileSize * 0.025,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade900,
+                                                borderRadius: BorderRadius.circular(GlobalAppDisplay.carouselTileSize * 0.02),
+                                                border: Border.all(
+                                                  color: Colors.amber,
+                                                  width: (GlobalAppDisplay.carouselTileSize * 0.005).clamp(1.0, 2.0),
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: Text(
+                                                    _searchQuery.isEmpty 
+                                                        ? '$filteredCount' 
+                                                        : '$filteredCount/${activePlayers.length}',
+                                                    style: gBuildArcadeTextStyle(
+                                                      GlobalAppDisplay.carouselTileSize * 0.035,
+                                                      gTextColor: Colors.amber,
+                                                      gFontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 0,
+                                      horizontal: GlobalAppDisplay.carouselTileSize * 0.045,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade800,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(GlobalAppDisplay.carouselTileSize * 0.03),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(GlobalAppDisplay.carouselTileSize * 0.03),
+                                      borderSide: BorderSide(
+                                        color: Colors.amber,
+                                        width: (GlobalAppDisplay.carouselTileSize * 0.008).clamp(1.5, 4.0),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      
-                      // TEAMS BUTTON (Left side flat, right side rounded - the mirror)
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (_isPlayersSelection) {
-                              setState(() {
-                                _isPlayersSelection = false;
-                              });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            decoration: BoxDecoration(
-                              color: _isPlayersSelection ? Colors.grey.shade800 : GlobalSettingType.teams.tileColor,
-                              borderRadius: const BorderRadius.horizontal(
-                                left: Radius.zero,
-                                right: Radius.circular(16.0),
-                              ),
-                              border: Border.all(
-                                color: _isPlayersSelection ? Colors.white : Colors.amber, 
-                                width: (avatarPlayerFrameImageConfigRS.renderSize * 0.025).clamp(1.5, 4.0),
-                              ),
-                            ),
-                            child: Text(
-                              'TEAMS',
-                              style: gBuildArcadeTextStyle(
-                                _responsiveFontSize * 0.85, 
-                                gTextColor: _isPlayersSelection ? Colors.white : Colors.amber,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      SizedBox(width: _responsiveTile * 0.015),
-                      // Left Arrow on right side
-                      GifView.asset(
-                        leftArrowConfig.assetPath,
-                        height: leftArrowConfig.renderSize,
-                        fit: BoxFit.contain,
-                      ),
-
-                      const Spacer(),
-
-                      // Right Arrow on left side
-                      GifView.asset(
-                        rightArrowConfig.assetPath,
-                        height: rightArrowConfig.renderSize,
-                        fit: BoxFit.contain,
-                      ),
-                      SizedBox(width: _responsiveTile * 0.015),
-
-                      ElevatedButton.icon(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade700,
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.play_arrow),
-                        label: Text(
-                          'START NEW GAME',
-                          style: gBuildArcadeTextStyle(_responsiveFontSize),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 
@@ -266,32 +276,54 @@ class _RostersSelectionState extends State<RostersSelection> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // 1. Center Game Tile
-                        SizedBox(
-                          width: gameCenterTileImageConfigRS.renderSize,
-                          height: gameCenterTileImageConfigRS.renderSize,
-                          child: Stack(
-                            children: [
-                              // 1.1 Color fill tucked inside fixed canvas dimensions
-                              Positioned.fill(
-                                child: Padding(
-                                  padding: EdgeInsets.all(gameCenterTileImageConfigRS.renderSize * 0.03),
-                                  child: Container(color: widget.enuGameType.tileColor),
-                                ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // 1. Right Arrow on left side
+                            GifView.asset(
+                              rightArrowConfig.assetPath,
+                              height: rightArrowConfig.renderSize,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(width: _responsiveTile * 0.015),
+
+                            // 2. Center Game Tile
+                            SizedBox(
+                              width: gameCenterTileImageConfigRS.renderSize * gameCenterTileImageConfigRS.scaleFactor,
+                              height: gameCenterTileImageConfigRS.renderSize * gameCenterTileImageConfigRS.scaleFactor,
+                              child: Stack(
+                                children: [
+                                  // 1.1 Color fill tucked inside fixed canvas dimensions
+                                  Positioned.fill(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(gameCenterTileImageConfigRS.renderSize * 0.03),
+                                      child: Container(color: widget.enuGameType.tileColor),
+                                    ),
+                                  ),
+                                  // 1.2. PNG frame overlaid on top
+                                  Positioned.fill(
+                                    child: Image.asset(
+                                      gameCenterTileImageConfigRS.assetPath,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              // 1.2. PNG frame overlaid on top
-                              Positioned.fill(
-                                child: Image.asset(
-                                  gameCenterTileImageConfigRS.assetPath,
-                                  fit: BoxFit.fill,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+
+                            // 3. Left Arrow on right side
+                            SizedBox(width: _responsiveTile * 0.015),
+                            GifView.asset(
+                              leftArrowConfig.assetPath,
+                              height: leftArrowConfig.renderSize,
+                              fit: BoxFit.contain,
+                            ),
+                          ]
                         ),
 
                         // 2. Surrounding Arcade Roster Slots (Positioned dynamically based on index)
-                        ..._buildArcadeRosterSlots(avatarPlayerFrameImageConfigRS),
+                        ..._buildPlayersSlots(avatarPlayerFrameImageConfigGB),
 
 
 
@@ -304,7 +336,7 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                 // 3. Persistent Bottom Panel (Aligned horizontally with the box above, zero safe-area interference)
                 Container(
-                  width: GlobalAppDisplay.safeWidth * 0.84,
+                  width: GlobalAppDisplay.safeWidth * 0.85,
                   height: _isPlayersSelection 
                     ? avatarPlayerFrameImageConfigRS.renderSize + 64.0 
                     : teamCardFrameImageConfig.renderHeight + 64.0,
@@ -316,6 +348,17 @@ class _RostersSelectionState extends State<RostersSelection> {
                       top: Radius.circular(20.0),
                       bottom: Radius.zero,
                     ),
+                    border: Border.all(
+                      color: Colors.amber, // Or Colors.white depending on the contrast you want
+                      width: avatarPlayerFrameImageConfigRS.renderSize * 0.015,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(150),
+                        blurRadius: avatarPlayerFrameImageConfigRS.renderSize * 0.08,
+                        offset: const Offset(0, -4), // Casts shadow upward onto the screen content
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -323,7 +366,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                       Container(
                         width: double.infinity,
                         margin: const EdgeInsets.symmetric(horizontal: 3.0),
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
                         decoration: BoxDecoration(
                           color: _isPlayersSelection ? GlobalSettingType.players.tilePickerColor : GlobalSettingType.teams.tilePickerColor,
                           borderRadius: const BorderRadius.vertical(
@@ -335,10 +378,21 @@ class _RostersSelectionState extends State<RostersSelection> {
                             width: 1.5,
                           ),
                         ),
-                        child: Text(
-                          _isPlayersSelection ? 'SELECT PLAYERS' : 'SELECT TEAMS',
-                          textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
+                        
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Centered Title Text
+                            Text(
+                              _isPlayersSelection ? 'SELECT PLAYERS' : 'SELECT TEAMS',
+                              style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
+                            ),
+                            // Toggle Buttons anchored to the right side
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: _buildTogglePlayersTeams(avatarPlayerFrameImageConfigRS.renderSize),
+                            ),
+                          ],
                         ),
                       ),
 
@@ -349,10 +403,20 @@ class _RostersSelectionState extends State<RostersSelection> {
                           ? ValueListenableBuilder<Box<TblPlayer>>(
                               valueListenable: playersBox.listenable(),
                               builder: (context, box, _) {
-                                // Filter out players that are already selected in the roster
-                                final playerList = box.values
+                                // Filter out deleted and already selected players
+                                final activePlayers = box.values
                                     .where((player) => !player.fldIsDeleted && !_selectedPlayers.contains(player))
                                     .toList();
+
+                                // Apply search filter on top of active players
+                                final playerList = _searchQuery.isEmpty
+                                    ? activePlayers
+                                    : activePlayers.where((player) {
+                                        final query = _searchQuery.toLowerCase();
+                                        return player.fldFirstName.toLowerCase().contains(query) ||
+                                            player.fldLastName.toLowerCase().contains(query) ||
+                                            player.fldNickName.toLowerCase().contains(query);
+                                      }).toList();
 
                                 if (playerList.isEmpty) {
                                   return Center(
@@ -365,6 +429,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     ),
                                   );
                                 }
+
                                 return CarouselView(
                                   elevation: 0,
                                   backgroundColor: Colors.transparent,
@@ -380,7 +445,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     return gBuildPlayerAvatarCard(
                                       avatarFrameImageConfig: avatarPlayerFrameImageConfigRS,
                                       avatarPlayerImageConfig: gGetAvatarPlayerImageConfigRS(player.fldAvatarCode),
-                                      enuSettingType: GlobalSettingType.players,
+                                      bgColor: GlobalSettingType.players.tileBackgroundColor,
                                       player: player, );
                                   }).toList(),
                                 );
@@ -445,34 +510,23 @@ class _RostersSelectionState extends State<RostersSelection> {
     );
   }
 
-  List<Widget> _buildArcadeRosterSlots(ImageConfigAvatar frameConfig) {
-    // Define relative coordinate offsets (percentages or alignment factors) 
-    // corresponding to your arcade slots 1 through 12 layout blueprint.
-    final List<Alignment> slotAlignments = [
-      const Alignment(-0.35, -0.60), // Slot 1
-      const Alignment( 0.35,  0.60), // Slot 2
-      const Alignment(-0.35,  0.30), // Slot 3
-      const Alignment( 0.35, -0.30), // Slot 4
-      const Alignment( 0.00,  0.75), // Slot 5
-      const Alignment( 0.00, -0.75), // Slot 6
-      const Alignment(-0.70, -0.75), // Slot 7
-      const Alignment( 0.70,  0.75), // Slot 8
-      const Alignment(-0.70,  0.00), // Slot 9
-      const Alignment( 0.70,  0.00), // Slot 10
-      const Alignment(-0.70,  0.75), // Slot 11
-      const Alignment( 0.70, -0.75), // Slot 12
-    ];
+  List<Widget> _buildPlayersSlots(ImageConfigAvatar frameConfig) {
+    // Define relative coordinate offsets (percentages or alignment factors)
+    final slotAlignments = GlobalPlayersGridConfig.values.toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
 
     List<Widget> widgets = [];
-    double slotSize = frameConfig.renderSize; // Scale down slightly to fit nicely around the center tile
+    
+    // Give the outer slot a tiny bit of extra room for the amber border padding
+    final double outerSize = frameConfig.renderSize * 1.04;
 
     for (int i = 0; i < _selectedPlayers.length && i < slotAlignments.length; i++) {
       final player = _selectedPlayers[i];
-      final alignment = slotAlignments[i];
+      final slotAlignment = slotAlignments[i];
 
       widgets.add(
         Align(
-          alignment: alignment,
+          alignment: slotAlignment.alignment,
           child: GestureDetector(
             onTap: () {
               setState(() {
@@ -480,13 +534,52 @@ class _RostersSelectionState extends State<RostersSelection> {
               });
             },
             child: SizedBox(
-              width: slotSize,
-              height: slotSize,
-              child: gBuildPlayerAvatarCard(
-                avatarFrameImageConfig: frameConfig,
-                avatarPlayerImageConfig: gGetAvatarPlayerImageConfigRS(player.fldAvatarCode),
-                enuSettingType: GlobalSettingType.players,
-                player: player,
+              width: outerSize,
+              height: outerSize,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Layer 1: Background rectangle color / box frame placeholder
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: slotAlignment.bgColor, // Or your preferred background fill color
+                        borderRadius: BorderRadius.circular(outerSize * 0.22),
+                        border: Border.all(
+                          color: Colors.amber,
+                          width: outerSize * 0.02,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black,
+                            blurRadius: outerSize * 0.04,
+                            offset: const Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Layer 2: The exact-size Player Avatar Card sitting cleanly on top
+                  SizedBox(
+                    width: frameConfig.renderSize,
+                    height: frameConfig.renderSize,
+                    child: gBuildPlayerAvatarCard(
+                      avatarFrameImageConfig: frameConfig,
+                      avatarPlayerImageConfig: gGetAvatarPlayerImageConfigGB(player.fldAvatarCode),
+                      bgColor: slotAlignment.bgColor,
+                      player: player,
+                    ),
+                  ),
+
+                  // Layer 3: The Player Slot indicator
+                  /* Positioned.fill(
+                    child: Image.asset(
+                      gameCenterTileImageConfigRS.assetPath,
+                      fit: BoxFit.fill,
+                    ),
+                  ), */
+                ],
               ),
             ),
           ),
@@ -494,5 +587,80 @@ class _RostersSelectionState extends State<RostersSelection> {
       );
     }
     return widgets;
+  }
+
+  Widget _buildTogglePlayersTeams(double renderSize) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              if (!_isPlayersSelection) {
+                setState(() {
+                  _isPlayersSelection = true;
+                });
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              decoration: BoxDecoration(
+                color: _isPlayersSelection ? GlobalSettingType.players.tileColor : Colors.grey.shade800,
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(16.0),
+                  right: Radius.zero,
+                ),
+                border: Border.all(
+                  color: _isPlayersSelection ? Colors.amber : Colors.white, 
+                  width: renderSize * 0.015,
+                ),
+              ),
+              child: Text(
+                'PLAYERS',
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.85, 
+                  gTextColor: _isPlayersSelection ? Colors.amber : Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              if (_isPlayersSelection) {
+                setState(() {
+                  _isPlayersSelection = false;
+                });
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              decoration: BoxDecoration(
+                color: _isPlayersSelection ? Colors.grey.shade800 : GlobalSettingType.teams.tileColor,
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.zero,
+                  right: Radius.circular(16.0),
+                ),
+                border: Border.all(
+                  color: _isPlayersSelection ? Colors.white : Colors.amber, 
+                  width: renderSize * 0.015,
+                ),
+              ),
+              child: Text(
+                'TEAMS',
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.85, 
+                  gTextColor: _isPlayersSelection ? Colors.white : Colors.amber,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
   }
 }

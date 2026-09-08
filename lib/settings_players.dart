@@ -176,38 +176,18 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     // 1. Access the Hive box opened during initialization
     final playersBox = Hive.box<TblPlayer>('playersBox');
     final ImageConfigPlayerCardFrame playerCardFrameImageConfig = gGetCarouselPlayerCardFrameImage();
+    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
 
     return Scaffold(
-      //pour le background color en bas du titre et pour le reste de la page
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
-      appBar: AppBar(        
-        foregroundColor: Colors.white,
-        backgroundColor: widget.enuSettingType.tileColor,
-        title: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 48.0,
-                height: 48.0,
-                child: Image.asset(
-                  'assets/png/logos/darts_101_logo_48x48.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  widget.enuSettingType.tileDisplayName,
-                  style: gBuildArcadeTextStyle(20),
-                ),
-              ),
-            ),
-          ],
-        ),
+      appBar: 
+        gBuildAppBar(
+          gToolbarHeight: toolbarHeight,
+          gAppBarTitle: widget.enuSettingType.tileDisplayName, 
+          gAppBarColorBg: widget.enuSettingType.tileColor,
+          gCallFromMainScreen: false,
+          gOnPressed: null,
+          gRightPopupMenu: null,
       ),
 
       body: SafeArea(

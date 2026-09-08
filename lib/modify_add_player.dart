@@ -298,28 +298,18 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   @override
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
+    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
-      appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: widget.enuSettingType.tileColor,
-        title: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 48.0,
-                height: 48.0,
-                child: Image.asset(
-                  'assets/png/logos/darts_101_logo_48x48.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Text(widget.enuFormMode == FormMode.formAdd ? 'Add a player' : 'Modify a player', style: gBuildArcadeTextStyle(20)),
-          ],
-        ),
+      appBar: 
+        gBuildAppBar(
+          gToolbarHeight: toolbarHeight,
+          gAppBarTitle: widget.enuSettingType.tileDisplayName, 
+          gAppBarColorBg: widget.enuSettingType.tileColor,
+          gCallFromMainScreen: false,
+          gOnPressed: null,
+          gRightPopupMenu: null,
       ),
       
       body: SafeArea(

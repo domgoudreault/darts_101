@@ -88,8 +88,9 @@ flutter:
     - assets/png/mechanics/
     - assets/png/tiles/
     - assets/svg/
-    - assets/svg/ui_buttons/
     - assets/svg/games/
+    - assets/svg/logos/
+    - assets/svg/ui_buttons/
     - assets/lottie/
     - assets/google_fonts/
 
