@@ -201,8 +201,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
             // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: teamCardFrameImageConfig.renderHeight * 0.06,
-                vertical: teamCardFrameImageConfig.renderHeight * 0.02,
+                horizontal: GlobalAppDisplay.safeWidth * 0.008,
+                vertical: GlobalAppDisplay.safeHeight * 0.008,
               ),
               color: Colors.grey.shade900,
               child: Column(
@@ -219,6 +219,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                         ),
                       ),
                       SizedBox(width: teamCardFrameImageConfig.renderHeight * 0.02),
+
                       MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
@@ -286,26 +287,26 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                     ],
                   ),
 
-                  SizedBox(height: teamCardFrameImageConfig.renderHeight * 0.015),
+                  SizedBox(height: GlobalAppDisplay.safeHeight * 0.010),
 
                   // 1.2 Seach Bar
                   Row(
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: teamCardFrameImageConfig.renderHeight * 0.12,
+                          height: GlobalAppDisplay.safeHeight * 0.075,
                           child: FocusScope(
                             node: FocusScopeNode(),
                             child: TextField(
                               controller: _searchController,
-                              style: gBuildArcadeTextStyle(teamCardFrameImageConfig.renderHeight * 0.035),
+                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.0195),
                               decoration: InputDecoration(
                                 hintText: 'Search names or nicknames (space separated)...',
-                                hintStyle: gBuildArcadeTextStyle(teamCardFrameImageConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
+                                hintStyle: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.0195, gTextColor: Colors.grey.shade400),
                                 prefixIcon: Icon(
                                   Icons.search,
                                   color: Colors.amber,
-                                  size: teamCardFrameImageConfig.renderHeight * 0.09,
+                                  size: GlobalAppDisplay.safeHeight * 0.060,
                                 ),
                                 suffixIcon: Row(
                                   mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
@@ -319,13 +320,13 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                         icon: Icon(
                                           Icons.clear,
                                           color: Colors.white54,
-                                          size: teamCardFrameImageConfig.renderHeight * 0.065,
+                                          size: GlobalAppDisplay.safeHeight * 0.045,
                                         ),
                                         onPressed: () => _searchController.clear(),
                                       ),
 
                                     // Gap between clear button and counter pill
-                                    SizedBox(width: teamCardFrameImageConfig.renderHeight * 0.015),
+                                    SizedBox(width: GlobalAppDisplay.safeWidth * 0.0065),
 
                                     // 2. Embedded Arcade Counter Pill
                                     ValueListenableBuilder<Box<TblTeam>>(
@@ -336,19 +337,19 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
                                         return Container(
                                           margin: EdgeInsets.only(
-                                            right: teamCardFrameImageConfig.renderHeight * 0.015,
-                                            top: teamCardFrameImageConfig.renderHeight * 0.015,
-                                            bottom: teamCardFrameImageConfig.renderHeight * 0.015,
+                                            right: GlobalAppDisplay.safeHeight * 0.01,
+                                            top: GlobalAppDisplay.safeHeight * 0.01,
+                                            bottom: GlobalAppDisplay.safeHeight * 0.01,
                                           ),
                                           padding: EdgeInsets.symmetric(
-                                            horizontal: teamCardFrameImageConfig.renderHeight * 0.025,
+                                            horizontal: GlobalAppDisplay.safeHeight * 0.015,
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.grey.shade900,
-                                            borderRadius: BorderRadius.circular(teamCardFrameImageConfig.renderHeight * 0.02),
+                                            borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
                                             border: Border.all(
                                               color: Colors.amber,
-                                              width: (teamCardFrameImageConfig.renderHeight * 0.005).clamp(1.0, 2.0),
+                                              width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
                                             ),
                                           ),
                                           child: Center(
@@ -359,7 +360,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                                   ? '$filteredCount' 
                                                   : '$filteredCount/${activeTeams.length}',
                                                 style: gBuildArcadeTextStyle(
-                                                  teamCardFrameImageConfig.renderHeight * 0.035,
+                                                  GlobalAppDisplay.safeHeight * 0.020,
                                                   gTextColor: Colors.amber,
                                                   gFontWeight: FontWeight.bold,
                                                 ),
@@ -371,21 +372,17 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                     ),
                                   ],
                                 ),
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 0,
-                                  horizontal: teamCardFrameImageConfig.renderHeight * 0.045,
-                                ),
                                 filled: true,
                                 fillColor: Colors.grey.shade800,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(teamCardFrameImageConfig.renderHeight * 0.03),
+                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
                                   borderSide: BorderSide.none,
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(teamCardFrameImageConfig.renderHeight * 0.03),
+                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
                                   borderSide: BorderSide(
                                     color: Colors.amber,
-                                    width: (teamCardFrameImageConfig.renderHeight * 0.008).clamp(1.5, 4.0),
+                                    width: (GlobalAppDisplay.safeHeight * 0.005).clamp(1.5, 4.0),
                                   ),
                                 ),
                               ),

@@ -121,12 +121,12 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       context, 
       tileColor: widget.enuSettingType.tileColor,
       tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
-      assetFullPath: 'assets/png/logos/LGGDS_360x360.png',
+      assetFullPath: 'assets/png/logos/LGGDS.png',
       headerText: 'SAMPLE LGGDS LEAGUE DATA ?',
       titleText: 'No players found.',
       questionText: 'Would you like to seed default LEAGUE players and teams for testing?',
-      noButtonText: 'NO,\nI\'LL ADD BY HAND',
-      yesButtonText: 'YES,\nGENERATE LEAGUE FOR ME',
+      noButtonText: 'NO,\nLATER',
+      yesButtonText: 'YES,\nNOW',
       onNoPressed: (dialogContext) {
         Navigator.pop(dialogContext);
         _showPlayersSeedDialog();
@@ -151,12 +151,12 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       context, 
       tileColor: widget.enuSettingType.tileColor,
       tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
-      assetFullPath: 'assets/png/tiles/settings_players_256x256.png',
+      assetFullPath: 'assets/png/tiles/settings_players.png',
       headerText: 'SAMPLE DEFAULT PLAYERS ?',
       titleText: 'No players found.',
       questionText: 'Would you like us to auto-generate sample default players for you?',
-      noButtonText: 'NO,\nI\'LL ADD BY HAND',
-      yesButtonText: 'YES,\nGENERATE FOR ME',
+      noButtonText: 'NO,\nLATER',
+      yesButtonText: 'YES,\nNOW',
       onNoPressed: (dialogContext) {
         Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
       },
@@ -193,43 +193,46 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
+            // 1. TOP SEGMENTED TOGGLE BAR (Takes (1/4 * 0.9) - toolbarHeight of screen free space)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: playerCardFrameImageConfig.renderHeight * 0.06,
-                vertical: playerCardFrameImageConfig.renderHeight * 0.02,
+                horizontal: GlobalAppDisplay.safeWidth * 0.008,
+                vertical: GlobalAppDisplay.safeHeight * 0.008,
               ),
+              height: (GlobalAppDisplay.safeHeight-toolbarHeight) * (1/4) * 0.9,
               color: Colors.grey.shade900,
               child: Column(
                 children: [
                   // 1.1 Add Player Banner
-                  gBuildArcadeActionBanner(
-                    gLeadingText: 'ADD NEW',
-                    gTrailingText: 'PLAYER',
-                    gFormMode: FormMode.formAdd,
-                    gOnTap: () => _addPlayer(context),
+                  Flexible(
+                    child: gBuildArcadeActionBanner(
+                      gLeadingText: 'ADD NEW',
+                      gTrailingText: 'PLAYER',
+                      gFormMode: FormMode.formAdd,
+                      gOnTap: () => _addPlayer(context),
+                    ),
                   ),
 
-                  SizedBox(height: playerCardFrameImageConfig.renderHeight * 0.015),
+                  SizedBox(height: GlobalAppDisplay.safeHeight * 0.010),
 
                   // 1.2 Seach Bar
                   Row(
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: playerCardFrameImageConfig.renderHeight * 0.12,
+                          height: GlobalAppDisplay.safeHeight * 0.075,
                           child: FocusScope(
                             node: FocusScopeNode(),
                             child: TextField(
                               controller: _searchController,
-                              style: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035),
+                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.0195),
                               decoration: InputDecoration(
                                 hintText: 'Search player name or nickname...',
-                                hintStyle: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.035, gTextColor: Colors.grey.shade400),
+                                hintStyle: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.0195, gTextColor: Colors.grey.shade400),
                                 prefixIcon: Icon(
                                   Icons.search,
                                   color: Colors.amber,
-                                  size: playerCardFrameImageConfig.renderHeight * 0.09,
+                                  size: GlobalAppDisplay.safeHeight * 0.060,
                                 ),
                                 suffixIcon: Row(
                                   mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
@@ -243,13 +246,13 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                         icon: Icon(
                                           Icons.clear,
                                           color: Colors.white54,
-                                          size: playerCardFrameImageConfig.renderHeight * 0.065,
+                                          size: GlobalAppDisplay.safeHeight * 0.045,
                                         ),
                                         onPressed: () => _searchController.clear(),
                                       ),
 
                                     // Gap between clear button and counter pill
-                                    SizedBox(width: playerCardFrameImageConfig.renderHeight * 0.015),
+                                    SizedBox(width: GlobalAppDisplay.safeWidth * 0.0065),
 
                                     // 2. Embedded Arcade Counter Pill
                                     ValueListenableBuilder<Box<TblPlayer>>(
@@ -267,19 +270,19 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
                                         return Container(
                                           margin: EdgeInsets.only(
-                                            right: playerCardFrameImageConfig.renderHeight * 0.015,
-                                            top: playerCardFrameImageConfig.renderHeight * 0.015,
-                                            bottom: playerCardFrameImageConfig.renderHeight * 0.015,
+                                            right: GlobalAppDisplay.safeHeight * 0.01,
+                                            top: GlobalAppDisplay.safeHeight * 0.01,
+                                            bottom: GlobalAppDisplay.safeHeight * 0.01,
                                           ),
                                           padding: EdgeInsets.symmetric(
-                                            horizontal: playerCardFrameImageConfig.renderHeight * 0.025,
+                                            horizontal: GlobalAppDisplay.safeHeight * 0.015,
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.grey.shade900,
-                                            borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.02),
+                                            borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
                                             border: Border.all(
                                               color: Colors.amber,
-                                              width: (playerCardFrameImageConfig.renderHeight * 0.005).clamp(1.0, 2.0),
+                                              width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
                                             ),
                                           ),
                                           child: Center(
@@ -290,7 +293,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                                     ? '$filteredCount' 
                                                     : '$filteredCount/${activePlayers.length}',
                                                 style: gBuildArcadeTextStyle(
-                                                  playerCardFrameImageConfig.renderHeight * 0.035,
+                                                  GlobalAppDisplay.safeHeight * 0.020,
                                                   gTextColor: Colors.amber,
                                                   gFontWeight: FontWeight.bold,
                                                 ),
@@ -302,21 +305,17 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                     ),
                                   ],
                                 ),
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 0,
-                                  horizontal: playerCardFrameImageConfig.renderHeight * 0.045,
-                                ),
                                 filled: true,
                                 fillColor: Colors.grey.shade800,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.03),
+                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
                                   borderSide: BorderSide.none,
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(playerCardFrameImageConfig.renderHeight * 0.03),
+                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
                                   borderSide: BorderSide(
                                     color: Colors.amber,
-                                    width: (playerCardFrameImageConfig.renderHeight * 0.008).clamp(1.5, 4.0),
+                                    width: (GlobalAppDisplay.safeHeight * 0.005).clamp(1.5, 4.0),
                                   ),
                                 ),
                               ),
@@ -328,14 +327,14 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                   ),
                 ],
               ),
-            ),            
+            ),
 
-            // 2. LIVE PLAYER CAROUSEL DISPLAY AREA
+            // 2. LIVE PLAYER CAROUSEL DISPLAY AREA (Takes 3/4 - toolbarHeight of screen free space)
             Expanded(
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  height: GlobalAppDisplay.carouselTileSize,
+                  width: (GlobalAppDisplay.safeWidth),
                   child: ValueListenableBuilder<Box<TblPlayer>>(
                     valueListenable: playersBox.listenable(),
                     builder: (context, box, _) {
@@ -363,10 +362,13 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                         );
                       }
 
+                      final cardHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4);
+                      final cardWidth = cardHeight * 0.6836;
+
                       return CarouselView(
                         controller: _carouselController,
-                        itemExtent: playerCardFrameImageConfig.renderWidth,
-                        shrinkExtent: 80,
+                        itemExtent: cardWidth,
+                        shrinkExtent: cardWidth * 0.5,
                         backgroundColor: Colors.transparent,
                         overlayColor: WidgetStateProperty.all(Colors.transparent),
                         shape: const RoundedRectangleBorder(
@@ -377,7 +379,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           _onPlayerTapped(context, player);
                         },
                         children: players
-                            .map((player) => _buildPlayerCard(context, player))
+                            .map((player) => _buildPlayerCard(context, player, cardHeight, cardWidth))
                             .toList(),
                       );
                     },
@@ -394,59 +396,57 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   Widget _buildPlayerCard(
     BuildContext context,
     TblPlayer player,
+    double cardHeight,
+    double cardWidth,
   ) {
-    final ImageConfigPlayerCardFrame playerCardFrameImageConfig = gGetCarouselPlayerCardFrameImage();
-
     return Center(
       child: AspectRatio(
-        aspectRatio: playerCardFrameImageConfig.renderWidth / playerCardFrameImageConfig.renderHeight,
+        aspectRatio: 0.6836,
         child: FittedBox(
-          fit: BoxFit.contain, // Forces height and width to scale down together proportionally
+          fit: BoxFit.contain,
           child: SizedBox(
-            width: playerCardFrameImageConfig.renderWidth,
-            height: playerCardFrameImageConfig.renderHeight,
+            height: cardHeight,
+            width: cardWidth,
             child: Stack(
               children: [
                 // 1. PNG Frame Background
                 Positioned.fill(
                   child: Image.asset(
-                    playerCardFrameImageConfig.assetPathBackground,
+                    'assets/png/mechanics/player_card_bg.png',
                     fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
 
                 // 2. Avatar Layer
                 Positioned.fill(
                   child: Image.asset(
-                    gGetCarouselPlayerCardImage(player.fldAvatarCode).assetPath,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.account_circle,
-                      size: 64,
-                      color: Colors.white38,
-                    ),
+                    'assets/png/avatars/avatar_${player.fldAvatarCode}_player_card.png',
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,                    
                   ),
                 ),
 
                 // 3. PNG Frame Overlay
                 Positioned.fill(
                   child: Image.asset(
-                    playerCardFrameImageConfig.assetPathFrame,
+                    'assets/png/mechanics/player_card_frame.png',
                     fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
-                
+                  
                 // 4. Player Data Text Overlay Layer (On top of white card area)
                 Positioned(
-                  top: playerCardFrameImageConfig.renderHeight * 0.52,
-                  left: playerCardFrameImageConfig.renderHeight * 0.08,
-                  right: playerCardFrameImageConfig.renderHeight * 0.08,
-                  bottom: playerCardFrameImageConfig.renderHeight * 0.06,
+                  top: cardHeight * 0.52,
+                  left: cardHeight * 0.08,
+                  right: cardHeight * 0.08,
+                  bottom: cardHeight * 0.06,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       // Gap 1: Picture bottom -> First Name
-                      SizedBox(height: playerCardFrameImageConfig.renderHeight * 0.015),
+                      SizedBox(height: cardHeight * 0.015),
                       
                       // First Name
                       FittedBox(
@@ -456,7 +456,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: const Color(0xFF111111),
-                            fontSize: playerCardFrameImageConfig.renderHeight * 0.035,
+                            fontSize: cardHeight * 0.035,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.5,
                           ),
@@ -464,7 +464,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                       ),
 
                       // Gap 2: First Name -> Last Name
-                      SizedBox(height: playerCardFrameImageConfig.renderHeight * 0.010),
+                      SizedBox(height: cardHeight * 0.010),
 
                       // Last Name
                       FittedBox(
@@ -474,7 +474,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: const Color(0xFF111111),
-                            fontSize: playerCardFrameImageConfig.renderHeight * 0.048,
+                            fontSize: cardHeight * 0.048,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
                           ),
@@ -482,32 +482,32 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                       ),
 
                       // Gap 3: Last Name -> Divider
-                      SizedBox(height: playerCardFrameImageConfig.renderHeight * 0.024),
+                      SizedBox(height: cardHeight * 0.024),
 
                       // Divider Accent
                       Container(
-                        height: (playerCardFrameImageConfig.renderHeight * 0.009),
-                        width: playerCardFrameImageConfig.renderHeight * 0.50,
+                        height: (cardHeight * 0.009),
+                        width: cardHeight * 0.50,
                         color: widget.enuSettingType.tileColor,
                       ),
                       
                       // Gap 4: Divider -> Nickname
-                      SizedBox(height: playerCardFrameImageConfig.renderHeight * 0.022),
+                      SizedBox(height: cardHeight * 0.022),
 
                       // Elliptic Arcade Badge around Nickname
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: playerCardFrameImageConfig.renderHeight * 0.035,
-                          vertical: playerCardFrameImageConfig.renderHeight * 0.006,
+                          horizontal: cardHeight * 0.035,
+                          vertical: cardHeight * 0.006,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.purpleAccent.shade100,
                           borderRadius: BorderRadius.circular(
-                            playerCardFrameImageConfig.renderHeight * 0.04,
+                            cardHeight * 0.04,
                           ),
                           border: Border.all(
                             color: Colors.purpleAccent.shade700,
-                            width: playerCardFrameImageConfig.renderHeight * 0.006,
+                            width: cardHeight * 0.006,
                           ),
                         ),
                         child: FittedBox(
@@ -515,7 +515,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           child: Text(
                             player.fldNickName.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: gBuildArcadeTextStyle(playerCardFrameImageConfig.renderHeight * 0.032, gFontWeight: FontWeight.w800),
+                            style: gBuildArcadeTextStyle(cardHeight * 0.032, gFontWeight: FontWeight.w800),
                           ),
                         ),
                       ),
@@ -527,8 +527,9 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 if (player.fldIsLeagueMember) 
                   Positioned.fill(
                     child: Image.asset(
-                      playerCardFrameImageConfig.assetPathIsLeagueMember,
+                      'assets/png/mechanics/player_league_member.png',
                       fit: BoxFit.fill,
+                      filterQuality: FilterQuality.high,
                     ),
                   ),
               ],

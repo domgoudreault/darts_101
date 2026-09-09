@@ -80,11 +80,9 @@ Widget gBuildArcadeActionBanner({
   required FormMode gFormMode,
   required VoidCallback gOnTap,
 }) {
-  final double responsiveTile = GlobalAppDisplay.carouselTileSize;
+  final double responsiveTile = GlobalAppDisplay.safeHeight * 0.6;
   final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 40.0);
 
-  final ImageConfigArrow leftArrowConfig = gGetArrowImageConfig(true);
-  final ImageConfigArrow rightArrowConfig = gGetArrowImageConfig(false);
   final String svgAssetPath = (gFormMode == FormMode.formAdd)
       ? 'assets/svg/ui_buttons/player_team_add.svg'
       : 'assets/svg/ui_buttons/player_team_save.svg';
@@ -93,16 +91,17 @@ Widget gBuildArcadeActionBanner({
     color: Colors.transparent,
     child: Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: responsiveTile * 0.02),
+      //padding: EdgeInsets.symmetric(vertical: responsiveTile * 0.01),
       alignment: Alignment.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Right Arrow on left side
           GifView.asset(
-            rightArrowConfig.assetPath,
-            height: rightArrowConfig.renderSize,
+            'assets/png/mechanics/arrow_right.png',
+            height: responsiveTile * 0.15,
             fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
           ),
           SizedBox(width: responsiveTile * 0.015),
           
@@ -160,9 +159,10 @@ Widget gBuildArcadeActionBanner({
           SizedBox(width: responsiveTile * 0.015),
           // Left Arrow on right side
           GifView.asset(
-            leftArrowConfig.assetPath,
-            height: leftArrowConfig.renderSize,
+            'assets/png/mechanics/arrow_left.png',
+            height: responsiveTile * 0.15,
             fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
           ),
         ],
       ),
@@ -218,18 +218,20 @@ void gShowDatabaseSeedDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext dialogContext) {
+      MediaQuery.sizeOf(context);
+
       return AlertDialog(
-        backgroundColor: Colors.grey.shade900,
+        backgroundColor: Colors.grey.shade800,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-          side: const BorderSide(color: Colors.white24, width: 1.0),
+          borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.015),
+          side: BorderSide(color: Colors.white24, width: GlobalAppDisplay.safeHeight * 0.003),
         ),
         title: null,
         content: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: GlobalAppDisplay.carouselTileSize * 0.45,
+              width: GlobalAppDisplay.safeWidth * 0.3,
               child: AspectRatio(
                 aspectRatio: 1.0,
                 child: FittedBox(
@@ -237,14 +239,16 @@ void gShowDatabaseSeedDialog(
                   child: Builder(
                     builder: (context) {
                       return SizedBox(
-                        width: GlobalAppDisplay.carouselTileSize,
-                        height: GlobalAppDisplay.carouselTileSize,
+                        width: GlobalAppDisplay.safeWidth * 0.3,
+                        height: GlobalAppDisplay.safeWidth * 0.3,
                         child: Stack(
                           children: [
                             // 1. Color fill tucked inside fixed canvas dimensions
-                            Positioned.fill(
-                              child: Padding(
-                                padding: EdgeInsets.all(GlobalAppDisplay.carouselTileSize * 0.03),
+                            Align(
+                              alignment: Alignment.center,
+                              child: FractionallySizedBox(
+                                widthFactor: 0.94, // Adjust percentage to taste (e.g. 0.94 leaves a clean 3% border)
+                                heightFactor: 0.94,
                                 child: Container(color: tileColor),
                               ),
                             ),
@@ -253,6 +257,7 @@ void gShowDatabaseSeedDialog(
                               child: Image.asset(
                                 assetFullPath,
                                 fit: BoxFit.fill,
+                                filterQuality: FilterQuality.high,
                               ),
                             ),
                           ],
@@ -264,7 +269,7 @@ void gShowDatabaseSeedDialog(
               ),
             ),
             
-            SizedBox(width: GlobalAppDisplay.carouselTileSize * 0.13),
+            SizedBox(width: GlobalAppDisplay.safeWidth * 0.016),
             
             // Column 2: Right-Side Stack (Title, Content, and Buttons)
             Expanded(
@@ -275,36 +280,39 @@ void gShowDatabaseSeedDialog(
                   children: [
                     // Styled Title Box
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      padding: EdgeInsets.symmetric(
+                        vertical: GlobalAppDisplay.safeWidth * 0.008,
+                        horizontal: GlobalAppDisplay.safeWidth * 0.016
+                        ),
                       decoration: BoxDecoration(
                         color: tileColor,
-                        borderRadius: BorderRadius.circular(10.0),
-                        border: Border.all(color: tileBackgroundColor, width: 1.5),
+                        borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.008),
+                        border: Border.all(color: tileBackgroundColor, width: GlobalAppDisplay.safeHeight * 0.003),
                       ),
                       child: Text(
                         headerText,
                         textAlign: TextAlign.center,
-                        style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035, gTextColor: Colors.amber),
+                        style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015, gTextColor: Colors.amber),
                       ),
                     ),
 
-                    SizedBox(height: GlobalAppDisplay.carouselTileSize * 0.06),
+                    SizedBox(height: GlobalAppDisplay.safeWidth * 0.026),
                     
                     Text(
                       titleText,
                       textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
+                      style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
                     ),
                     
-                    SizedBox(height: GlobalAppDisplay.carouselTileSize * 0.06),
+                    SizedBox(height: GlobalAppDisplay.safeWidth * 0.026),
 
                     // Content Question Text
                     Text(
                       questionText,
-                      style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
+                      style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
                     ),
 
-                    SizedBox(height: GlobalAppDisplay.carouselTileSize * 0.03),
+                    SizedBox(height: GlobalAppDisplay.safeWidth * 0.026),
                     
                     // Action Buttons
                     Row(
@@ -312,39 +320,39 @@ void gShowDatabaseSeedDialog(
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.white, width: 1.5),
+                              side: BorderSide(color: Colors.white, width: GlobalAppDisplay.safeHeight * 0.003),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
+                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.025),
                               ),
                               backgroundColor: Colors.red.shade800,
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                              padding: EdgeInsets.symmetric(horizontal: GlobalAppDisplay.safeWidth * 0.016, vertical: GlobalAppDisplay.safeWidth * 0.016),
                             ),
                             onPressed: () => onNoPressed(dialogContext),
                             child: Text(
                               noButtonText,
                               textAlign: TextAlign.center,
-                              style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
+                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
                             ),
                           ),
                         ),
                           
-                        SizedBox(width: GlobalAppDisplay.carouselTileSize * 0.02),
+                        SizedBox(width: GlobalAppDisplay.safeWidth * 0.008),
                           
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.amber, width: 1.5),
+                              side: BorderSide(color: Colors.amber, width: GlobalAppDisplay.safeHeight * 0.003),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
+                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.025),
                               ),
                               backgroundColor: Colors.green.shade600,
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                              padding: EdgeInsets.symmetric(horizontal: GlobalAppDisplay.safeWidth * 0.016, vertical: GlobalAppDisplay.safeWidth * 0.016),
                             ),
                             onPressed: () => onYesPressed(dialogContext),
                             child: Text(
                               yesButtonText,
                               textAlign: TextAlign.center,
-                              style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
+                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
                             ),
                           ),
                         ),
