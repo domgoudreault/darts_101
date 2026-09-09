@@ -1,42 +1,6 @@
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 
-class ImageConfigArrow {
-  final String assetPath;
-  final double renderSize;
-
-  const ImageConfigArrow({required this.assetPath, required this.renderSize});
-}
-
-// Returns APNG Arrow left or right based on screen width
-ImageConfigArrow gGetArrowImageConfig(bool isLeft) {
-  final String direction = isLeft ? 'left' : 'right';
-
-  switch (GlobalAppDisplay.displayMode) {
-    case GlobalEnumDisplayMode.display05SmallPhone:
-    case GlobalEnumDisplayMode.display10CompactPhone:
-      return ImageConfigArrow(        
-        assetPath: 'assets/png/mechanics/arrow_${direction}_40x32.png',
-        renderSize: 32,
-      );
-    case GlobalEnumDisplayMode.display15MediumTablet:
-      return ImageConfigArrow(        
-        assetPath: 'assets/png/mechanics/arrow_${direction}_80x64.png',
-        renderSize: 64,
-      );
-    case GlobalEnumDisplayMode.display20LargeLapDesk:
-      return ImageConfigArrow(        
-        assetPath: 'assets/png/mechanics/arrow_${direction}_120x96.png',
-        renderSize: 96,
-      );
-    case GlobalEnumDisplayMode.display25Ultra4K:
-      return ImageConfigArrow(        
-        assetPath: 'assets/png/mechanics/arrow_${direction}_160x128.png',
-        renderSize: 128,
-      );
-  }
-}
-
 class ImageConfigAvatar {
   final String assetPath;
   final double renderSize;

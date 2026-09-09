@@ -110,8 +110,6 @@ class _RostersSelectionState extends State<RostersSelection> {
     final teamCardFrameImageConfig = gGetCarouselTeamCardHFrameImageRS();
     final ImageConfigAvatar avatarPlayerFrameImageConfigGB = gGetAvatarPlayerFrameImageConfigGB();
 
-    final ImageConfigArrow leftArrowConfig = gGetArrowImageConfig(true);
-    final ImageConfigArrow rightArrowConfig = gGetArrowImageConfig(false);
     final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
   
     
@@ -282,9 +280,11 @@ class _RostersSelectionState extends State<RostersSelection> {
                           children: [
                             // 1. Right Arrow on left side
                             GifView.asset(
-                              rightArrowConfig.assetPath,
-                              height: rightArrowConfig.renderSize,
+                              'assets/png/mechanics/arrow_right.png',
+                              // TODO correct the height
+                              height: 99,
                               fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
                             ),
                             SizedBox(width: _responsiveTile * 0.015),
 
@@ -315,9 +315,11 @@ class _RostersSelectionState extends State<RostersSelection> {
                             // 3. Left Arrow on right side
                             SizedBox(width: _responsiveTile * 0.015),
                             GifView.asset(
-                              leftArrowConfig.assetPath,
-                              height: leftArrowConfig.renderSize,
+                              'assets/png/mechanics/arrow_left.png',
+                              // TODO correct the height
+                              height: 99,
                               fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
                             ),
                           ]
                         ),
