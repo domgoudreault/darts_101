@@ -9,7 +9,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
-import 'package:darts_101/helpers_assets.dart';
 import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
@@ -58,7 +57,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
   }
 
   // Fonctions de navigation when a button is pressed
-  void _addTeam(BuildContext context) async {
+  void _addTeam(BuildContext context, double cardWidth) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -80,7 +79,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         
         if (activeTeams.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
-            activeTeams.length * gGetCarouselTeamCardVFrameImage().renderWidth,
+            activeTeams.length * cardWidth,
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
           );
@@ -118,7 +117,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
       context, 
       tileColor: widget.enuSettingType.tileColor,
       tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
-      assetFullPath: 'assets/png/tiles/settings_teams_256x256.png',
+      assetFullPath: 'assets/png/tiles/settings_teams.png',
       headerText: 'SAMPLE DEFAULT TEAMS ?',
       titleText: 'No teams found.',
       questionText: 'Would you like us to auto-generate sample default teams for you?',
@@ -180,6 +179,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     // 1. Access the Hive box opened during initialization
     final teamsBox = Hive.box<TblTeam>('teamsBox');
     final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+    final cardHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4);
+    final cardWidth = cardHeight * 0.6836;
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
@@ -196,7 +197,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
+            // 1. TOP SEGMENTED TOGGLE BAR (Takes (1/4 * 0.9) - toolbarHeight of screen free space)
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: GlobalAppDisplay.safeWidth * 0.008,
@@ -215,7 +216,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                             gLeadingText: 'ADD NEW',
                             gTrailingText: 'TEAM',
                             gFormMode: FormMode.formAdd,
-                            gOnTap: () => _addTeam(context),
+                            gOnTap: () => _addTeam(context, cardWidth),
                           ),
                         ),
                         
@@ -259,7 +260,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                                     // 2. Middle Layer: Crisp PNG Icon Asset
                                     Positioned.fill(
                                       child: Image.asset(
-                                        'assets/png/mechanics/player_dummy_icon_126x126.png',
+                                        'assets/png/mechanics/player_dummy_icon.png',
                                         width: GlobalAppDisplay.safeHeight * 0.105,
                                         height: GlobalAppDisplay.safeHeight * 0.105,
                                         fit: BoxFit.contain,
@@ -292,7 +293,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
 
                   SizedBox(height: GlobalAppDisplay.safeHeight * 0.010),
 
-                  // 1.2 Seach Bar
+                  // 1.2 Search Bar
                   Row(
                     children: [
                       Expanded(
@@ -420,10 +421,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                             style: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.023),
                           ),
                         );
-                      }
-
-                      final cardHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4);
-                      final cardWidth = cardHeight * 0.6836;
+                      }                      
 
                       return CarouselView(
                         controller: _carouselController,
@@ -439,7 +437,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                           _onTeamTapped(context, team);
                         },
                         children: teams
-                            .map((team) => _buildTeamCard(context, team, cardHeight, cardWidth))
+                            .map((team) => _buildTeamCardV(context, team, cardHeight, cardWidth))
                             .toList(),
                       );
                     },
@@ -453,7 +451,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     );
   }
 
-  Widget _buildTeamCard(
+  Widget _buildTeamCardV(
     BuildContext context,
     TblTeam team,
     double cardHeight,
@@ -513,7 +511,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                   child: Center(
                     child: ClipOval(
                       child: Image.asset(
-                        'assets/png/avatars/avatar_${team.fldPlayers[0].fldAvatarCode}_384x384.png',
+                        'assets/png/avatars/avatar_${team.fldPlayers[0].fldAvatarCode}_v1.png',
                         width: cardHeight / 2,
                         height: cardHeight / 2,
                         fit: BoxFit.cover,
@@ -531,7 +529,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                   child: Center(
                     child: ClipOval(
                       child: Image.asset(
-                        'assets/png/avatars/avatar_${team.fldPlayers[1].fldAvatarCode}_384x384.png',
+                        'assets/png/avatars/avatar_${team.fldPlayers[1].fldAvatarCode}_v1.png',
                         width: cardHeight / 2,
                         height: cardHeight / 2,
                         fit: BoxFit.cover,
@@ -554,7 +552,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                 if (isDummyTeam)
                   Positioned.fill(
                     child: Image.asset(
-                      'assets/png/mechanics/player_dummy_525x768.png',
+                      'assets/png/mechanics/player_dummy_V.png',
                       fit: BoxFit.fill,
                       filterQuality: FilterQuality.high,
                     ),

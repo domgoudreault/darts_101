@@ -10,7 +10,6 @@ import 'package:darts_101/database/tbl_player.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
-import 'package:darts_101/helpers_assets.dart';
 
 enum FormMode{
   formAdd,
@@ -183,9 +182,9 @@ void gShowArcadeErrorSnackBar({
       backgroundColor: gBbackgroundColor ?? Colors.red.shade800,
       behavior: SnackBarBehavior.floating,
       margin: EdgeInsets.only(
-        left: GlobalAppDisplay.safeWidth * 0.05,
-        right: GlobalAppDisplay.safeWidth * 0.05,
-        bottom: GlobalAppDisplay.safeHeight * 0.05,
+        left: GlobalAppDisplay.safeHeight * 0.056,
+        right: GlobalAppDisplay.safeHeight * 0.056,
+        bottom: GlobalAppDisplay.safeHeight * 0.056,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -371,9 +370,8 @@ void gShowDatabaseSeedDialog(
 }
 
 Widget gBuildPlayerAvatarCard({
-  required TblPlayer player, 
-  required ImageConfigAvatar avatarFrameImageConfig,
-  required ImageConfigAvatar avatarPlayerImageConfig,
+  required TblPlayer player,
+  required double avatarHeight, 
   required Color bgColor,
 }) {
   return Center(
@@ -382,8 +380,8 @@ Widget gBuildPlayerAvatarCard({
       child: FittedBox(
         fit: BoxFit.contain, // Forces artwork and text to scale together proportionally
         child: SizedBox(
-          width: avatarFrameImageConfig.renderSize,
-          height: avatarFrameImageConfig.renderSize,
+          width: avatarHeight,
+          height: avatarHeight,
           child: Stack(
             children: [
               // 1. Dynamic Circle Background Layer
@@ -391,11 +389,11 @@ Widget gBuildPlayerAvatarCard({
                 top: 0,
                 left: 0,
                 right: 0,
-                height: avatarFrameImageConfig.renderSize,
+                height: avatarHeight,
                 child: Center(
                   child: Container(
-                    width: avatarFrameImageConfig.renderSize * 0.95,
-                    height: avatarFrameImageConfig.renderSize * 0.95,
+                    width: avatarHeight * 0.95,
+                    height: avatarHeight * 0.95,
                     decoration: BoxDecoration(
                       color: bgColor,
                       shape: BoxShape.circle,
@@ -409,10 +407,11 @@ Widget gBuildPlayerAvatarCard({
                 top: 0,
                 left: 0,
                 right: 0,
-                height: avatarFrameImageConfig.renderSize,
+                height: avatarHeight,
                 child: Image.asset(
-                  avatarPlayerImageConfig.assetPath,
-                  fit: BoxFit.contain,
+                  'assets/png/avatars/avatar_${player.fldAvatarCode}_v1.png',
+                  fit: BoxFit.fill,
+                  filterQuality: FilterQuality.high,
                 ),
               ),
 
@@ -421,9 +420,9 @@ Widget gBuildPlayerAvatarCard({
                 top: 0,
                 left: 0,
                 right: 0,
-                height: avatarFrameImageConfig.renderSize,
+                height: avatarHeight,
                 child: Image.asset(
-                  avatarFrameImageConfig.assetPath,
+                  'assets/png/mechanics/player_avatar.png',
                   fit: BoxFit.contain,
                 ),
               ),
@@ -436,15 +435,15 @@ Widget gBuildPlayerAvatarCard({
                 child: Center(
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: avatarFrameImageConfig.renderSize * 0.045,
-                      vertical: avatarFrameImageConfig.renderSize * 0.015,
+                      horizontal: avatarHeight * 0.045,
+                      vertical: avatarHeight * 0.015,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.purpleAccent.shade100,
-                      borderRadius: BorderRadius.circular(avatarFrameImageConfig.renderSize * 0.04),
+                      borderRadius: BorderRadius.circular(avatarHeight * 0.04),
                       border: Border.all(
                         color: Colors.purpleAccent.shade700,
-                        width: avatarFrameImageConfig.renderSize * 0.006,
+                        width: avatarHeight * 0.006,
                       ),
                     ),
                     child: FittedBox(
@@ -453,7 +452,7 @@ Widget gBuildPlayerAvatarCard({
                         player.fldNickName.toUpperCase(),
                         textAlign: TextAlign.center,
                         style: gBuildArcadeTextStyle(
-                          avatarFrameImageConfig.renderSize * 0.062,
+                          avatarHeight * 0.062,
                           gFontWeight: FontWeight.w800,
                         ),
                       ),
@@ -469,163 +468,176 @@ Widget gBuildPlayerAvatarCard({
   );
 }
 
-Widget gBuildTeamCardMainUI({
-  required ImageConfigTeamCardFrame teamCardFrameImageConfig,
-  required ImageConfigAvatar avatarPlayer1ImageConfig,
-  required ImageConfigAvatar avatarPlayer2ImageConfig,
-  required Color colorBgAvatar,
-  required bool isDummyTeam,
+Widget gBuildTeamCardH({
+  required double cardHeight,
+  required double cardWidth,
   required TblPlayer? selectedPlayer1,
   required TblPlayer? selectedPlayer2,
+  required bool isDummyTeam,
+  required Color colorBgAvatar,
 }) {
-  return SizedBox(
-    width: teamCardFrameImageConfig.renderWidth,
-    height: teamCardFrameImageConfig.renderHeight,
-    child: Stack(
-      children: [
-        // 1. Player 1 Solid Color Circle (Left Half Background)
-        Positioned(
-          top: 0,
-          bottom: 0,
-          left: teamCardFrameImageConfig.renderWidth * 0.02,
-          width: avatarPlayer1ImageConfig.renderSize,
-          child: Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: colorBgAvatar,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ),
+  final avatarHeightCard = cardHeight * 1.45 / 2;
 
-        // 2. Player 2 Solid Color Circle (Right Background)
-        Positioned(
-          top: 0,
-          bottom: 0,
-          right: teamCardFrameImageConfig.renderWidth * 0.02,
-          width: avatarPlayer2ImageConfig.renderSize,
-          child: Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: colorBgAvatar,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ),
-
-        // 3. Player 1 Avatar Artwork (Left Half)
-        Positioned(
-          top: 0,
-          bottom: 0,
-          left: teamCardFrameImageConfig.renderWidth * 0.01,
-          width: avatarPlayer1ImageConfig.renderSize,
-          child: Image.asset(
-            avatarPlayer1ImageConfig.assetPath,
-            fit: BoxFit.contain,
-          ),
-        ),
-
-        // 4. Player 2 Avatar Artwork (Right Half)
-        Positioned(
-          top: 0,
-          bottom: 0,
-          right: teamCardFrameImageConfig.renderWidth * 0.01,
-          width: avatarPlayer2ImageConfig.renderSize,
-          child: Image.asset(
-            avatarPlayer2ImageConfig.assetPath,
-            fit: BoxFit.contain,
-          ),
-        ),
-
-        // 5. Metallic Frame Overlay
-        Positioned.fill(
-          child: Image.asset(
-            teamCardFrameImageConfig.assetPathFrame,
-            fit: BoxFit.contain,
-          ),
-        ),
-
-        // 6. Dummy Player Layer
-        if (isDummyTeam) // e.g., checking if this slot is a dummy
-          Positioned.fill(
-            child: Image.asset(
-              teamCardFrameImageConfig.assetPathIsDummyPlayer,
-              fit: BoxFit.fill,
-            ),
-          ),
-
-        // 7. Player 1 Nickname Pill (Left Slot)
-        if (selectedPlayer1 != null)
-          Positioned(
-            bottom: teamCardFrameImageConfig.renderHeight * 0.13,
-            left: 0,
-            width: avatarPlayer1ImageConfig.renderSize,
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: avatarPlayer1ImageConfig.renderSize * 0.045,
-                  vertical: avatarPlayer1ImageConfig.renderSize * 0.015,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.purpleAccent.shade100,
-                  borderRadius: BorderRadius.circular(avatarPlayer1ImageConfig.renderSize * 0.04),
-                  border: Border.all(
-                    color: Colors.purpleAccent.shade700,
-                    width: avatarPlayer1ImageConfig.renderSize * 0.006,
-                  ),
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    selectedPlayer1.fldNickName.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: gBuildArcadeTextStyle(
-                      avatarPlayer1ImageConfig.renderSize * 0.062,
-                      gFontWeight: FontWeight.w800,
+  return Center(
+    child: AspectRatio(
+      aspectRatio: 1.4628,
+      child: FittedBox(
+        fit: BoxFit.contain, // Forces height and width to scale down together proportionally
+        child: SizedBox(
+          height: cardHeight,
+          width: cardWidth,
+          child: Stack(
+            children: [
+              // 1. Player 1 Solid Color Circle (Left Background)
+              Positioned(
+                top: 0, // Positions inside top metallic ring
+                bottom: 0,
+                left: cardWidth * 0.02,
+                width: avatarHeightCard,
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorBgAvatar,
+                      shape: BoxShape.circle,
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        
-        // 8. Player 2 Nickname Pill (Right Slot)
-        if (selectedPlayer2 != null)
-          Positioned(
-            bottom: teamCardFrameImageConfig.renderHeight * 0.13,
-            right: 0,
-            width: avatarPlayer2ImageConfig.renderSize,
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: avatarPlayer2ImageConfig.renderSize * 0.045,
-                  vertical: avatarPlayer2ImageConfig.renderSize * 0.015,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.purpleAccent.shade100,
-                  borderRadius: BorderRadius.circular(avatarPlayer2ImageConfig.renderSize * 0.04),
-                  border: Border.all(
-                    color: Colors.purpleAccent.shade700,
-                    width: avatarPlayer2ImageConfig.renderSize * 0.006,
-                  ),
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    selectedPlayer2.fldNickName.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: gBuildArcadeTextStyle(
-                      avatarPlayer2ImageConfig.renderSize * 0.062,
-                      gFontWeight: FontWeight.w800,
+
+              // 2. Player 2 Solid Color Circle (Right Background)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: cardWidth * 0.02,
+                width: avatarHeightCard,
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorBgAvatar,
+                      shape: BoxShape.circle,
                     ),
                   ),
                 ),
               ),
-            ),
+              
+              // 3. Player 1 Avatar Artwork (Left Half)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                left: cardWidth * 0.01,
+                width: avatarHeightCard,
+                child: Image.asset(
+                  'assets/png/avatars/avatar_${selectedPlayer1 != null ? selectedPlayer1.fldAvatarCode : 'question'}_v1.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+
+              // 4. Player 2 Avatar Artwork (Right Half)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: cardWidth * 0.01,
+                width: avatarHeightCard,
+                child: Image.asset(
+                  'assets/png/avatars/avatar_${selectedPlayer2 != null ? selectedPlayer2.fldAvatarCode : 'question'}_v1.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+
+              // 5. Metallic Frame Overlay
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/png/mechanics/team_card_frame_H.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+
+              // 6. Dummy Player Layer
+              if (isDummyTeam) // e.g., checking if this slot is a dummy
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/png/mechanics/player_dummy_H.png',
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
+              
+              // 7. Player 1 Nickname Pill (Left Slot)
+              if (selectedPlayer1 != null)
+                Positioned(
+                  bottom: cardHeight * 0.13,
+                  left: 0,
+                  width: avatarHeightCard,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: avatarHeightCard * 0.045,
+                        vertical: avatarHeightCard * 0.015,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: avatarHeightCard * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          selectedPlayer1.fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(
+                            avatarHeightCard * 0.067,
+                            gFontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              
+              // 8. Player 2 Nickname Pill (Right Slot)
+              if (selectedPlayer2 != null)
+                Positioned(
+                  bottom: cardHeight * 0.13,
+                  right: 0,
+                  width: avatarHeightCard,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: avatarHeightCard * 0.045,
+                        vertical: avatarHeightCard * 0.015,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: avatarHeightCard * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          selectedPlayer2.fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(
+                            avatarHeightCard * 0.067,
+                            gFontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-      ]
+        ),
+      ),
     ),
   );
 }

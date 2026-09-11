@@ -10,7 +10,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
-import 'package:darts_101/helpers_assets.dart';
 import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
@@ -58,7 +57,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   }
 
   // Fonctions de navigation when a button is pressed
-  void _addPlayer(BuildContext context) async {
+  void _addPlayer(BuildContext context, double cardWidth) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -80,7 +79,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         
         if (activePlayers.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
-            activePlayers.length * gGetCarouselPlayerCardFrameImage().renderWidth,
+            activePlayers.length * cardWidth,
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
           );
@@ -176,6 +175,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     // 1. Access the Hive box opened during initialization
     final playersBox = Hive.box<TblPlayer>('playersBox');
     final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+    final cardHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4);
+    final cardWidth = cardHeight * 0.6836;
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
@@ -208,13 +209,13 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                       gLeadingText: 'ADD NEW',
                       gTrailingText: 'PLAYER',
                       gFormMode: FormMode.formAdd,
-                      gOnTap: () => _addPlayer(context),
+                      gOnTap: () => _addPlayer(context, cardWidth),
                     ),
                   ),
 
                   SizedBox(height: GlobalAppDisplay.safeHeight * 0.010),
 
-                  // 1.2 Seach Bar
+                  // 1.2 Search Bar
                   Row(
                     children: [
                       Expanded(
@@ -360,9 +361,6 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           ),
                         );
                       }
-
-                      final cardHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4);
-                      final cardWidth = cardHeight * 0.6836;
 
                       return CarouselView(
                         controller: _carouselController,

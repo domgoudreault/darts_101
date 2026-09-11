@@ -47,8 +47,8 @@ class _RostersSelectionState extends State<RostersSelection> {
   bool _isPlayersSelection = true;
   final List<TblPlayer> _selectedPlayers = [];
 
-  double get _responsiveTile => GlobalAppDisplay.carouselTileSize;
-  double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(10.0, 60.0);
+  double get _responsiveTile => GlobalAppDisplay.safeHeight * 0.67;
+  double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(8.0, 60.0);
 
   @override
   void initState() {
@@ -105,13 +105,10 @@ class _RostersSelectionState extends State<RostersSelection> {
     MediaQuery.sizeOf(context);
     
     // Fetch the asset config for the current game type
-    final gameCenterTileImageConfigRS = gGetCenterTileImageConfigRS(widget.enuGameType.tileType, widget.enuGameType.tileCode);
-    final ImageConfigAvatar avatarPlayerFrameImageConfigRS = gGetAvatarPlayerFrameImageConfigRS();
-    final teamCardFrameImageConfig = gGetCarouselTeamCardHFrameImageRS();
-    final ImageConfigAvatar avatarPlayerFrameImageConfigGB = gGetAvatarPlayerFrameImageConfigGB();
-
     final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
-  
+    final avatarHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * 0.229;
+    final cardHeight = avatarHeight;
+    final cardWidth = cardHeight * 1.4628;
     
     return Scaffold(
       backgroundColor: widget.enuGameType.tileBackgroundColor,
@@ -134,7 +131,7 @@ class _RostersSelectionState extends State<RostersSelection> {
               child: Opacity(
                 opacity: 0.15,
                 child: Image.asset(
-                  'assets/png/tiles/${widget.enuGameType.tileType}_${widget.enuGameType.tileCode}_1024x1024.png',
+                  'assets/png/tiles/${widget.enuGameType.tileType}_${widget.enuGameType.tileCode}.png',
                   //gameTileImageConfig.assetPath,
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
@@ -143,7 +140,7 @@ class _RostersSelectionState extends State<RostersSelection> {
             ),
             Column(
               children: [
-                // 1.2 Seach Bar
+                // 1.2 Search Bar
                 Center(
                   child: SizedBox(
                     width: GlobalAppDisplay.safeWidth * 0.85,
@@ -153,19 +150,19 @@ class _RostersSelectionState extends State<RostersSelection> {
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: GlobalAppDisplay.carouselTileSize * 0.12,
+                              height: _responsiveTile * 0.1175,
                               child: FocusScope(
                                 node: FocusScopeNode(),
                                 child: TextField(
                                   controller: _searchController,
-                                  style: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035),
+                                  style: gBuildArcadeTextStyle(_responsiveFontSize),
                                   decoration: InputDecoration(
                                     hintText: 'Search player name or nickname...',
-                                    hintStyle: gBuildArcadeTextStyle(GlobalAppDisplay.carouselTileSize * 0.035, gTextColor: Colors.grey.shade400),
+                                    hintStyle: gBuildArcadeTextStyle(_responsiveFontSize, gTextColor: Colors.grey.shade400),
                                     prefixIcon: Icon(
                                       Icons.search,
                                       color: Colors.amber,
-                                      size: GlobalAppDisplay.carouselTileSize * 0.09,
+                                      size: _responsiveTile * 0.0875,
                                     ),
                                     suffixIcon: Row(
                                       mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
@@ -179,13 +176,13 @@ class _RostersSelectionState extends State<RostersSelection> {
                                             icon: Icon(
                                               Icons.clear,
                                               color: Colors.white54,
-                                              size: GlobalAppDisplay.carouselTileSize * 0.065,
+                                              size: _responsiveTile * 0.0625,
                                             ),
                                             onPressed: () => _searchController.clear(),
                                           ),
 
                                         // Gap between clear button and counter pill
-                                        SizedBox(width: GlobalAppDisplay.carouselTileSize * 0.015),
+                                        SizedBox(width: _responsiveTile * 0.015),
 
                                         // 2. Embedded Arcade Counter Pill
                                         ValueListenableBuilder<Box<TblPlayer>>(
@@ -203,19 +200,19 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                                             return Container(
                                               margin: EdgeInsets.only(
-                                                right: GlobalAppDisplay.carouselTileSize * 0.015,
-                                                top: GlobalAppDisplay.carouselTileSize * 0.015,
-                                                bottom: GlobalAppDisplay.carouselTileSize * 0.015,
+                                                right: GlobalAppDisplay.safeHeight * 0.01,
+                                                top: GlobalAppDisplay.safeHeight * 0.01,
+                                                bottom: GlobalAppDisplay.safeHeight * 0.01,
                                               ),
                                               padding: EdgeInsets.symmetric(
-                                                horizontal: GlobalAppDisplay.carouselTileSize * 0.025,
+                                                horizontal: GlobalAppDisplay.safeHeight * 0.015,
                                               ),
                                               decoration: BoxDecoration(
                                                 color: Colors.grey.shade900,
-                                                borderRadius: BorderRadius.circular(GlobalAppDisplay.carouselTileSize * 0.02),
+                                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
                                                 border: Border.all(
                                                   color: Colors.amber,
-                                                  width: (GlobalAppDisplay.carouselTileSize * 0.005).clamp(1.0, 2.0),
+                                                  width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
                                                 ),
                                               ),
                                               child: Center(
@@ -226,7 +223,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                                         ? '$filteredCount' 
                                                         : '$filteredCount/${activePlayers.length}',
                                                     style: gBuildArcadeTextStyle(
-                                                      GlobalAppDisplay.carouselTileSize * 0.035,
+                                                      _responsiveFontSize,
                                                       gTextColor: Colors.amber,
                                                       gFontWeight: FontWeight.bold,
                                                     ),
@@ -238,21 +235,17 @@ class _RostersSelectionState extends State<RostersSelection> {
                                         ),
                                       ],
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      vertical: 0,
-                                      horizontal: GlobalAppDisplay.carouselTileSize * 0.045,
-                                    ),
                                     filled: true,
                                     fillColor: Colors.grey.shade800,
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(GlobalAppDisplay.carouselTileSize * 0.03),
+                                      borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(GlobalAppDisplay.carouselTileSize * 0.03),
+                                      borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
                                       borderSide: BorderSide(
                                         color: Colors.amber,
-                                        width: (GlobalAppDisplay.carouselTileSize * 0.008).clamp(1.5, 4.0),
+                                        width: (GlobalAppDisplay.safeHeight * 0.005).clamp(1.5, 4.0),
                                       ),
                                     ),
                                   ),
@@ -269,8 +262,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                 // 2. Middle Area: Game Tile & Live Roster Display Grid
                 Expanded(
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                    padding: const EdgeInsets.all(2),
+                    margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.004, vertical: _responsiveTile * 0.004),
+                    padding: EdgeInsets.all(_responsiveTile * 0.004),
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -281,8 +274,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                             // 1. Right Arrow on left side
                             GifView.asset(
                               'assets/png/mechanics/arrow_right.png',
-                              // TODO correct the height
-                              height: 99,
+                              height: _responsiveTile * 0.1,
                               fit: BoxFit.contain,
                               filterQuality: FilterQuality.high,
                             ),
@@ -290,22 +282,23 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                             // 2. Center Game Tile
                             SizedBox(
-                              width: gameCenterTileImageConfigRS.renderSize * gameCenterTileImageConfigRS.scaleFactor,
-                              height: gameCenterTileImageConfigRS.renderSize * gameCenterTileImageConfigRS.scaleFactor,
+                              width: avatarHeight * 0.4,
+                              height: avatarHeight * 0.4,
                               child: Stack(
                                 children: [
                                   // 1.1 Color fill tucked inside fixed canvas dimensions
                                   Positioned.fill(
                                     child: Padding(
-                                      padding: EdgeInsets.all(gameCenterTileImageConfigRS.renderSize * 0.03),
+                                      padding: EdgeInsets.all(avatarHeight * 0.03),
                                       child: Container(color: widget.enuGameType.tileColor),
                                     ),
                                   ),
                                   // 1.2. PNG frame overlaid on top
                                   Positioned.fill(
                                     child: Image.asset(
-                                      gameCenterTileImageConfigRS.assetPath,
+                                      'assets/png/tiles/${widget.enuGameType.tileType}_${widget.enuGameType.tileCode}.png',
                                       fit: BoxFit.fill,
+                                      filterQuality: FilterQuality.high,
                                     ),
                                   ),
                                 ],
@@ -316,8 +309,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                             SizedBox(width: _responsiveTile * 0.015),
                             GifView.asset(
                               'assets/png/mechanics/arrow_left.png',
-                              // TODO correct the height
-                              height: 99,
+                              height: _responsiveTile * 0.1,
                               fit: BoxFit.contain,
                               filterQuality: FilterQuality.high,
                             ),
@@ -325,7 +317,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                         ),
 
                         // 2. Surrounding Arcade Roster Slots (Positioned dynamically based on index)
-                        ..._buildPlayersSlots(avatarPlayerFrameImageConfigGB),
+                        ..._buildPlayersSlots(avatarHeight * 0.7),
 
 
 
@@ -340,25 +332,25 @@ class _RostersSelectionState extends State<RostersSelection> {
                 Container(
                   width: GlobalAppDisplay.safeWidth * 0.85,
                   height: _isPlayersSelection 
-                    ? avatarPlayerFrameImageConfigRS.renderSize + 64.0 
-                    : teamCardFrameImageConfig.renderHeight + 64.0,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.symmetric(vertical: 3.0),
+                    ? avatarHeight + _responsiveTile * 0.127 
+                    : cardHeight + _responsiveTile * 0.127,
+                  margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.025),
+                  padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.005),
                   decoration: BoxDecoration(
                     color: _isPlayersSelection ? GlobalSettingType.players.tileColor : GlobalSettingType.teams.tileColor,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20.0),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(_responsiveTile * 0.042),
                       bottom: Radius.zero,
                     ),
                     border: Border.all(
                       color: Colors.amber, // Or Colors.white depending on the contrast you want
-                      width: avatarPlayerFrameImageConfigRS.renderSize * 0.015,
+                      width: _responsiveTile * 0.003,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withAlpha(150),
-                        blurRadius: avatarPlayerFrameImageConfigRS.renderSize * 0.08,
-                        offset: const Offset(0, -4), // Casts shadow upward onto the screen content
+                        blurRadius: _responsiveTile * 0.015,
+                        offset: Offset(0, -_responsiveTile * 0.006), // Casts shadow upward onto the screen content
                       ),
                     ],
                   ),
@@ -367,12 +359,12 @@ class _RostersSelectionState extends State<RostersSelection> {
                     children: [
                       Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.symmetric(horizontal: 3.0),
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.005),
+                        padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006),
                         decoration: BoxDecoration(
                           color: _isPlayersSelection ? GlobalSettingType.players.tilePickerColor : GlobalSettingType.teams.tilePickerColor,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(18.0),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(_responsiveTile * 0.036),
                             bottom: Radius.zero,
                           ),
                           border: Border.all(
@@ -392,13 +384,13 @@ class _RostersSelectionState extends State<RostersSelection> {
                             // Toggle Buttons anchored to the right side
                             Align(
                               alignment: Alignment.centerRight,
-                              child: _buildTogglePlayersTeams(avatarPlayerFrameImageConfigRS.renderSize),
+                              child: _buildTogglePlayersTeams(),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 8),
+                      SizedBox(height: _responsiveTile * 0.015),
 
                       Expanded(
                         child: _isPlayersSelection
@@ -436,8 +428,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   elevation: 0,
                                   backgroundColor: Colors.transparent,
                                   overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                  itemExtent: avatarPlayerFrameImageConfigRS.renderSize + 4.0,
-                                  shrinkExtent: avatarPlayerFrameImageConfigRS.renderSize * 0.8,
+                                  itemExtent: avatarHeight + 2.0,
+                                  shrinkExtent: avatarHeight * 0.8,
                                   onTap: (int index) {
                                     setState(() {
                                       _selectedPlayers.add(playerList[index]);
@@ -445,10 +437,10 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   },
                                   children: playerList.map((player) {
                                     return gBuildPlayerAvatarCard(
-                                      avatarFrameImageConfig: avatarPlayerFrameImageConfigRS,
-                                      avatarPlayerImageConfig: gGetAvatarPlayerImageConfigRS(player.fldAvatarCode),
+                                      player: player,
+                                      avatarHeight: avatarHeight,
                                       bgColor: GlobalSettingType.players.tileBackgroundColor,
-                                      player: player, );
+                                       );
                                   }).toList(),
                                 );
                               },
@@ -472,8 +464,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   elevation: 0,
                                   backgroundColor: Colors.transparent,
                                   overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                  itemExtent: teamCardFrameImageConfig.renderWidth + 6.0,
-                                  shrinkExtent: avatarPlayerFrameImageConfigRS.renderSize * 0.8,
+                                  itemExtent: cardWidth + 2.0,
+                                  shrinkExtent: cardWidth * 0.8,
                                   onTap: (int index) {
                                     //final selectedTeam = teamList[index];
                                     
@@ -481,18 +473,14 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   children: teamList.map((team) {
                                     return Center(
                                       child: AspectRatio(
-                                        aspectRatio: teamCardFrameImageConfig.renderWidth / teamCardFrameImageConfig.renderHeight,
-                                        child: FittedBox(
-                                          fit: BoxFit.contain,
-                                          child: gBuildTeamCardMainUI(
-                                            teamCardFrameImageConfig: teamCardFrameImageConfig,
-                                            avatarPlayer1ImageConfig: gGetAvatarTeamCardImageConfigRS(team.fldPlayers[0].fldAvatarCode),
-                                            avatarPlayer2ImageConfig: gGetAvatarTeamCardImageConfigRS(team.fldPlayers[1].fldAvatarCode),
-                                            colorBgAvatar: GlobalSettingType.teams.tileBackgroundColor,
-                                            isDummyTeam: team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode,
-                                            selectedPlayer1: team.fldPlayers[0],
-                                            selectedPlayer2: team.fldPlayers[1],
-                                          ),
+                                        aspectRatio: cardWidth / cardHeight,
+                                        child: gBuildTeamCardH(
+                                          cardHeight: cardHeight,
+                                          cardWidth: cardWidth,
+                                          selectedPlayer1: team.fldPlayers[0],
+                                          selectedPlayer2: team.fldPlayers[1],
+                                          isDummyTeam: team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode,
+                                          colorBgAvatar: GlobalSettingType.teams.tileBackgroundColor,
                                         ),
                                       ),
                                     );
@@ -512,7 +500,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     );
   }
 
-  List<Widget> _buildPlayersSlots(ImageConfigAvatar frameConfig) {
+  List<Widget> _buildPlayersSlots(double avatarHeight) {
     // Define relative coordinate offsets (percentages or alignment factors)
     final slotAlignments = GlobalPlayersGridConfig.values.toList()
       ..sort((a, b) => a.position.compareTo(b.position));
@@ -520,7 +508,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     List<Widget> widgets = [];
     
     // Give the outer slot a tiny bit of extra room for the amber border padding
-    final double outerSize = frameConfig.renderSize * 1.04;
+    final double outerSize = avatarHeight * 1.04;
 
     for (int i = 0; i < _selectedPlayers.length && i < slotAlignments.length; i++) {
       final player = _selectedPlayers[i];
@@ -564,13 +552,12 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                   // Layer 2: The exact-size Player Avatar Card sitting cleanly on top
                   SizedBox(
-                    width: frameConfig.renderSize,
-                    height: frameConfig.renderSize,
+                    width: avatarHeight,
+                    height: avatarHeight,
                     child: gBuildPlayerAvatarCard(
-                      avatarFrameImageConfig: frameConfig,
-                      avatarPlayerImageConfig: gGetAvatarPlayerImageConfigGB(player.fldAvatarCode),
-                      bgColor: slotAlignment.bgColor,
                       player: player,
+                      avatarHeight: avatarHeight,
+                      bgColor: slotAlignment.bgColor,
                     ),
                   ),
 
@@ -591,7 +578,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     return widgets;
   }
 
-  Widget _buildTogglePlayersTeams(double renderSize) {
+  Widget _buildTogglePlayersTeams() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -606,7 +593,7 @@ class _RostersSelectionState extends State<RostersSelection> {
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.03, vertical: _responsiveTile * 0.015),
               decoration: BoxDecoration(
                 color: _isPlayersSelection ? GlobalSettingType.players.tileColor : Colors.grey.shade800,
                 borderRadius: const BorderRadius.horizontal(
@@ -615,7 +602,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                 ),
                 border: Border.all(
                   color: _isPlayersSelection ? Colors.amber : Colors.white, 
-                  width: renderSize * 0.015,
+                  width: _responsiveTile * 0.003,
                 ),
               ),
               child: Text(
@@ -639,16 +626,16 @@ class _RostersSelectionState extends State<RostersSelection> {
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.03, vertical: _responsiveTile * 0.015),
               decoration: BoxDecoration(
                 color: _isPlayersSelection ? Colors.grey.shade800 : GlobalSettingType.teams.tileColor,
-                borderRadius: const BorderRadius.horizontal(
+                borderRadius: BorderRadius.horizontal(
                   left: Radius.zero,
-                  right: Radius.circular(16.0),
+                  right: Radius.circular(_responsiveTile * 0.03),
                 ),
                 border: Border.all(
                   color: _isPlayersSelection ? Colors.white : Colors.amber, 
-                  width: renderSize * 0.015,
+                  width: _responsiveTile * 0.003,
                 ),
               ),
               child: Text(
@@ -661,7 +648,8 @@ class _RostersSelectionState extends State<RostersSelection> {
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        
+        SizedBox(width: _responsiveTile * 0.015),
       ],
     );
   }

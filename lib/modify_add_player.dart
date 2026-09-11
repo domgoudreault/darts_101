@@ -11,7 +11,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
-import 'package:darts_101/helpers_assets.dart';
 
 class ModifyAddPlayerForm extends StatefulWidget {  
   final FormMode enuFormMode;
@@ -40,7 +39,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
 
   late String _selectedAvatarCode;
 
-  double get _responsiveTile => GlobalAppDisplay.carouselTileSize;
+  double get _responsiveTile => GlobalAppDisplay.safeHeight * 0.67;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(10.0, 60.0);
 
   // 2. Clean up controllers when the widget is destroyed
@@ -151,21 +150,23 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   }
 
   void _deletePlayer() {
+    String playerNickname = widget.modifyPlayer!.fldNickName.toUpperCase();
+
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
         return AlertDialog(
           backgroundColor: Colors.grey.shade900,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: const BorderSide(color: Colors.redAccent, width: 1.5),
+            borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+            side: BorderSide(color: Colors.redAccent, width: (_responsiveTile * 0.002).clamp(1.5, 4.0)),
           ),
           title: Text(
             'DELETE THIS PLAYER?',
             style: gBuildArcadeTextStyle(_responsiveFontSize * 1.4, gTextColor: Colors.redAccent),
           ),
           content: Text(
-            'Are you sure you want to remove ${_nickNameController.text}?',
+            'Are you sure you want to remove "$playerNickname" ?',
             style: TextStyle(
               color: Colors.white, 
               fontSize: (_responsiveFontSize * 0.90).clamp(10.0, 60.0),
@@ -214,42 +215,41 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     );
   }
 
-  void _showAvatarPicker() {
+  void _showAvatarPicker(double avatarHeight) {
     final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
     final List<TblAvatar> avatarList = avatarsBox.values
       .where((avatar) => avatar.fldAvatarCode != 'question')
       .toList();
-    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
-
+    
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
       backgroundColor: widget.enuSettingType.tileColor,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(_responsiveTile * 0.037)),
       ),
       builder: (BuildContext context) {
         return SafeArea(
           child: Container(
             width: GlobalAppDisplay.safeWidth * 0.775,
-            height: (avatarFrameImageConfig.renderSize + 80.0).clamp(0.0, GlobalAppDisplay.safeHeight * 0.9),
-            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            height: _responsiveTile * 0.645,
+            padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006),
             child: Column(
               children: [
                 Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.005),
+                  padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.020),
                   decoration: BoxDecoration(
                     color: GlobalSettingType.players.tilePickerColor,
                     border: Border.all(
-                      color: Colors.white, // Or widget.tileColor / whatever border color you want
-                      width: 1.5,
+                      color: Colors.white,
+                      width: GlobalAppDisplay.safeHeight * 0.002,
                     ),
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(18.0), // Matches outer 20px sheet curve perfectly
+                      top: Radius.circular(_responsiveTile * 0.034), // Matches outer 20px sheet curve perfectly
                       bottom: Radius.zero,       // Sharp, edgy straight cut at the bottom
                     ),
                   ),
@@ -261,15 +261,17 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                
+                SizedBox(height: _responsiveTile * 0.022),
+                
                 SizedBox(
-                  height: avatarFrameImageConfig.renderSize,
+                  height: avatarHeight,
                   child: CarouselView(
                     elevation: 0,
                     backgroundColor: Colors.transparent,
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
-                    itemExtent: avatarFrameImageConfig.renderSize + 4.0,
-                    shrinkExtent: avatarFrameImageConfig.renderSize * 0.8,
+                    itemExtent: avatarHeight + 4.0,
+                    shrinkExtent: avatarHeight * 0.8,
                     // Native CarouselView callback receives the tapped item index directly
                     onTap: (int index) {
                       final selectedAvatar = avatarList[index];
@@ -282,6 +284,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                       return Center(
                         child: _buildAvatarPicker(
                           avatar: avatar,
+                          avatarHeight: avatarHeight,
                         ),
                       );
                     }).toList(),
@@ -298,7 +301,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   @override
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
+    
     final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+    final avatarHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (0.369);
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
@@ -315,28 +320,36 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. TOP SEGMENTED TOGGLE BAR (Reserved for sub-filters if needed)
+            // 1. TOP SEGMENTED TOGGLE BAR (Takes 1/7 - toolbarHeight of screen free space)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: GlobalAppDisplay.carouselTileSize * 0.06,
-                vertical: GlobalAppDisplay.carouselTileSize * 0.02,
+                horizontal: _responsiveTile * 0.06,
+                vertical: _responsiveTile * 0.02,
               ),
+              height: (GlobalAppDisplay.safeHeight-toolbarHeight) * (1/7),
               color: Colors.grey.shade900,
-              child: 
-                // 1.1 Save Player Banner
-                gBuildArcadeActionBanner(
-                  gLeadingText: 'SAVE',
-                  gTrailingText: 'PLAYER',
-                  gFormMode: FormMode.formModify,
-                  gOnTap: () => _savePlayer(),
-                ),
+              child: Column(
+                children: [
+                  Flexible(
+                    child:
+                      // 1.1 Save Player Banner
+                      gBuildArcadeActionBanner(
+                        gLeadingText: 'SAVE',
+                        gTrailingText: 'PLAYER',
+                        gFormMode: FormMode.formModify,
+                        gOnTap: () => _savePlayer(),
+                      ),
+                    ),
+                ]
+              ),
             ),
 
+            // 2. PLAYER FORM DISPLAY AREA (Takes 6/7 - toolbarHeight of screen free space)
             Expanded(
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(_responsiveTile * 0.047),
                   child: 
                     // SIDE-BY-SIDE MAIN CONTAINER
                     Row(
@@ -352,13 +365,15 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  _buildAvatarMainUI(),
-                                  const SizedBox(height: 12),
+                                  _buildAvatarMainUI(avatarHeight),
+                                  
+                                  SizedBox(height: _responsiveTile * 0.022),
+                                  
                                   // Trigger button for the upcoming avatar picker dialog/pop-up
                                   MouseRegion(
                                     cursor: SystemMouseCursors.click,
                                     child: GestureDetector(
-                                      onTap: _showAvatarPicker,
+                                      onTap: () => _showAvatarPicker(avatarHeight),
                                       child: Container(                                        
                                         padding: EdgeInsets.symmetric(
                                           horizontal: (_responsiveTile * 0.02).clamp(8.0, 24.0),
@@ -366,7 +381,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: widget.enuSettingType.tileColor,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(_responsiveTile * 0.04),
                                           border: Border.all(
                                             color: Colors.white,
                                             width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
@@ -388,17 +403,17 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                         SizedBox(width: _responsiveTile * 0.08),
 
                         Container(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+                          padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006, horizontal: _responsiveTile * 0.004),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade900,
-                            borderRadius: BorderRadius.circular(50.0), // Pill shape
+                            borderRadius: BorderRadius.circular(_responsiveTile * 0.096), // Pill shape
                             border: Border.all(
                               color: Colors.white,
-                              width: 1.5,
+                              width: _responsiveTile * 0.004,
                             ),
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50.0),
+                            borderRadius: BorderRadius.circular(_responsiveTile * 0.096),
                             child: SizedBox(
                               width: _responsiveTile * 0.01,
                               height: _responsiveTile * 0.75,
@@ -408,7 +423,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                   value: 1,
                                   backgroundColor: Colors.transparent,
                                   color: widget.enuSettingType.tileColor,
-                                  minHeight: 4.0,
+                                  minHeight: _responsiveTile * 0.0077,
                                 ),
                               ),
                             ),
@@ -422,9 +437,13 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                           child: Column(
                             children: [
                               _buildTextField(_firstNameController, 'First Name'),
-                              const SizedBox(height: 12),
+                              
+                              SizedBox(height: _responsiveTile * 0.022),
+                              
                               _buildTextField(_lastNameController, 'Last Name'),
-                              const SizedBox(height: 12),
+                              
+                              SizedBox(height: _responsiveTile * 0.022),
+                              
                               _buildTextField(_nickNameController, 'Nickname'),
 
                               // DELETE PLAYER BUTTON
@@ -439,13 +458,15 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                   child: GestureDetector(
                                     onTap: _deletePlayer,
                                     child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: (_responsiveTile * 0.005).clamp(4.0, 24.0),
-                                        vertical: (_responsiveTile * 0.005).clamp(4.0, 24.0),
+                                      padding: EdgeInsets.only(
+                                        left: _responsiveTile * 0.014,
+                                        right: _responsiveTile * 0.034,
+                                        top: _responsiveTile * 0.008,
+                                        bottom: _responsiveTile * 0.008,
                                       ),
                                       decoration: BoxDecoration(
                                         color: Colors.red.shade800,
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
                                         border: Border.all(
                                           color: Colors.white,
                                           width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
@@ -542,17 +563,14 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     );
   }
 
-  Widget _buildAvatarMainUI() {
-    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(_selectedAvatarCode);
-
+  Widget _buildAvatarMainUI(double avatarHeight) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: _showAvatarPicker,
+        onTap: () => _showAvatarPicker(avatarHeight),
         child: SizedBox(
-          width: avatarFrameImageConfig.renderSize,
-          height: avatarFrameImageConfig.renderSize,
+          width: avatarHeight,
+          height: avatarHeight,
           child: Stack(
             children: [
               // 1. Solid Color Circle (Bottom-most layer behind the avatar)
@@ -568,8 +586,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               // 2. Avatar Artwork (Transparent PNG)
               Positioned.fill(
                 child: Image.asset(
-                  avatarPlayerImageConfig.assetPath,
-                  fit: BoxFit.contain,
+                  'assets/png/avatars/avatar_${_selectedAvatarCode}_v1.png',
+                  fit: BoxFit.fill,
                   filterQuality: FilterQuality.high,
                 ),
               ),
@@ -577,8 +595,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               // 3. Metallic Frame Overlay (Top-most layer)
               Positioned.fill(
                 child: Image.asset(
-                  avatarFrameImageConfig.assetPath,
-                  fit: BoxFit.contain,
+                  'assets/png/mechanics/player_avatar.png',
+                  fit: BoxFit.fill,
                   filterQuality: FilterQuality.high,
                 ),
               ),
@@ -591,13 +609,11 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
 
   Widget _buildAvatarPicker({
     required TblAvatar avatar,
+    required double avatarHeight,
   }) {
-    final ImageConfigAvatar avatarFrameImageConfig = gGetAvatarFrameImageConfig();
-    final ImageConfigAvatar avatarPlayerImageConfig = gGetAvatarPlayerImageConfig(avatar.fldAvatarCode);
-
     return SizedBox(
-      width: avatarFrameImageConfig.renderSize,
-      height: avatarFrameImageConfig.renderSize,
+      width: avatarHeight,
+      height: avatarHeight,
       child: Stack(
         children: [
           // 1. Dynamic Circle Background Layer
@@ -613,7 +629,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           // 2. Avatar Artwork
           Positioned.fill(
             child: Image.asset(
-              avatarPlayerImageConfig.assetPath,
+              'assets/png/avatars/avatar_${avatar.fldAvatarCode}_v1.png',
               fit: BoxFit.contain,
               //filterQuality: FilterQuality.none,
             ),
@@ -622,7 +638,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           // 3. Metallic Frame Overlay
           Positioned.fill(
             child: Image.asset(
-              avatarFrameImageConfig.assetPath,
+              'assets/png/mechanics/player_avatar.png',
               fit: BoxFit.contain,
               //filterQuality: FilterQuality.none,
             ),
