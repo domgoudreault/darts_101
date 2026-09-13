@@ -208,8 +208,10 @@ void gShowDatabaseSeedDialog(
   required String headerText,
   required String titleText,
   required String questionText,
-  required String noButtonText,
-  required String yesButtonText,
+  required String noButtonText1,
+  required String? noButtonText2,
+  required String yesButtonText1,
+  required String? yesButtonText2,
   required void Function(BuildContext dialogContext) onNoPressed,
   required void Function(BuildContext dialogContext) onYesPressed,
 }) {
@@ -327,10 +329,22 @@ void gShowDatabaseSeedDialog(
                               padding: EdgeInsets.symmetric(horizontal: GlobalAppDisplay.safeWidth * 0.016, vertical: GlobalAppDisplay.safeWidth * 0.016),
                             ),
                             onPressed: () => onNoPressed(dialogContext),
-                            child: Text(
-                              noButtonText,
-                              textAlign: TextAlign.center,
-                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                            child: Column(
+                              children: [
+                                  Text(
+                                  noButtonText1,
+                                  textAlign: TextAlign.center,
+                                  style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                ),
+                                if (noButtonText2 != null)
+                                  SizedBox(height: GlobalAppDisplay.safeWidth * 0.006),
+                                  
+                                  Text(
+                                    noButtonText2!,
+                                    textAlign: TextAlign.center,
+                                    style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -348,10 +362,22 @@ void gShowDatabaseSeedDialog(
                               padding: EdgeInsets.symmetric(horizontal: GlobalAppDisplay.safeWidth * 0.016, vertical: GlobalAppDisplay.safeWidth * 0.016),
                             ),
                             onPressed: () => onYesPressed(dialogContext),
-                            child: Text(
-                              yesButtonText,
-                              textAlign: TextAlign.center,
-                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                            child: Column(
+                              children: [
+                                  Text(
+                                    yesButtonText1,
+                                    textAlign: TextAlign.center,
+                                    style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                  ),
+                                  if (yesButtonText2 != null)
+                                    SizedBox(height: GlobalAppDisplay.safeWidth * 0.006),
+                                    
+                                    Text(
+                                      yesButtonText2!,
+                                      textAlign: TextAlign.center,
+                                      style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                    ),
+                                ],
                             ),
                           ),
                         ),

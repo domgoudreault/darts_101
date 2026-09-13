@@ -121,8 +121,10 @@ class _SettingsTeamsState extends State<SettingsTeams> {
       headerText: 'SAMPLE DEFAULT TEAMS ?',
       titleText: 'No teams found.',
       questionText: 'Would you like us to auto-generate sample default teams for you?',
-      noButtonText: 'NO,\nI\'LL ADD BY HAND',
-      yesButtonText: 'YES,\nGENERATE FOR ME',
+      noButtonText1: 'NO',
+      noButtonText2: '(LATER)',
+      yesButtonText1: 'YES',
+      yesButtonText2: '(NOW)',
       onNoPressed: (dialogContext) {
         Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
       },

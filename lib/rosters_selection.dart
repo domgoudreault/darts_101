@@ -11,7 +11,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
-import 'package:darts_101/helpers_assets.dart';
 
 // UI Screens
 //import 'package:darts_101/game_halfit.dart';
@@ -140,7 +139,7 @@ class _RostersSelectionState extends State<RostersSelection> {
             ),
             Column(
               children: [
-                // 1.2 Search Bar
+                // 1. Search Bar
                 Center(
                   child: SizedBox(
                     width: GlobalAppDisplay.safeWidth * 0.85,
@@ -259,65 +258,168 @@ class _RostersSelectionState extends State<RostersSelection> {
                   ),
                 ),
                 
-                // 2. Middle Area: Game Tile & Live Roster Display Grid
+                // 2. Middle Area: Game Tile & Live Rosters Display Grid
                 Expanded(
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.004, vertical: _responsiveTile * 0.004),
                     padding: EdgeInsets.all(_responsiveTile * 0.004),
-                    child: Stack(
-                      alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // 1. Right Arrow on left side
-                            GifView.asset(
-                              'assets/png/mechanics/arrow_right.png',
-                              height: _responsiveTile * 0.1,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                            ),
-                            SizedBox(width: _responsiveTile * 0.015),
-
-                            // 2. Center Game Tile
-                            SizedBox(
-                              width: avatarHeight * 0.4,
-                              height: avatarHeight * 0.4,
-                              child: Stack(
-                                children: [
-                                  // 1.1 Color fill tucked inside fixed canvas dimensions
-                                  Positioned.fill(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(avatarHeight * 0.03),
-                                      child: Container(color: widget.enuGameType.tileColor),
-                                    ),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 1st Left ListView Column
+                              SizedBox(
+                                height: avatarHeight * 1.04,
+                                width: avatarHeight * 3,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  reverse: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  children: _buildPlayersSlotsH(
+                                    avatarHeight: avatarHeight,
+                                    isLeft: true,
+                                    isFirst: true,
                                   ),
-                                  // 1.2. PNG frame overlaid on top
-                                  Positioned.fill(
-                                    child: Image.asset(
-                                      'assets/png/tiles/${widget.enuGameType.tileType}_${widget.enuGameType.tileCode}.png',
-                                      fit: BoxFit.fill,
-                                      filterQuality: FilterQuality.high,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
 
-                            // 3. Left Arrow on right side
-                            SizedBox(width: _responsiveTile * 0.015),
-                            GifView.asset(
-                              'assets/png/mechanics/arrow_left.png',
-                              height: _responsiveTile * 0.1,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                            ),
-                          ]
+                              // 2nd Left ListView Column
+                              if (_selectedPlayers.length > 6) ...[
+                                SizedBox(height: _responsiveTile * 0.02),
+                                
+                                SizedBox(
+                                  height: avatarHeight * 1.04,
+                                  width: avatarHeight * 3,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    reverse: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    children: _buildPlayersSlotsH(
+                                      avatarHeight: avatarHeight,
+                                      isLeft: true,
+                                      isFirst: false,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
 
+                        /* Expanded(
+                          child:  */Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 1. Bottom Arrow on top side
+                              RotatedBox(
+                                quarterTurns: 1,
+                                child: GifView.asset(
+                                  'assets/png/mechanics/arrow_right.png',
+                                  height: _responsiveTile * 0.08,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                ),
+                              ),
+
+                              SizedBox(height: _responsiveTile * 0.015),
+
+                              // 2. Center Game Tile
+                              SizedBox(
+                                width: avatarHeight * 0.4,
+                                height: avatarHeight * 0.4,
+                                child: Stack(
+                                  children: [
+                                    // 1.1 Color fill tucked inside fixed canvas dimensions
+                                    Positioned.fill(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(avatarHeight * 0.03),
+                                        child: Container(color: widget.enuGameType.tileColor),
+                                      ),
+                                    ),
+                                    // 1.2. PNG frame overlaid on top
+                                    Positioned.fill(
+                                      child: Image.asset(
+                                        'assets/png/tiles/${widget.enuGameType.tileType}_${widget.enuGameType.tileCode}.png',
+                                        fit: BoxFit.fill,
+                                        filterQuality: FilterQuality.high,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // 3. Up Arrow on bottom side
+                              SizedBox(height: _responsiveTile * 0.015),
+                              
+                              RotatedBox(
+                                quarterTurns: 1,
+                                child: GifView.asset(
+                                  'assets/png/mechanics/arrow_left.png',
+                                  height: _responsiveTile * 0.08,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                ),
+                              ),
+                            ],
+                          ),
+                        /* ), */
+
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 1st Right ListView Column
+                              SizedBox(
+                                height: avatarHeight * 1.04,
+                                width: avatarHeight * 3,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  reverse: false,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  children: _buildPlayersSlotsH(
+                                    avatarHeight: avatarHeight,
+                                    isLeft: false,
+                                    isFirst: true,
+                                  ),
+                                ),
+                              ),
+
+                              // 2nd Left ListView Column
+                              if (_selectedPlayers.length > 7) ...[
+                                SizedBox(height: _responsiveTile * 0.02),
+                                
+                                SizedBox(
+                                  height: avatarHeight * 1.04,
+                                  width: avatarHeight * 3,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    reverse: false,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    children: _buildPlayersSlotsH(
+                                      avatarHeight: avatarHeight,
+                                      isLeft: false,
+                                      isFirst: false,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+
+                        /* child: Stack(
+                          alignment: Alignment.center,
+ */
                         // 2. Surrounding Arcade Roster Slots (Positioned dynamically based on index)
-                        ..._buildPlayersSlots(avatarHeight * 0.7),
+                        //..._buildPlayersSlots(avatarHeight * 0.7),
 
 
 
@@ -500,27 +602,42 @@ class _RostersSelectionState extends State<RostersSelection> {
     );
   }
 
-  List<Widget> _buildPlayersSlots(double avatarHeight) {
-    // Define relative coordinate offsets (percentages or alignment factors)
+  List<Widget> _buildPlayersSlotsH({
+    required double avatarHeight,
+    required bool isLeft,
+    required bool isFirst,
+  }) {
     final slotAlignments = GlobalPlayersGridConfig.values.toList()
       ..sort((a, b) => a.position.compareTo(b.position));
 
-    List<Widget> widgets = [];
-    
-    // Give the outer slot a tiny bit of extra room for the amber border padding
+    // Filtered players naturally come in as [P1, P3, P5, P7]
+    final filteredPlayers = _selectedPlayers.where((p) {
+      final originalIndex = _selectedPlayers.indexOf(p);
+      return isLeft ? originalIndex.isEven : originalIndex.isOdd;
+    }).toList();
+
     final double outerSize = avatarHeight * 1.04;
+    final ratioBadge = 345 / 260;
 
-    for (int i = 0; i < _selectedPlayers.length && i < slotAlignments.length; i++) {
-      final player = _selectedPlayers[i];
-      final slotAlignment = slotAlignments[i];
+    final targetPlayers = isFirst
+      ? filteredPlayers.take(3).toList()
+      : filteredPlayers.skip(3).toList();
+    final stackedPlayers = targetPlayers.reversed.toList();
 
-      widgets.add(
-        Align(
-          alignment: slotAlignment.alignment,
+    return List.generate(stackedPlayers.length, (index) {
+      final player = stackedPlayers[index];
+      final originalIndex = _selectedPlayers.indexOf(player);
+      final slotAlignment = slotAlignments[originalIndex];
+
+      return Transform.translate(
+        // Slight negative offset pulls each subsequent card leftward to create the deck overlap
+        offset: isLeft ? Offset(index * (avatarHeight * 0.2), 0) : Offset(-index * (avatarHeight * 0.2), 0),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
               setState(() {
-                _selectedPlayers.removeAt(i);
+                _selectedPlayers.removeAt(originalIndex);
               });
             },
             child: SizedBox(
@@ -529,59 +646,72 @@ class _RostersSelectionState extends State<RostersSelection> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Layer 1: Background rectangle color / box frame placeholder
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: slotAlignment.bgColor, // Or your preferred background fill color
+                        color: slotAlignment.bgColor,
                         borderRadius: BorderRadius.circular(outerSize * 0.22),
                         border: Border.all(
-                          color: Colors.amber,
-                          width: outerSize * 0.02,
+                          color: Colors.yellowAccent,
+                          width: outerSize * 0.017,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black,
-                            blurRadius: outerSize * 0.04,
-                            offset: const Offset(2, 2),
-                          ),
-                        ],
                       ),
                     ),
                   ),
-
-                  // Layer 2: The exact-size Player Avatar Card sitting cleanly on top
                   SizedBox(
                     width: avatarHeight,
                     height: avatarHeight,
                     child: gBuildPlayerAvatarCard(
                       player: player,
                       avatarHeight: avatarHeight,
-                      bgColor: slotAlignment.bgColor,
+                      bgColor: GlobalSettingType.players.tileBackgroundColor,
                     ),
                   ),
-
-                  // Layer 3: The Player Slot indicator
-                  /* Positioned.fill(
-                    child: Image.asset(
-                      gameCenterTileImageConfigRS.assetPath,
-                      fit: BoxFit.fill,
+                  Align(
+                    alignment: isLeft ? Alignment(0.80, -0.80) : Alignment(-0.80, -0.80),
+                    child: SizedBox(
+                      width: avatarHeight * 0.3 * ratioBadge,
+                      height: avatarHeight * 0.3,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(outerSize * 0.07),
+                          border: Border.all(
+                            color: Colors.yellowAccent,
+                            width: outerSize * 0.012,
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/png/mechanics/rs_tag_p_${originalIndex + 1}.png',
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
                     ),
-                  ), */
+                  ),
                 ],
               ),
             ),
           ),
         ),
       );
-    }
-    return widgets;
+    });
   }
 
   Widget _buildTogglePlayersTeams() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // 1. Right Arrow on left side
+        GifView.asset(
+          'assets/png/mechanics/arrow_right.png',
+          height: _responsiveTile * 0.08,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
+
+        SizedBox(width: _responsiveTile * 0.006),
+        
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(

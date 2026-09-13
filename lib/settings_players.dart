@@ -124,8 +124,10 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       headerText: 'SAMPLE LGGDS LEAGUE DATA ?',
       titleText: 'No players found.',
       questionText: 'Would you like to seed default LEAGUE players and teams for testing?',
-      noButtonText: 'NO,\nLATER',
-      yesButtonText: 'YES,\nNOW',
+      noButtonText1: 'NO',
+      noButtonText2: '(LATER)',
+      yesButtonText1: 'YES',
+      yesButtonText2: '(NOW)',
       onNoPressed: (dialogContext) {
         Navigator.pop(dialogContext);
         _showPlayersSeedDialog();
@@ -154,8 +156,10 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       headerText: 'SAMPLE DEFAULT PLAYERS ?',
       titleText: 'No players found.',
       questionText: 'Would you like us to auto-generate sample default players for you?',
-      noButtonText: 'NO,\nLATER',
-      yesButtonText: 'YES,\nNOW',
+      noButtonText1: 'NO',
+      noButtonText2: '(LATER)',
+      yesButtonText1: 'YES',
+      yesButtonText2: '(NOW)',
       onNoPressed: (dialogContext) {
         Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
       },
