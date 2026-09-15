@@ -300,6 +300,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                             player: player,
                             avatarHeight: avatarHeight,
                             bgColor: widget.enuSettingType.tileBackgroundColor,
+                            isSlicedAvatar: false,
                             );
                         }).toList(),
                       ),
@@ -621,6 +622,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                 selectedPlayer2: _selectedPlayer2,
                                 isDummyTeam: _isDummyTeam,
                                 colorBgAvatar: widget.enuSettingType.tileColor,
+                                isSlicedCard: false,
                               ),
                             ),
                             

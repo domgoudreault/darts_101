@@ -338,7 +338,7 @@ void gShowDatabaseSeedDialog(
                                 ),
                                 if (noButtonText2 != null)
                                   SizedBox(height: GlobalAppDisplay.safeWidth * 0.006),
-                                  
+
                                   Text(
                                     noButtonText2!,
                                     textAlign: TextAlign.center,
@@ -399,6 +399,7 @@ Widget gBuildPlayerAvatarCard({
   required TblPlayer player,
   required double avatarHeight, 
   required Color bgColor,
+  required bool isSlicedAvatar,
 }) {
   return Center(
     child: AspectRatio(
@@ -454,38 +455,77 @@ Widget gBuildPlayerAvatarCard({
               ),
 
               // 4. Player Nickname Pill
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: avatarHeight * 0.045,
-                      vertical: avatarHeight * 0.015,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.purpleAccent.shade100,
-                      borderRadius: BorderRadius.circular(avatarHeight * 0.04),
-                      border: Border.all(
-                        color: Colors.purpleAccent.shade700,
-                        width: avatarHeight * 0.006,
-                      ),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        player.fldNickName.toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: gBuildArcadeTextStyle(
-                          avatarHeight * 0.062,
-                          gFontWeight: FontWeight.w800,
+              if (isSlicedAvatar) ...[
+                Positioned(
+                  right: avatarHeight * 0.26,
+                  top: 0,
+                  bottom: 0,
+                  child: RotatedBox(
+                    quarterTurns: 3, // Rotates the pill vertically 90 degrees
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: avatarHeight * 0.03,
+                          vertical: avatarHeight * 0.015,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.purpleAccent.shade100.withAlpha(150),
+                          borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                          border: Border.all(
+                            color: Colors.purpleAccent.shade700,
+                            width: avatarHeight * 0.006,
+                          ),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            player.fldNickName.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: gBuildArcadeTextStyle(
+                              avatarHeight * 0.05,
+                              gFontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ] else ...[
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: avatarHeight * 0.045,
+                        vertical: avatarHeight * 0.015,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: avatarHeight * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          player.fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(
+                            avatarHeight * 0.062,
+                            gFontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ]
+              
             ],
           ),
         ),
@@ -501,6 +541,7 @@ Widget gBuildTeamCardH({
   required TblPlayer? selectedPlayer2,
   required bool isDummyTeam,
   required Color colorBgAvatar,
+  required bool isSlicedCard,
 }) {
   final avatarHeightCard = cardHeight * 1.45 / 2;
 

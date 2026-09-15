@@ -1,6 +1,13 @@
 // Flutter basics
 import 'package:flutter/material.dart';
 
+// Database Models
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
+
+List<TblPlayer> gSelectedPlayers = [];
+List<TblTeam> gSelectedTeams = [];
+
 // Global enum representing supported game modes
 enum GlobalGameType {
   halfIt(
@@ -135,6 +142,23 @@ enum GlobalPlayersGridConfig {
   final Color bgColor;
 
   const GlobalPlayersGridConfig({
+    required this.position,
+    required this.bgColor,
+  });
+}
+
+enum GlobalTeamsGridConfig {
+  teamSlot1(position: 1, bgColor: Color(0xFF2196F3)),
+  teamSlot2(position: 2, bgColor: Color(0xFFE53935)),
+  teamSlot3(position: 3, bgColor: Color.fromARGB(255, 255, 170, 41)),
+  teamSlot4(position: 4, bgColor: Color.fromARGB(255, 147, 206, 84)),
+  teamSlot5(position: 5, bgColor: Color(0xFF3F51B5)),
+  teamSlot6(position: 6, bgColor: Color(0xFF8E24AA));
+  
+  final int position;
+  final Color bgColor;
+
+  const GlobalTeamsGridConfig({
     required this.position,
     required this.bgColor,
   });

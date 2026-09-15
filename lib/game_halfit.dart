@@ -74,7 +74,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   @override
   void dispose() {
-    _pulseController.dispose(); // Always clean up
+    _pulseController.dispose();
+    _slashController.dispose(); // Always clean up
     super.dispose();
   }  
 

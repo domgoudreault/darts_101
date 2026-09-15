@@ -461,7 +461,7 @@ class _MainScreenState extends State<MainScreen> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  width: (GlobalAppDisplay.safeWidth),
+                  width: ((GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4)) * activeTiles.length,
                   child: CarouselView(
                     itemExtent: (GlobalAppDisplay.safeHeight-toolbarHeight) * (3/4),
                     shrinkExtent: (GlobalAppDisplay.safeHeight-toolbarHeight) * 0.15,
