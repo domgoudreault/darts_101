@@ -116,6 +116,36 @@ class _RostersSelectionState extends State<RostersSelection> {
     }
   }
 
+  bool _matchesPlayerQuery(TblPlayer player, String query) {
+    if (query.isEmpty) return true;
+    final terms = query.split(' ').where((term) => term.isNotEmpty).toList();
+    if (terms.isEmpty) return true;
+
+    // Use .any() so a player matches if they contain ANY of the space-separated terms
+    return terms.any((term) =>
+        player.fldFirstName.toLowerCase().contains(term) ||
+        player.fldLastName.toLowerCase().contains(term) ||
+        player.fldNickName.toLowerCase().contains(term));
+  }
+
+  bool _matchesTeamQuery(TblTeam team, String query) {
+    if (query.isEmpty) return true;
+    final terms = query.split(' ').where((term) => term.isNotEmpty).toList();
+    if (terms.isEmpty) return true;
+
+    final p1 = team.fldPlayers[0];
+    final p2 = team.fldPlayers[1];
+
+    bool matchesPlayer(TblPlayer player, String term) {
+      return player.fldFirstName.toLowerCase().contains(term) ||
+          player.fldLastName.toLowerCase().contains(term) ||
+          player.fldNickName.toLowerCase().contains(term);
+    }
+
+    // Every space-separated term must match either Player 1 or Player 2
+    return terms.every((term) => matchesPlayer(p1, term) || matchesPlayer(p2, term));
+  }
+
   @override
   Widget build(BuildContext context) {    
     MediaQuery.sizeOf(context);
@@ -124,12 +154,12 @@ class _RostersSelectionState extends State<RostersSelection> {
     final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
     final avatarHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * 0.279;
     final avatarHeightOuterSize = avatarHeight * 1.12;
-    final avatarSlicedWidth = avatarHeight * 0.45;
+    final avatarSlicedWidth = avatarHeight * 0.42;
     final avatarSlicedWidthOuterSize = avatarSlicedWidth * 1.12;
     final cardHeight = avatarHeight;
     final cardWidth = cardHeight * 1.4628;
     final cardWidthOuterSize = cardWidth * 1.12;
-    final cardSlicedHeight = cardWidth * 0.45;
+    final cardSlicedHeight = cardWidth * 0.305;
     final cardSlicedHeightOuterSize = cardSlicedHeight * 1.12;
     
     // Sort slot alignments to match player positions
@@ -196,109 +226,217 @@ class _RostersSelectionState extends State<RostersSelection> {
             ),
             Column(
               children: [
-                // 1. Search Bar
+                // 1. Top Area including Search, Start Game and Resume Game buttons
                 Row(
                   children: [
-                    SizedBox(width: _responsiveTile * 0.25),
-
-                    Expanded(
-                      child: SizedBox(
-                        height: _responsiveTile * 0.1175,
-                        child: FocusScope(
-                          node: FocusScopeNode(),
-                          child: TextField(
-                            controller: _searchController,
-                            style: gBuildArcadeTextStyle(_responsiveFontSize),
-                            decoration: InputDecoration(
-                              hintText: 'Search player name or nickname...',
-                              hintStyle: gBuildArcadeTextStyle(_responsiveFontSize, gTextColor: Colors.grey.shade400),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.amber,
-                                size: _responsiveTile * 0.0875,
+                    SizedBox(width: _responsiveTile * 0.04),
+                    
+                    // 1.1 Resume Game Button
+                    AnimatedOpacity(
+                      opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.3,
+                      duration: const Duration(milliseconds: 200),
+                      child: MouseRegion(
+                        cursor: _isPlayersTeamsMinSelectionValid 
+                          ? SystemMouseCursors.click 
+                          : SystemMouseCursors.basic,
+                        child: GestureDetector(
+                          //TODO Tap and resume the game
+                          onTap: _isPlayersTeamsMinSelectionValid 
+                            ? () async {
+                                setState(() {
+                                  _selectedPlayers.shuffle();
+                                });
+                              }
+                            : null,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(100),
+                                  blurRadius: _responsiveTile * 0.04,
+                                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                width: avatarHeight * 0.5,
+                                height: avatarHeight * 0.5,
+                                child: Image.asset(
+                                  'assets/png/mechanics/resume_game.png',
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                ),
                               ),
-                              suffixIcon: Row(
-                                mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  // 1. Clear Button (Only shows when search is active)
-                                  if (_searchQuery.isNotEmpty)
-                                    IconButton(
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      icon: Icon(
-                                        Icons.clear,
-                                        color: Colors.white54,
-                                        size: _responsiveTile * 0.0625,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // 1.2 Left Arrow pointing Resume Game Button
+                    AnimatedOpacity(
+                      opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: GifView.asset(
+                          'assets/png/mechanics/arrow_left.png',
+                          height: _responsiveTile * 0.08,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                    ),
+
+                    SizedBox(width: _responsiveTile * 0.06),
+
+                    // 1.3 Search Bar
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(150),
+                              blurRadius: _responsiveTile * 0.012,
+                              offset: Offset(_responsiveTile * 0.008, _responsiveTile * 0.008), // Casts shadow upward onto the screen content
+                            ),
+                          ],
+                        ), 
+                        child: SizedBox(
+                          height: _responsiveTile * 0.1175,
+                          child: FocusScope(
+                            node: FocusScopeNode(),
+                            child: TextField(
+                              controller: _searchController,
+                              style: gBuildArcadeTextStyle(_responsiveFontSize),
+                              decoration: InputDecoration(
+                                hintText: 'Search player name or nickname...',
+                                hintStyle: gBuildArcadeTextStyle(_responsiveFontSize, gTextColor: Colors.grey.shade400),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.amber,
+                                  size: _responsiveTile * 0.0875,
+                                ),
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    // 1. Clear Button (Only shows when search is active)
+                                    if (_searchQuery.isNotEmpty)
+                                      IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        icon: Icon(
+                                          Icons.clear,
+                                          color: Colors.white54,
+                                          size: _responsiveTile * 0.0625,
+                                        ),
+                                        onPressed: () => _searchController.clear(),
                                       ),
-                                      onPressed: () => _searchController.clear(),
-                                    ),
 
-                                  // Gap between clear button and counter pill
-                                  SizedBox(width: _responsiveTile * 0.015),
+                                    // Gap between clear button and counter pill
+                                    SizedBox(width: _responsiveTile * 0.015),
 
-                                  // 2. Embedded Arcade Counter Pill
-                                  ValueListenableBuilder<Box<TblPlayer>>(
-                                    valueListenable: playersBox.listenable(),
-                                    builder: (context, box, _) {
-                                      final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
-                                      final filteredCount = _searchQuery.isEmpty
-                                          ? activePlayers.length
-                                          : activePlayers.where((player) {
-                                              final query = _searchQuery.toLowerCase();
-                                              return player.fldFirstName.toLowerCase().contains(query) ||
-                                                  player.fldLastName.toLowerCase().contains(query) ||
-                                                  player.fldNickName.toLowerCase().contains(query);
-                                            }).length;
+                                    // 2. Embedded Arcade Counter Pill
+                                    _isPlayersSelection
+                                      ? ValueListenableBuilder<Box<TblPlayer>>(
+                                        valueListenable: playersBox.listenable(),
+                                        builder: (context, box, _) {
+                                          final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
+                                          final filteredCount = _searchQuery.isEmpty
+                                            ? activePlayers.length
+                                            : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).length;
 
-                                      return Container(
-                                        margin: EdgeInsets.only(
-                                          right: GlobalAppDisplay.safeHeight * 0.01,
-                                          top: GlobalAppDisplay.safeHeight * 0.01,
-                                          bottom: GlobalAppDisplay.safeHeight * 0.01,
-                                        ),
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: GlobalAppDisplay.safeHeight * 0.015,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade900,
-                                          borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
-                                          border: Border.all(
-                                            color: Colors.amber,
-                                            width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              _searchQuery.isEmpty 
-                                                  ? '$filteredCount' 
-                                                  : '$filteredCount/${activePlayers.length}',
-                                              style: gBuildArcadeTextStyle(
-                                                _responsiveFontSize,
-                                                gTextColor: Colors.amber,
-                                                gFontWeight: FontWeight.bold,
+                                          return Container(
+                                            margin: EdgeInsets.only(
+                                              right: GlobalAppDisplay.safeHeight * 0.01,
+                                              top: GlobalAppDisplay.safeHeight * 0.01,
+                                              bottom: GlobalAppDisplay.safeHeight * 0.01,
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: GlobalAppDisplay.safeHeight * 0.015,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade900,
+                                              borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
+                                              border: Border.all(
+                                                color: Colors.amber,
+                                                width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      );
-                                    },
+                                            child: Center(
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(
+                                                  _searchQuery.isEmpty 
+                                                      ? '$filteredCount' 
+                                                      : '$filteredCount/${activePlayers.length}',
+                                                  style: gBuildArcadeTextStyle(
+                                                    _responsiveFontSize,
+                                                    gTextColor: Colors.amber,
+                                                    gFontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : ValueListenableBuilder<Box<TblTeam>>(
+                                        valueListenable: teamsBox.listenable(),
+                                        builder: (context, box, _) {
+                                          final activeTeams = box.values.where((team) => !team.fldIsDeleted).toList();
+                                          final filteredCount = _searchQuery.isEmpty
+                                            ? activeTeams.length
+                                            : activeTeams.where((team) => _matchesTeamQuery(team, _searchQuery)).length;
+
+                                          return Container(
+                                            margin: EdgeInsets.only(
+                                              right: GlobalAppDisplay.safeHeight * 0.01,
+                                              top: GlobalAppDisplay.safeHeight * 0.01,
+                                              bottom: GlobalAppDisplay.safeHeight * 0.01,
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: GlobalAppDisplay.safeHeight * 0.015,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade900,
+                                              borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
+                                              border: Border.all(
+                                                color: Colors.amber,
+                                                width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(
+                                                  _searchQuery.isEmpty 
+                                                      ? '$filteredCount' 
+                                                      : '$filteredCount/${activeTeams.length}',
+                                                  style: gBuildArcadeTextStyle(
+                                                    _responsiveFontSize,
+                                                    gTextColor: Colors.amber,
+                                                    gFontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade800,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
+                                  borderSide: BorderSide(
+                                    color: Colors.amber,
+                                    width: (GlobalAppDisplay.safeHeight * 0.005).clamp(1.5, 4.0),
                                   ),
-                                ],
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade800,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
-                                borderSide: BorderSide(
-                                  color: Colors.amber,
-                                  width: (GlobalAppDisplay.safeHeight * 0.005).clamp(1.5, 4.0),
                                 ),
                               ),
                             ),
@@ -309,7 +447,7 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                     SizedBox(width: _responsiveTile * 0.06),
                     
-                    // 1.1 Right Arrow pointing Start Button
+                    // 1.4 Right Arrow pointing Start Button
                     AnimatedOpacity(
                       opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 200),
@@ -321,7 +459,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                         ),
                     ),
                     
-                    // 1.2 Start Button
+                    // 1.5 Start Button
                     AnimatedOpacity(
                       opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.3,
                       duration: const Duration(milliseconds: 200),
@@ -338,14 +476,25 @@ class _RostersSelectionState extends State<RostersSelection> {
                                 });
                               }
                             : null,
-                          child: Center(
-                            child: SizedBox(
-                              width: avatarHeight * 0.5,
-                              height: avatarHeight * 0.5,
-                              child: Image.asset(
-                                'assets/png/mechanics/start_game.png',
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(150),
+                                  blurRadius: _responsiveTile * 0.012,
+                                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                width: avatarHeight * 0.5,
+                                height: avatarHeight * 0.5,
+                                child: Image.asset(
+                                  'assets/png/mechanics/start_game.png',
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                ),
                               ),
                             ),
                           ),
@@ -369,7 +518,6 @@ class _RostersSelectionState extends State<RostersSelection> {
                         SizedBox(width: _responsiveTile * 0.022),
 
                         // 1. Left Players or Teams CarouselView
-                        // TODO condition players or teams
                         Expanded(
                           child:Align(
                             alignment: Alignment.center,
@@ -380,62 +528,36 @@ class _RostersSelectionState extends State<RostersSelection> {
                               if (_isPlayersSelection) ...[
                                 SizedBox(
                                   height: avatarHeightOuterSize,
-                                  width: avatarSlicedWidthOuterSize * (leftPlayers.isEmpty ? 1 : leftPlayers.length.clamp(1, 6)),
-                                  child: CarouselView(
-                                    itemExtent: avatarSlicedWidthOuterSize,
-                                    shrinkExtent: avatarHeightOuterSize * 0.4,
-                                    backgroundColor: Colors.transparent,
-                                    overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                    onTap: (int index) {
-                                      final targetList = leftPlayers;
-                                      if (index < targetList.length) {
-                                        final originalIndex = targetList[index].originalIndex;
-                                        
-                                        setState(() {
-                                          _selectedPlayers.removeAt(originalIndex);
-                                        });
-                                      }
-                                    },
+                                  width: (avatarSlicedWidthOuterSize * (leftPlayers.isEmpty ? 1 : leftPlayers.length)) + 
+                                        (leftPlayers.isEmpty ? 0 : (leftPlayers.length - 1) * (_responsiveTile * 0.015)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.max,
                                     children: _buildPlayersSlotsH(
                                       targetPlayers: leftPlayers,
                                       avatarHeight: avatarHeight,
                                       avatarHeightOuterSize: avatarHeightOuterSize,
                                       avatarSlicedWidth: avatarSlicedWidth,
                                       avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                    ),
+                                      onTap: (originalIndex) {
+                                        setState(() {
+                                          _selectedPlayers.removeWhere((p) => _selectedPlayers.indexOf(p) == originalIndex);
+                                        });
+                                      },
+                                    ).expand((widget) => [
+                                      widget,
+                                      SizedBox(width: _responsiveTile * 0.015), // Adjust the gap size here
+                                    ]).toList()..removeLast(),
                                   ),
                                 ),
                               ] else ...[
                                 SizedBox(
-                                  height: cardHeight,
-                                  width: cardWidth,
-                                  child: CarouselView(
-                                    scrollDirection: Axis.vertical,
-                                    itemExtent: cardWidth,
-                                    shrinkExtent: cardWidth * 0.4,
-                                    backgroundColor: Colors.transparent,
-                                    overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                    onTap: (int index) {
-                                      final filteredTeams = _selectedTeams.where((p) {
-                                        final originalIndex = _selectedTeams.indexOf(p);
-                                        return originalIndex.isEven;
-                                      }).toList();
-
-                                      if (index < filteredTeams.length) {
-                                        final teamToToggle = filteredTeams[index];
-                                        final originalIndex = _selectedTeams.indexOf(teamToToggle);
-                                        
-                                        setState(() {
-                                          _selectedTeams.removeAt(originalIndex);
-                                        });
-                                      }
-                                    },
+                                  height: (cardSlicedHeightOuterSize * (leftTeams.isEmpty ? 1 : leftTeams.length)) + 
+                                      (leftTeams.isEmpty ? 0 : (leftTeams.length - 1) * (_responsiveTile * 0.015)),
+                                  width: cardWidthOuterSize,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.max,
                                     children: _buildTeamsSlotsV(
                                       targetTeams: leftTeams,
                                       cardHeight: cardHeight,
@@ -443,7 +565,15 @@ class _RostersSelectionState extends State<RostersSelection> {
                                       cardWidthOuterSize: cardWidthOuterSize,
                                       cardSlicedHeight: cardSlicedHeight,
                                       cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                    ),
+                                      onTap: (originalIndex) {
+                                        setState(() {
+                                          _selectedTeams.removeWhere((p) => _selectedTeams.indexOf(p) == originalIndex);
+                                        });
+                                      },
+                                    ).expand((widget) => [
+                                      widget,
+                                      SizedBox(height: _responsiveTile * 0.015),
+                                    ]).toList()..removeLast(),
                                   ),
                                 ),
                               ],
@@ -486,23 +616,64 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   : SystemMouseCursors.basic,
                                 child: GestureDetector(
                                   onTap: _isPlayersTeamsMinSelectionValid 
-                                    ? () async {
-                                        setState(() {
-                                          _selectedPlayers.shuffle();
-                                        });
-                                      }
+                                    ? _isPlayersSelection
+                                      ? () async {
+                                          setState(() {
+                                            _selectedPlayers.shuffle();
+                                          });
+                                        }
+                                      : () async {
+                                          setState(() {
+                                            _selectedTeams.shuffle();
+                                          });
+                                        }
                                     : null,
                                   child: Center(
-                                    child: SizedBox(
-                                      width: avatarHeight * 0.5,
-                                      height: avatarHeight * 0.5,
-                                      child: Image.asset(
-                                        _isPlayersSelection 
-                                          ? 'assets/png/mechanics/shuffle_players.png' 
-                                          : 'assets/png/mechanics/shuffle_teams.png',
-                                        fit: BoxFit.contain,
-                                        filterQuality: FilterQuality.high,
-                                      ),
+                                    child: Stack(
+                                      children: [
+                                        // 1. Bottom Layer: Dynamic Solid Fill Background
+                                        Positioned.fill(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.blue,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  //color: Colors.black.withAlpha(150),
+                                                  blurRadius: _responsiveTile * 0.015,
+                                                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        
+                                        // 2. Middle Layer: Crisp PNG Icon Asset
+                                        SizedBox(
+                                          width: avatarHeight * 0.5,
+                                          height: avatarHeight * 0.5,
+                                          child: Image.asset(
+                                            _isPlayersSelection 
+                                              ? 'assets/png/mechanics/shuffle_players.png' 
+                                              : 'assets/png/mechanics/shuffle_teams.png',
+                                            fit: BoxFit.contain,
+                                            filterQuality: FilterQuality.high,
+                                          ),
+                                        ),
+                                        
+                                        // 3. Top Overlay Layer: Circular Border Ring
+                                        Positioned.fill(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors.amber.shade300,
+                                                width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -541,62 +712,36 @@ class _RostersSelectionState extends State<RostersSelection> {
                               if (_isPlayersSelection) ...[
                                 SizedBox(
                                   height: avatarHeightOuterSize,
-                                  width: avatarSlicedWidthOuterSize * (rightPlayers.isEmpty ? 1 : rightPlayers.length.clamp(1, 6)),
-                                  child: CarouselView(
-                                    itemExtent: avatarSlicedWidthOuterSize,
-                                    shrinkExtent: avatarHeightOuterSize * 0.4,
-                                    backgroundColor: Colors.transparent,
-                                    overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                    onTap: (int index) {
-                                      final targetList = rightPlayers;
-                                      if (index < targetList.length) {
-                                        final originalIndex = targetList[index].originalIndex;
-                                        
-                                        setState(() {
-                                          _selectedPlayers.removeAt(originalIndex);
-                                        });
-                                      }
-                                    },
+                                  width: (avatarSlicedWidthOuterSize * (rightPlayers.isEmpty ? 1 : rightPlayers.length)) + 
+                                        (rightPlayers.isEmpty ? 0 : (rightPlayers.length - 1) * (_responsiveTile * 0.015)),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.max,
                                     children: _buildPlayersSlotsH(
                                       targetPlayers: rightPlayers,
                                       avatarHeight: avatarHeight,
                                       avatarHeightOuterSize: avatarHeightOuterSize,
                                       avatarSlicedWidth: avatarSlicedWidth,
                                       avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                    ),
+                                      onTap: (originalIndex) {
+                                        setState(() {
+                                          _selectedPlayers.removeWhere((p) => _selectedPlayers.indexOf(p) == originalIndex);
+                                        });
+                                      },
+                                    ).expand((widget) => [
+                                      widget,
+                                      SizedBox(width: _responsiveTile * 0.015), // Adjust the gap size here
+                                    ]).toList()..removeLast(),
                                   ),
                                 ),
                               ] else ...[
                                 SizedBox(
-                                  height: cardHeight,
-                                  width: cardWidth,
-                                  child: CarouselView(
-                                    scrollDirection: Axis.vertical,
-                                    itemExtent: cardWidth,
-                                    shrinkExtent: cardWidth * 0.4,
-                                    backgroundColor: Colors.transparent,
-                                    overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                    onTap: (int index) {
-                                      final filteredTeams = _selectedTeams.where((p) {
-                                        final originalIndex = _selectedTeams.indexOf(p);
-                                        return originalIndex.isOdd;
-                                      }).toList();
-
-                                      if (index < filteredTeams.length) {
-                                        final teamToToggle = filteredTeams[index];
-                                        final originalIndex = _selectedTeams.indexOf(teamToToggle);
-                                        
-                                        setState(() {
-                                          _selectedTeams.removeAt(originalIndex);
-                                        });
-                                      }
-                                    },
+                                  height: (cardSlicedHeightOuterSize * (rightTeams.isEmpty ? 1 : rightTeams.length)) + 
+                                      (rightTeams.isEmpty ? 0 : (rightTeams.length - 1) * (_responsiveTile * 0.015)),
+                                  width: cardWidthOuterSize,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.max,
                                     children: _buildTeamsSlotsV(
                                       targetTeams: rightTeams,
                                       cardHeight: cardHeight,
@@ -604,7 +749,15 @@ class _RostersSelectionState extends State<RostersSelection> {
                                       cardWidthOuterSize: cardWidthOuterSize,
                                       cardSlicedHeight: cardSlicedHeight,
                                       cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                    ),
+                                      onTap: (originalIndex) {
+                                        setState(() {
+                                          _selectedTeams.removeWhere((p) => _selectedTeams.indexOf(p) == originalIndex);
+                                        });
+                                      },
+                                    ).expand((widget) => [
+                                      widget,
+                                      SizedBox(height: _responsiveTile * 0.015),
+                                    ]).toList()..removeLast(),
                                   ),
                                 ),
                               ]
@@ -693,13 +846,8 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                                 // Apply search filter on top of active players
                                 final playerList = _searchQuery.isEmpty
-                                    ? activePlayers
-                                    : activePlayers.where((player) {
-                                        final query = _searchQuery.toLowerCase();
-                                        return player.fldFirstName.toLowerCase().contains(query) ||
-                                            player.fldLastName.toLowerCase().contains(query) ||
-                                            player.fldNickName.toLowerCase().contains(query);
-                                      }).toList();
+                                  ? activePlayers
+                                  : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).toList();
 
                                 if (playerList.isEmpty) {
                                   return Center(
@@ -760,16 +908,8 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                                 // Apply search filter on top of active players
                                 final teamList = _searchQuery.isEmpty
-                                    ? activeTeams
-                                    : activeTeams.where((team) {
-                                        final query = _searchQuery.toLowerCase();
-                                        return team.fldPlayers[0].fldFirstName.toLowerCase().contains(query) ||
-                                            team.fldPlayers[0].fldLastName.toLowerCase().contains(query) ||
-                                            team.fldPlayers[0].fldNickName.toLowerCase().contains(query) ||
-                                            team.fldPlayers[1].fldFirstName.toLowerCase().contains(query) ||
-                                            team.fldPlayers[1].fldLastName.toLowerCase().contains(query) ||
-                                            team.fldPlayers[1].fldNickName.toLowerCase().contains(query);
-                                      }).toList();
+                                  ? activeTeams
+                                  : activeTeams.where((team) => _matchesTeamQuery(team, _searchQuery)).toList();
                               
                                 if (teamList.isEmpty) {
                                   return Center(
@@ -811,7 +951,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                           cardWidth: cardWidth,
                                           selectedPlayer1: team.fldPlayers[0],
                                           selectedPlayer2: team.fldPlayers[1],
-                                          isDummyTeam: team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode,
+                                          isDummyTeam: team.fldPlayers[0] == team.fldPlayers[1],
                                           colorBgAvatar: GlobalSettingType.teams.tileBackgroundColor,
                                           isSlicedCard: false,
                                         ),
@@ -839,8 +979,8 @@ class _RostersSelectionState extends State<RostersSelection> {
     required double avatarHeightOuterSize,
     required double avatarSlicedWidth,
     required double avatarSlicedWidthOuterSize,
+    required void Function(int originalIndex) onTap,
   }) {
-    //Fits with asset of badge P1 or T1
     final ratioPlayerTeamBadge = 345 / 260;
 
     return List.generate(targetPlayers.length, (index) {
@@ -849,61 +989,120 @@ class _RostersSelectionState extends State<RostersSelection> {
       final originalIndex = item.originalIndex;
       final slotAlignment = item.slotConfig;
 
-      return Stack(
-        children: [
-          Container(
+      // The core visual card content
+      final cardWidget = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => onTap(originalIndex),
+          child: SizedBox(
             width: avatarSlicedWidthOuterSize,
             height: avatarHeightOuterSize,
+            child: Stack(
+              children: [
+                Container(
+                  width: avatarSlicedWidthOuterSize,
+                  height: avatarHeightOuterSize,
+                  decoration: BoxDecoration(
+                    color: slotAlignment.bgColor,
+                    borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+                    border: Border.all(
+                      color: Colors.yellowAccent,
+                      width: avatarHeightOuterSize * 0.012,
+                    ),
+                  ),
+                  child: ClipRect(
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: avatarHeight,
+                        height: avatarHeight,
+                        child: gBuildPlayerAvatarCard(
+                          player: player,
+                          avatarHeight: avatarHeight,
+                          bgColor: Colors.transparent,
+                          isSlicedAvatar: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: const Alignment(0.0, -0.94),
+                  child: SizedBox(
+                    width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
+                    height: avatarHeight * 0.20,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                        border: Border.all(
+                          color: Colors.yellowAccent,
+                          width: avatarSlicedWidthOuterSize * 0.015,
+                        ),
+                      ),
+                      child: Image.asset(
+                        'assets/png/mechanics/rs_tag_p_${originalIndex + 1}.png',
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Wrap with DragTarget to accept dropped players and swap positions
+      return DragTarget<PlayerDragData>(
+        onWillAcceptWithDetails: (details) => details.data.originalIndex != originalIndex,
+        onAcceptWithDetails: (details) {
+          final draggedIndex = details.data.originalIndex;
+          setState(() {
+            // Swap the two players in the global _selectedPlayers list
+            final temp = _selectedPlayers[draggedIndex];
+            _selectedPlayers[draggedIndex] = _selectedPlayers[originalIndex];
+            _selectedPlayers[originalIndex] = temp;
+          });
+        },
+        builder: (context, candidateData, rejectedData) {
+          final isHovering = candidateData.isNotEmpty;
+
+          // Wrap the card with a dynamic highlight/glow effect when hovered
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
             decoration: BoxDecoration(
-              color: slotAlignment.bgColor,
               borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
-              border: Border.all(
-                color: Colors.yellowAccent,
-                width: avatarHeightOuterSize * 0.012,
-              ),
+              boxShadow: isHovering
+                  ? [
+                      BoxShadow(
+                        color: Colors.yellowAccent.withAlpha(220),
+                        blurRadius: avatarSlicedWidthOuterSize * 0.15,
+                        spreadRadius: avatarSlicedWidthOuterSize * 0.05,
+                      )
+                    ]
+                  : [],
             ),
-            child: ClipRect(
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: avatarHeight,
-                  height: avatarHeight,
-                  child: gBuildPlayerAvatarCard(
-                    player: player,
-                    avatarHeight: avatarHeight,
-                    bgColor: Colors.transparent,
-                    isSlicedAvatar: true,
-                  ),
+            child: Draggable<PlayerDragData>(
+              data: PlayerDragData(originalIndex),
+              feedback: Material(
+                color: Colors.transparent,
+                child: Opacity(
+                  opacity: 0.85,
+                  child: cardWidget,
                 ),
               ),
-            ),
-          ),
-          
-          Align(
-            alignment: Alignment(0.0, -0.94),
-            child: SizedBox(
-              width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
-              height: avatarHeight * 0.20,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
-                  border: Border.all(
-                    color: Colors.yellowAccent,
-                    width: avatarSlicedWidthOuterSize * 0.015,
-                  ),
-                ),
-                child: Image.asset(
-                  'assets/png/mechanics/rs_tag_p_${originalIndex + 1}.png',
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
+              childWhenDragging: Opacity(
+                opacity: 0.35,
+                child: cardWidget,
               ),
+              child: cardWidget,
             ),
-          ),
-        ],
+          );
+        },
       );
     });
   }
@@ -915,6 +1114,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     required double cardWidthOuterSize,
     required double cardSlicedHeight,
     required double cardSlicedHeightOuterSize,
+    required void Function(int originalIndex) onTap,
   }) {
     //Fits with asset of badge P1 or T1
     final ratioPlayerTeamBadge = 345 / 260;
@@ -924,71 +1124,130 @@ class _RostersSelectionState extends State<RostersSelection> {
       final team = item.team;
       final originalIndex = item.originalIndex;
       final slotAlignment = item.slotConfig;
+      final isDummy = (team.fldPlayers[0] == team.fldPlayers[1]);
 
-      return Stack(
-        children: [
-          Container(
+      // The core visual card content
+      final cardWidget = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => onTap(originalIndex), // <--- Trigger the removal using originalIndex
+          child: SizedBox(
             width: cardWidthOuterSize,
             height: cardSlicedHeightOuterSize,
+            child: Stack(
+              children: [
+                Container(
+                  width: cardWidthOuterSize,
+                  height: cardSlicedHeightOuterSize,
+                  decoration: BoxDecoration(
+                    color: slotAlignment.bgColor,
+                    borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+                    border: Border.all(
+                      color: Colors.yellowAccent,
+                      width: cardWidthOuterSize * 0.008,
+                    ),
+                  ),
+                  child: ClipRect(
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: cardWidth,
+                        height: cardHeight,
+                        child: gBuildTeamCardH(
+                          cardHeight: cardHeight,
+                          cardWidth: cardWidth,
+                          selectedPlayer1: team.fldPlayers[0],
+                          selectedPlayer2: team.fldPlayers[1],
+                          isDummyTeam: isDummy,
+                          colorBgAvatar: Colors.transparent,
+                          isSlicedCard: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                Align(
+                  alignment: !isDummy
+                    ? Alignment(0.0, 0.0)
+                    : originalIndex.isEven
+                      ? Alignment(-0.95, -0.80)
+                      : Alignment(0.95, -0.80),
+                  child: SizedBox(
+                    width: cardWidth * 0.15 * ratioPlayerTeamBadge,
+                    height: cardWidth * 0.15,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                        border: Border.all(
+                          color: Colors.yellowAccent,
+                          width: cardSlicedHeightOuterSize * 0.015,
+                        ),
+                      ),
+                      child: Image.asset(
+                        'assets/png/mechanics/rs_tag_t_${originalIndex + 1}.png',
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Wrap with DragTarget to accept dropped players and swap positions
+      return DragTarget<PlayerDragData>(
+        onWillAcceptWithDetails: (details) => details.data.originalIndex != originalIndex,
+        onAcceptWithDetails: (details) {
+          final draggedIndex = details.data.originalIndex;
+          setState(() {
+            // Swap the two players in the global _selectedPlayers list
+            final temp = _selectedTeams[draggedIndex];
+            _selectedTeams[draggedIndex] = _selectedTeams[originalIndex];
+            _selectedTeams[originalIndex] = temp;
+          });
+        },
+        builder: (context, candidateData, rejectedData) {
+          final isHovering = candidateData.isNotEmpty;
+
+          // Wrap the card with a dynamic highlight/glow effect when hovered
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
             decoration: BoxDecoration(
-              color: slotAlignment.bgColor,
               borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
-              border: Border.all(
-                color: Colors.yellowAccent,
-                width: cardWidthOuterSize * 0.012,
-              ),
+              boxShadow: isHovering
+                  ? [
+                      BoxShadow(
+                        color: Colors.yellowAccent.withAlpha(220),
+                        blurRadius: cardSlicedHeightOuterSize * 0.15,
+                        spreadRadius: cardSlicedHeightOuterSize * 0.05,
+                      )
+                    ]
+                  : [],
             ),
-            child: ClipRect(
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: cardWidth,
-                  height: cardHeight,
-                  child: gBuildTeamCardH(
-                    cardHeight: cardHeight,
-                    cardWidth: cardWidth,
-                    selectedPlayer1: team.fldPlayers[0],
-                    selectedPlayer2: team.fldPlayers[1],
-                    isDummyTeam: team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode,
-                    colorBgAvatar: Colors.transparent,
-                    isSlicedCard: true,
-                  ),
-                  /* child: gBuildPlayerAvatarCard(
-                    player: player,
-                    avatarHeight: avatarHeight,
-                    bgColor: Colors.transparent,
-                    isSlicedAvatar: true,
-                  ), */
+            child: Draggable<PlayerDragData>(
+              data: PlayerDragData(originalIndex),
+              feedback: Material(
+                color: Colors.transparent,
+                child: Opacity(
+                  opacity: 0.85,
+                  child: cardWidget,
                 ),
               ),
-            ),
-          ),
-          
-          Align(
-            alignment: Alignment(0.0, -0.94),
-            child: SizedBox(
-              width: cardWidth * 0.20 * ratioPlayerTeamBadge,
-              height: cardWidth * 0.20,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
-                  border: Border.all(
-                    color: Colors.yellowAccent,
-                    width: cardSlicedHeightOuterSize * 0.015,
-                  ),
-                ),
-                child: Image.asset(
-                  'assets/png/mechanics/rs_tag_t_${originalIndex + 1}.png',
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
+              childWhenDragging: Opacity(
+                opacity: 0.35,
+                child: cardWidget,
               ),
+              child: cardWidget,
             ),
-          ),
-        ],
+          );
+        },
       );
     });
   }
@@ -1186,4 +1445,9 @@ class _FadingEllipseAnimationState extends State<FadingEllipseAnimation>
       ),
     );
   }
+}
+
+class PlayerDragData {
+  final int originalIndex;
+  PlayerDragData(this.originalIndex);
 }

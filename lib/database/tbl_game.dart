@@ -1,43 +1,41 @@
+// Flutter basics
 import 'package:hive_ce/hive_ce.dart';
+
+// Database Models
+import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
+
+// Backend Logic
+import 'package:darts_101/global_be.dart';
 
 part 'tbl_game.g.dart';
 
 @HiveType(typeId: 4) // Unique ID for your model
 class TblGame extends HiveObject {
   @HiveField(0)
-  int? idGame;
-
-  @HiveField(1)
-  // gameType = [1, Half-it], [2, Team Build-up], etc...
-  int gameType;
+  GlobalGameType fldGameType;
  
-  // gameMode = [1, Players], [2, Teams]
+  @HiveField(1)
+  List<TblPlayer>? fldPlayers;
+
   @HiveField(2)
-  int gameMode;
+  List<TblTeam>? fldTeams;
 
   @HiveField(3)
-  List<int>? teamsIDs;
+  TblPlayer? fldPlayerWinner;
 
   @HiveField(4)
-  int? idTeamWinner;
+  TblTeam? fldTeamWinner;
 
-  @HiveField(5)
-  List<int> playersIDs;
-
-  @HiveField(6)
-  int? idPlayerWinner;
-
-  @HiveField(7, defaultValue: false)
-  bool isEnded;
+  @HiveField(5, defaultValue: false)
+  bool fldIsEnded;
 
   TblGame({
-    this.idGame,
-    required this.gameType, 
-    required this.gameMode, 
-    this.teamsIDs, 
-    this.idTeamWinner, 
-    required this.playersIDs, 
-    this.idPlayerWinner, 
-    this.isEnded = false,
+    required this.fldGameType,
+    this.fldPlayers, 
+    this.fldTeams, 
+    this.fldPlayerWinner, 
+    this.fldTeamWinner, 
+    this.fldIsEnded = false,
   });
 }

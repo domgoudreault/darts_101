@@ -1,4 +1,8 @@
+// Flutter basics
 import 'package:hive_ce/hive_ce.dart';
+
+// Database Models
+import 'package:darts_101/database/tbl_avatar.dart';
 
 part 'tbl_player.g.dart';
 
@@ -19,8 +23,8 @@ class TblPlayer extends HiveObject {
   @HiveField(4, defaultValue: false)
   bool fldIsLeagueMember;
 
-  @HiveField(5, defaultValue: 'avatar_01')
-  String fldAvatarCode;
+  @HiveField(5)
+  TblAvatar fldAvatar;
 
   TblPlayer({
     required this.fldFirstName, 
@@ -28,6 +32,6 @@ class TblPlayer extends HiveObject {
     required this.fldNickName, 
     this.fldIsDeleted = false,
     this.fldIsLeagueMember = false,
-    required this.fldAvatarCode,
+    required this.fldAvatar,
   });
 }

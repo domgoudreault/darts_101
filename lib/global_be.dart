@@ -148,12 +148,12 @@ enum GlobalPlayersGridConfig {
 }
 
 enum GlobalTeamsGridConfig {
-  teamSlot1(position: 1, bgColor: Color(0xFF2196F3)),
+  teamSlot1(position: 1, bgColor: Color(0xFF3F51B5)),
   teamSlot2(position: 2, bgColor: Color(0xFFE53935)),
-  teamSlot3(position: 3, bgColor: Color.fromARGB(255, 255, 170, 41)),
+  teamSlot3(position: 3, bgColor: Color(0xFFFF7043)),
   teamSlot4(position: 4, bgColor: Color.fromARGB(255, 147, 206, 84)),
-  teamSlot5(position: 5, bgColor: Color(0xFF3F51B5)),
-  teamSlot6(position: 6, bgColor: Color(0xFF8E24AA));
+  teamSlot5(position: 5, bgColor: Color(0xFF8E24AA)),
+  teamSlot6(position: 6, bgColor: Color(0xFFD81B60));
   
   final int position;
   final Color bgColor;

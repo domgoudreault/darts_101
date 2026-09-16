@@ -56,6 +56,18 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     super.dispose();
   }
 
+  bool _matchesPlayerQuery(TblPlayer player, String query) {
+    if (query.isEmpty) return true;
+    final terms = query.split(' ').where((term) => term.isNotEmpty).toList();
+    if (terms.isEmpty) return true;
+
+    // Use .any() so a player matches if they contain ANY of the space-separated terms
+    return terms.any((term) =>
+        player.fldFirstName.toLowerCase().contains(term) ||
+        player.fldLastName.toLowerCase().contains(term) ||
+        player.fldNickName.toLowerCase().contains(term));
+  }
+
   // Fonctions de navigation when a button is pressed
   void _addPlayer(BuildContext context, double cardWidth) async {
     final result = await Navigator.push(
@@ -264,13 +276,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                       builder: (context, box, _) {
                                         final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
                                         final filteredCount = _searchQuery.isEmpty
-                                            ? activePlayers.length
-                                            : activePlayers.where((player) {
-                                                final query = _searchQuery.toLowerCase();
-                                                return player.fldFirstName.toLowerCase().contains(query) ||
-                                                    player.fldLastName.toLowerCase().contains(query) ||
-                                                    player.fldNickName.toLowerCase().contains(query);
-                                              }).length;
+                                          ? activePlayers.length
+                                          : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).length;
 
                                         return Container(
                                           margin: EdgeInsets.only(
@@ -346,16 +353,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
                       // Filter by First Name, Last Name, or Nickname
                       final players = _searchQuery.isEmpty
-                          ? activePlayers
-                          : activePlayers.where((player) {
-                              final firstName = player.fldFirstName.toLowerCase();
-                              final lastName = player.fldLastName.toLowerCase();
-                              final nickName = player.fldNickName.toLowerCase();
-
-                              return firstName.contains(_searchQuery) ||
-                                  lastName.contains(_searchQuery) ||
-                                  nickName.contains(_searchQuery);
-                            }).toList();
+                        ? activePlayers
+                        : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).toList();
 
                       if (players.isEmpty) {
                         return Center(
@@ -422,7 +421,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 // 2. Avatar Layer
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/png/avatars/avatar_${player.fldAvatarCode}_player_card.png',
+                    'assets/png/avatars/avatar_${player.fldAvatar.fldAvatarCode}_player_card.png',
                     fit: BoxFit.fill,
                     filterQuality: FilterQuality.high,                    
                   ),

@@ -375,6 +375,55 @@ class _MainScreenState extends State<MainScreen> {
   // Accordion State: GAMES active by default
   MainScreenSection _activeSection = MainScreenSection.section05Games;
 
+  bool _isCached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isCached) {
+      _isCached = true;
+      _precacheAllAssets(context);
+    }
+  }
+
+  Future<void> _precacheAllAssets(BuildContext context) async {
+    // 1. Collect all dynamic game and setting tile asset paths
+    final assetPaths = <String>[];
+
+    for (var tile in GlobalGameType.values) {
+      assetPaths.add('assets/png/tiles/${tile.tileType}_${tile.tileCode}.png');
+    }
+    for (var tile in GlobalSettingType.values) {
+      assetPaths.add('assets/png/tiles/${tile.tileType}_${tile.tileCode}.png');
+    }
+
+    // 2. Collect core mechanics & navigation UI assets
+    assetPaths.addAll([
+      'assets/png/mechanics/arrow_right.png',
+      'assets/png/mechanics/arrow_left.png',
+      'assets/png/mechanics/player_avatar.png',
+      'assets/png/mechanics/player_card_bg.png',
+      'assets/png/mechanics/player_card_frame.png',
+      'assets/png/mechanics/player_dummy_H.png',
+      'assets/png/mechanics/player_dummy_icon.png',
+      'assets/png/mechanics/player_dummy_V.png',
+      'assets/png/mechanics/player_league_member.png',
+      'assets/png/mechanics/resume_game.png',
+      'assets/png/mechanics/section_games.png',
+      'assets/png/mechanics/section_settings.png',
+      'assets/png/mechanics/shuffle_players.png',
+      'assets/png/mechanics/shuffle_teams.png',
+      'assets/png/mechanics/start_game.png',
+      'assets/png/mechanics/team_card_frame_H.png',
+      'assets/png/mechanics/team_card_frame_V.png',
+    ]);
+
+    // 3. Precache them all into memory safely
+    for (String path in assetPaths) {
+      precacheImage(AssetImage(path), context);
+    }
+  }
+
   // Fonction de navigation when a button is pressed
   void _onTileTapped(BuildContext context, dynamic tile) {    
     Widget? destination;
@@ -567,6 +616,8 @@ Future<void> _clearHiveDatabase(BuildContext context) async {
   // Clear primary user data and game logs
   await Hive.box<TblPlayer>('playersBox').clear();
   await Hive.box<TblTeam>('teamsBox').clear();
+  gSelectedPlayers.clear();
+  gSelectedTeams.clear();
   
   if (context.mounted) {
     gShowArcadeErrorSnackBar(

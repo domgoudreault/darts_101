@@ -1,5 +1,8 @@
-import 'package:darts_101/database/tbl_player.dart';
+// Flutter basics
 import 'package:hive_ce/hive_ce.dart';
+
+// Database Models
+import 'package:darts_101/database/tbl_player.dart';
 
 part 'tbl_team.g.dart';
 

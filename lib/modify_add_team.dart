@@ -51,10 +51,10 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     // If we are modifying, fill the controllers with existing data
     if (widget.enuFormMode == FormMode.formModify && widget.modifyTeam != null) {
       _selectedPlayer1 = widget.modifyTeam!.fldPlayers[0];
-      _selectedAvatarCodePlayer1 = _selectedPlayer1!.fldAvatarCode;
+      _selectedAvatarCodePlayer1 = _selectedPlayer1!.fldAvatar.fldAvatarCode;
 
       _selectedPlayer2 = widget.modifyTeam!.fldPlayers[1];
-      _selectedAvatarCodePlayer2 = _selectedPlayer2!.fldAvatarCode;
+      _selectedAvatarCodePlayer2 = _selectedPlayer2!.fldAvatar.fldAvatarCode;
 
       // Auto-detect if it's a dummy team
       if (_selectedPlayer1 == _selectedPlayer2) {
@@ -72,12 +72,12 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     if (player != null) {
       setState(() {
         _selectedPlayer1 = player;
-        _selectedAvatarCodePlayer1 = player.fldAvatarCode;
+        _selectedAvatarCodePlayer1 = player.fldAvatar.fldAvatarCode;
 
         // Force-push Player 1 into Player 2 at all cost if Dummy Mode is active
         if (_isDummyTeam) {
           _selectedPlayer2 = player;
-          _selectedAvatarCodePlayer2 = player.fldAvatarCode;
+          _selectedAvatarCodePlayer2 = player.fldAvatar.fldAvatarCode;
         }
       });
     }
@@ -88,7 +88,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     if (player != null) {
       setState(() {
         _selectedPlayer2 = player;
-        _selectedAvatarCodePlayer2 = player.fldAvatarCode;
+        _selectedAvatarCodePlayer2 = player.fldAvatar.fldAvatarCode;
       });
     }
   }

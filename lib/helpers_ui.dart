@@ -436,7 +436,7 @@ Widget gBuildPlayerAvatarCard({
                 right: 0,
                 height: avatarHeight,
                 child: Image.asset(
-                  'assets/png/avatars/avatar_${player.fldAvatarCode}_v1.png',
+                  'assets/png/avatars/avatar_${player.fldAvatar.fldAvatarCode}_v1.png',
                   fit: BoxFit.fill,
                   filterQuality: FilterQuality.high,
                 ),
@@ -454,10 +454,9 @@ Widget gBuildPlayerAvatarCard({
                 ),
               ),
 
-              // 4. Player Nickname Pill
               if (isSlicedAvatar) ...[
                 Positioned(
-                  right: avatarHeight * 0.26,
+                  right: avatarHeight * 0.265,
                   top: 0,
                   bottom: 0,
                   child: RotatedBox(
@@ -469,7 +468,7 @@ Widget gBuildPlayerAvatarCard({
                           vertical: avatarHeight * 0.015,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.purpleAccent.shade100.withAlpha(150),
+                          color: Colors.purpleAccent.shade100.withAlpha(200),
                           borderRadius: BorderRadius.circular(avatarHeight * 0.04),
                           border: Border.all(
                             color: Colors.purpleAccent.shade700,
@@ -594,7 +593,7 @@ Widget gBuildTeamCardH({
                 left: cardWidth * 0.01,
                 width: avatarHeightCard,
                 child: Image.asset(
-                  'assets/png/avatars/avatar_${selectedPlayer1 != null ? selectedPlayer1.fldAvatarCode : 'question'}_v1.png',
+                  'assets/png/avatars/avatar_${selectedPlayer1 != null ? selectedPlayer1.fldAvatar.fldAvatarCode : 'question'}_v1.png',
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
                 ),
@@ -607,7 +606,7 @@ Widget gBuildTeamCardH({
                 right: cardWidth * 0.01,
                 width: avatarHeightCard,
                 child: Image.asset(
-                  'assets/png/avatars/avatar_${selectedPlayer2 != null ? selectedPlayer2.fldAvatarCode : 'question'}_v1.png',
+                  'assets/png/avatars/avatar_${selectedPlayer2 != null ? selectedPlayer2.fldAvatar.fldAvatarCode : 'question'}_v1.png',
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
                 ),
@@ -633,7 +632,7 @@ Widget gBuildTeamCardH({
                 ),
               
               // 7. Player 1 Nickname Pill (Left Slot)
-              if (selectedPlayer1 != null)
+              if (selectedPlayer1 != null && !isSlicedCard) ...[
                 Positioned(
                   bottom: cardHeight * 0.13,
                   left: 0,
@@ -666,9 +665,43 @@ Widget gBuildTeamCardH({
                     ),
                   ),
                 ),
+              ] else if (selectedPlayer1 != null && isSlicedCard) ...[
+                Positioned(
+                  bottom: cardHeight * 0.255,
+                  left: 0,
+                  width: avatarHeightCard,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: avatarHeightCard * 0.045,
+                        vertical: avatarHeightCard * 0.015,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100.withAlpha(200),
+                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: avatarHeightCard * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          selectedPlayer1.fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(
+                            avatarHeightCard * 0.067,
+                            gFontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               
               // 8. Player 2 Nickname Pill (Right Slot)
-              if (selectedPlayer2 != null)
+              if (selectedPlayer2 != null && !isSlicedCard) ...[
                 Positioned(
                   bottom: cardHeight * 0.13,
                   right: 0,
@@ -701,6 +734,40 @@ Widget gBuildTeamCardH({
                     ),
                   ),
                 ),
+              ] else if (selectedPlayer2 != null && isSlicedCard) ...[
+                Positioned(
+                  bottom: cardHeight * 0.255,
+                  right: 0,
+                  width: avatarHeightCard,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: avatarHeightCard * 0.045,
+                        vertical: avatarHeightCard * 0.015,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100.withAlpha(200),
+                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: avatarHeightCard * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          selectedPlayer2.fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(
+                            avatarHeightCard * 0.067,
+                            gFontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

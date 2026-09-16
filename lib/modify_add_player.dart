@@ -59,7 +59,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
       _firstNameController.text = widget.modifyPlayer!.fldFirstName;
       _lastNameController.text = widget.modifyPlayer!.fldLastName;
       _nickNameController.text = widget.modifyPlayer!.fldNickName;
-      _selectedAvatarCode = widget.modifyPlayer!.fldAvatarCode;
+      _selectedAvatarCode = widget.modifyPlayer!.fldAvatar.fldAvatarCode;
     }
     else {
       _selectedAvatarCode = 'question';
@@ -115,6 +115,8 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     }
 
     // 4. Save to Hive database if everything is ok
+    // Get the avatarsBox from Hive
+    final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
     // Get the playersBox from Hive
     final playersBox = Hive.box<TblPlayer>('playersBox');
 
@@ -126,7 +128,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         fldNickName: _nickNameController.text.trim(),
         fldIsDeleted: false,
         fldIsLeagueMember: false,
-        fldAvatarCode: _selectedAvatarCode,
+        fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == _selectedAvatarCode),
       );
 
       // Add to Hive        
@@ -139,7 +141,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         widget.modifyPlayer?.fldFirstName = _firstNameController.text.trim();
         widget.modifyPlayer?.fldLastName = _lastNameController.text.trim();
         widget.modifyPlayer?.fldNickName = _nickNameController.text.trim();
-        widget.modifyPlayer?.fldAvatarCode = _selectedAvatarCode;
+        widget.modifyPlayer?.fldAvatar = avatarsBox.values.firstWhere((a) => a.fldAvatarCode == _selectedAvatarCode);
 
         // Save to Hive        
         widget.modifyPlayer?.save();

@@ -150,7 +150,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     // 1. DUMMY FILTER CHECK
     if (_isDummyFilterActive) {
       // Check if team is a dummy team (both players share avatar code)
-      final bool isDummyTeam = p1.fldAvatarCode == p2.fldAvatarCode;
+      final bool isDummyTeam = p1 == p2;
       
       // If the toggle is ON and this isn't a dummy team, exclude it immediately
       if (!isDummyTeam) return false;
@@ -459,7 +459,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     double cardHeight,
     double cardWidth,
   ) {
-    final bool isDummyTeam = team.fldPlayers[0].fldAvatarCode == team.fldPlayers[1].fldAvatarCode;
+    final bool isDummyTeam = team.fldPlayers[0] == team.fldPlayers[1];
 
     return Center(
       child: AspectRatio(
@@ -513,7 +513,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                   child: Center(
                     child: ClipOval(
                       child: Image.asset(
-                        'assets/png/avatars/avatar_${team.fldPlayers[0].fldAvatarCode}_v1.png',
+                        'assets/png/avatars/avatar_${team.fldPlayers[0].fldAvatar.fldAvatarCode}_v1.png',
                         width: cardHeight / 2,
                         height: cardHeight / 2,
                         fit: BoxFit.cover,
@@ -531,7 +531,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                   child: Center(
                     child: ClipOval(
                       child: Image.asset(
-                        'assets/png/avatars/avatar_${team.fldPlayers[1].fldAvatarCode}_v1.png',
+                        'assets/png/avatars/avatar_${team.fldPlayers[1].fldAvatar.fldAvatarCode}_v1.png',
                         width: cardHeight / 2,
                         height: cardHeight / 2,
                         fit: BoxFit.cover,
