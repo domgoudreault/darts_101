@@ -1,5 +1,6 @@
 /* import 'dart:ui';
 import 'dart:async';
+import 'package:darts_101/global_be.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:lottie/lottie.dart';
@@ -46,14 +47,14 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   int currentTeamIndex = 0; // Index in widget.game.teamsIDs
   int currentTargetIndex = 0; // Index in targets list (0-11)
 
-  late Box<TblGameHalfIt> scoreBox;
+  late Box<TblGameHalfIt> gameScoreBox;
   late Box<TblPlayer> playersBox;
   late Box<TblTeam> teamsBox;
 
   @override
   void initState() {
     super.initState();
-    scoreBox = Hive.box<TblGameHalfIt>('gamescoresBox');
+    gameScoreBox = Hive.box<TblGameHalfIt>('gameScoreBox');
     playersBox = Hive.box<TblPlayer>('playersBox');
     teamsBox = Hive.box<TblTeam>('teamsBox');
 
@@ -79,27 +80,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     super.dispose();
   }  
 
-  Color _getTeamColor(int? idTeam) {
-  if (idTeam == null || idTeam == -1) return Colors.transparent;
-  
-    // A curated list of distinct colors for darts teams
-    final List<Color> materialColors = [
-      Colors.blue.shade600,
-      Colors.green.shade700,
-      Colors.purple.shade600,
-      Colors.orange.shade800,
-      Colors.pinkAccent.shade400,
-      Colors.cyan.shade700,
-      Colors.grey.shade800,
-      Colors.lime.shade800,
-    ];
-
-    return materialColors[idTeam % materialColors.length];
-  }
-
   void _calculateResumeIndexes() {
-    final gameScores = scoreBox.values
-        .where((s) => s.idGame == widget.game.idGame)
+    final gameScores = gameScoreBox.values
+        .where((s) => s.fldGame == widget.game)
         .toList();
 
     if (gameScores.isNotEmpty) {
@@ -107,12 +90,12 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       int maxSeat = -1;
 
       for (var score in gameScores) {
-        if (score.round > maxRound) {
-          maxRound = score.round;
-          maxSeat = score.seatIndex;
-        } else if (score.round == maxRound) {
-          if (score.seatIndex > maxSeat) {
-            maxSeat = score.seatIndex;
+        if (score.fldRound > maxRound) {
+          maxRound = score.fldRound;
+          maxSeat = score.fldSeatIndex;
+        } else if (score.fldRound == maxRound) {
+          if (score.fldSeatIndex > maxSeat) {
+            maxSeat = score.fldSeatIndex;
           }
         }
       }
@@ -120,7 +103,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       int nextSeat = maxSeat + 1;
       int nextRound = maxRound;
 
-      if (nextSeat >= widget.game.playersIDs.length) {
+      if (nextSeat >= widget.game.fldPlayers!.length) {
         nextSeat = 0;
         nextRound++;
       }
@@ -128,14 +111,14 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       // Prevent out of bounds if game was fully completed
       if (nextRound >= targets.length) {
         nextRound = targets.length - 1;
-        nextSeat = widget.game.playersIDs.length - 1;
+        nextSeat = widget.game.fldPlayers!.length - 1;
       }
 
       // Set state variables directly since this is called from initState
       currentTargetIndex = nextRound;
       currentPlayerIndex = nextSeat;
       
-      final int totalTeams = widget.game.teamsIDs?.length ?? 0;
+      final int totalTeams = widget.game.fldTeams?.length ?? 0;
       if (totalTeams > 0) {
         currentTeamIndex = currentPlayerIndex % totalTeams;
       }
@@ -144,31 +127,34 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   
   List<Map<String, dynamic>> _getCurrentRankings() {
     List<Map<String, dynamic>> rankings = [];
-    bool isTeamMode = widget.game.gameMode == 2;
+    final bool isTeamMode = (widget.game.fldPlayers == null);
 
     if (isTeamMode) {
-      for (int i = 0; i < widget.game.teamsIDs!.length; i++) {
-        int tId = widget.game.teamsIDs![i];
-        final team = teamsBox.get(tId);
-        final player1 = team?.fldPlayers[0].fldNickName;
-        final player2 = team?.fldPlayers[1].fldNickName;
+      // Sort slot alignments to match team positions
+      final teamsSlotColors = GlobalTeamsGridConfig.values.toList()
+        ..sort((a, b) => a.position.compareTo(b.position));
+      
+      for (int i = 0; i < widget.game.fldTeams!.length; i++) {
+        final team = widget.game.fldTeams![i];
+        final player1 = team.fldPlayers[0].fldNickName;
+        final player2 = team.fldPlayers[1].fldNickName;
         rankings.add({
           'name': "$player1, $player2",
           //'team_name': team?.fldSurName ?? "Team",
-          'score': _getLatestTeamScore(tId),
-          'color': _getTeamColor(i),
-          'id': tId,
+          'score': _getLatestTeamScore(team),
+          'color': teamsSlotColors[i],
+          'id': i,
         });
       }
     } else {
-      for (int i = 0; i < widget.game.playersIDs.length; i++) {
-        int pId = widget.game.playersIDs[i];
+      for (int i = 0; i < widget.game.fldPlayers!.length; i++) {
+        final player = widget.game.fldPlayers![i];
         rankings.add({          
-          'name': playersBox.get(pId)?.fldNickName ?? "Player",
-          'team_name': playersBox.get(pId)?.fldNickName ?? "Player", // property won't be used in TeamMode, needs to be identical for purpose
-          'score': _getLatestPlayerScore(pId, i),
+          'name': '$player.fldNickName Player',
+          'team_name': "Player", // property won't be used in TeamMode, needs to be identical for purpose
+          'score': _getLatestPlayerScore(player),
           'color': Colors.blueGrey.shade700,
-          'id': pId,
+          'id': i,
         });
       }
     }
@@ -180,10 +166,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   List<Map<String, dynamic>> _getRankingsWithTrends() {
     final currentRanks = _getCurrentRankings();
-    final bool isTeamMode = widget.game.gameMode == 2;
+    final bool isTeamMode = (widget.game.fldPlayers == null);
 
     // 1. Get the last entry for this game
-    final gameHistory = scoreBox.values.where((s) => s.idGame == widget.game.idGame).toList();
+    final gameHistory = gameScoreBox.values.where((s) => s.fldGame == widget.game).toList();
     if (gameHistory.isEmpty) return currentRanks;
 
     final lastScoreEntry = gameHistory.last;
@@ -191,8 +177,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     // 2. Create the "Previous" rankings list
     List<Map<String, dynamic>> previousRanks = [];
     
-    if (isTeamMode) {
-      for (int tId in widget.game.teamsIDs!) {
+    /* if (isTeamMode) {
+      for (int i = 0; i < widget.game.fldTeams!.length; i++) {
         // Find the score snapshot just BEFORE the last entry for this team
         final teamHistory = gameHistory.where((s) => s.idTeam == tId).toList();
         int prevScore = 0;
@@ -216,7 +202,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         }
         previousRanks.add({'id': pId, 'score': prevScore});
       }
-    }
+    } */
 
     // Sort previous ranks to find old positions
     previousRanks.sort((a, b) => b['score'].compareTo(a['score']));
@@ -236,8 +222,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   void _undoLastScore(bool isUndoFromDialog) {
     // 1. Find the last entry for this specific game
-    final gameScores = scoreBox.values
-        .where((s) => s.idGame == widget.game.idGame)
+    final gameScores = gameScoreBox.values
+        .where((s) => s.fldGame == widget.game)
         .toList();
 
     if (gameScores.isEmpty) return; // Nothing to undo
@@ -245,7 +231,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     // 2. Delete the last entry from Hive
     final lastEntry = gameScores.last;
     // Use the internal Hive key to delete exactly that object
-    scoreBox.delete(lastEntry.key);
+    gameScoreBox.delete(lastEntry.key);
 
     if (!isUndoFromDialog) {
       _manageFwdBwdIncremental(ScoringMode.backward);
@@ -255,11 +241,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         // We don't just call backward once, because after the last hit, 
         // the pointers might have wrapped around. 
         // The safest way is to set the pointers to the record we are deleting:
-        currentTargetIndex = lastEntry.round;
-        currentPlayerIndex = lastEntry.seatIndex;
+        currentTargetIndex = lastEntry.fldRound;
+        currentPlayerIndex = lastEntry.fldSeatIndex;
         
         // Now recalculate the team index so the UI highlights the right team
-        final int totalTeams = widget.game.teamsIDs?.length ?? 0;
+        final int totalTeams = widget.game.fldTeams?.length ?? 0;
         if (totalTeams > 0) {
           currentTeamIndex = currentPlayerIndex % totalTeams;
         }
@@ -275,41 +261,39 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }
 
   // Returns the last scoreSnapshot for a specific player in a specific seat
-  int _getLatestPlayerScore(int playerId, int seatIndex) {
-    final history = scoreBox.values.where((s) => 
-      s.idGame == widget.game.idGame && 
-      s.idPlayer == playerId && 
-      s.seatIndex == seatIndex
+  int _getLatestPlayerScore(TblPlayer player, int seatIndex) {
+    final history = gameScoreBox.values.where((s) => 
+      s.fldGame == widget.game && 
+      s.fldPlayer == player && 
+      s.fldSeatIndex == seatIndex
     ).toList();
 
-    return history.isEmpty ? 0 : history.last.scoreSnapshot;
+    return history.isEmpty ? 0 : history.last.fldScoreSnapshot;
   }
 
   // Returns the last scoreTeamSnapshot for any player belonging to this Team ID
   int _getLatestTeamScore(int teamId) {
-    final history = scoreBox.values.where((s) => 
-      s.idGame == widget.game.idGame && 
-      s.idTeam == teamId
+    final history = gameScoreBox.values.where((s) => 
+      s.fldGame == widget.game /* && 
+      s. == teamId */
     ).toList();
 
-    return history.isEmpty ? 0 : history.last.scoreTeamSnapshot;
+    return history.isEmpty ? 0 : history.last.fldsScoreTeamSnapshot;
   }
 
   void _recordScore(int hits) {
     // Safety check: Don't allow more than 6 for Bull
     if (targetLabels[currentTargetIndex] == "BULL" && hits > 6) return;
     
-    int playerId = widget.game.playersIDs[currentPlayerIndex];
+    TblPlayer player = widget.game.fldPlayers![currentPlayerIndex];
     int targetValue = targets[currentTargetIndex];
-    bool isTeamMode = widget.game.gameMode == 2;
+    final bool isTeamMode = (widget.game.fldPlayers == null);
     
-    int teamId = 0;
-    if (isTeamMode && widget.game.teamsIDs != null) {
-      teamId = widget.game.teamsIDs![currentTeamIndex];
-    }     
+    TblTeam team;
+    isTeamMode ? team = widget.game.fldTeams![currentTeamIndex] : null;
     
-    int prevPlayerTotal = _getLatestPlayerScore(playerId, currentPlayerIndex);
-    int prevTeamTotal = _getLatestTeamScore(teamId);    
+    int prevPlayerTotal = _getLatestPlayerScore(player, currentPlayerIndex);
+    int prevTeamTotal = _getLatestTeamScore(team);    
     
     int newPlayerTotal = 0;
     int newTeamTotal = 0;
@@ -349,21 +333,17 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
     // Save to Hive
     final gameScore = TblGameHalfIt(
-      idGame: widget.game.idGame!,
-      idTeam: widget.game.gameMode == 2 ? teamId : null,
-      idPlayer: playerId,
-      seatIndex: currentPlayerIndex,
-      round: currentTargetIndex,
-      targetValue: targetValue,
-      hits: hits,
-      scoreSnapshot: newPlayerTotal,
-      scoreTeamSnapshot: newTeamTotal,
-      isHalfIt: wasHalved,
+      fldGame: widget.game,
+      fldPlayer: player,
+      fldSeatIndex: currentPlayerIndex,
+      fldRound: currentTargetIndex,
+      fldTargetValue: targetValue,
+      fldHits: hits,
+      fldScoreSnapshot: newPlayerTotal,
+      fldsScoreTeamSnapshot: newTeamTotal,
+      fldIsHalfIt: wasHalved,
     );
-    scoreBox.add(gameScore);
-
-    // Get the auto-increment key that was generated
-    gameScore.idGameHalfIt = gameScore.key as int;
+    gameScoreBox.add(gameScore);
 
     // Save the player with the auto-increment id that was generated By Hive
     gameScore.save();
@@ -387,9 +367,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }
 
   void _manageFwdBwdIncremental(ScoringMode enuScoringMode) {
-    final int totalPlayers = widget.game.playersIDs.length;
+    final int totalPlayers = widget.game.fldPlayers!.length;
     // Use .length of teamsIDs to determine how many teams are in the rotation
-    final int totalTeams = widget.game.teamsIDs?.length ?? 0;
+    final int totalTeams = widget.game.fldTeams!.length;
 
     // Advance turn
     setState(() {
@@ -412,7 +392,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
           // We were at the start of a round, go back to the end of the PREVIOUS round
           if (currentTargetIndex > 0) {
             currentTargetIndex--;
-            currentPlayerIndex = widget.game.playersIDs.length - 1;
+            currentPlayerIndex = widget.game.fldPlayers!.length - 1;
           }
         }
       }
@@ -429,13 +409,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   void _endGame() {
     // We'll store the results in a list of Map for easy sorting
     List<Map<String, dynamic>> finalResults = [];
-    final bool isTeamMode = (widget.game.gameMode == 2);
+    final bool isTeamMode = (widget.game.fldPlayers == null);
 
     if (isTeamMode) {
       // TEAM MODE
-      for (int tId in widget.game.teamsIDs!) {
+      for (TblTeam team in widget.game.fldTeams!) {
         //final team = teamsBox.get(tId);
-        final score = _getLatestTeamScore(tId);
+        final score = _getLatestTeamScore(team);
         finalResults.add({
           //'name': team?.fldSurName,
           'id': tId,

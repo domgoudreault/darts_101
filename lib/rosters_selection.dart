@@ -6,20 +6,15 @@ import 'package:gif_view/gif_view.dart';
 // Database Models
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
-//import 'package:darts_101/database/tbl_game.dart';
+import 'package:darts_101/database/tbl_game.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 
 // UI Screens
-//import 'package:darts_101/game_halfit.dart';
+import 'package:darts_101/game_halfit.dart';
 //import 'package:darts_101/game_build_up.dart';
-
-enum GameType{
-  gameHalfIt,
-  gameBuildUp
-}
 
 class RostersSelection extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
@@ -69,6 +64,44 @@ class _RostersSelectionState extends State<RostersSelection> {
     super.dispose();
   }
 
+  Future<void> _startGame() async {
+    // 1. Instantiate the new TblGame using your model fields
+    final newGame = TblGame(
+      fldGameType: widget.enuGameType,
+      fldPlayers: _isPlayersSelection ? List<TblPlayer>.from(_selectedPlayers) : null,
+      fldTeams: !_isPlayersSelection ? List<TblTeam>.from(_selectedTeams) : null,
+      fldIsEnded: false,
+    );
+
+    // 2. Save it to the games Hive box right away
+    final gamesBox = Hive.box<TblGame>('gamesBox');
+    await gamesBox.add(newGame);
+    
+    // Guard against any async gaps if needed
+    if (!mounted) return;
+
+    // 3. Determine correctly if it's a team game mode
+    final bool isTeamGameMode = !_isPlayersSelection;
+
+    // 4. Navigate to the game screen if it's Half-It
+    /* if (widget.enuGameType.tileCode == 'halfit') {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameHalfItScreen(
+            game: newGame,
+            gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
+            tileBackgroundColor: widget.enuGameType.tileBackgroundColor,
+            resumeMode: false,
+          ),
+        ),
+      );
+    } */
+    
+    if (!mounted) return;
+    setState(() {});
+  }
+
   /* Future<void> _resumeGame(BuildContext context, TblGame game) async {
     final bool isTeamGameMode = (game.gameMode == 2);
 
@@ -102,17 +135,21 @@ class _RostersSelectionState extends State<RostersSelection> {
 
   bool get _isPlayersTeamsMinSelectionValid {
     if (_isPlayersSelection) {
-      return _selectedPlayers.length >= widget.enuGameType.minNbrPlayers;
+      final min = widget.enuGameType.minNbrPlayers;
+      return min > 0 && _selectedPlayers.length >= min;
     } else {
-      return _selectedTeams.length >= widget.enuGameType.minNbrTeams;
+      final min = widget.enuGameType.minNbrTeams;
+      return min > 0 && _selectedTeams.length >= min;
     }
   }
 
   bool get _isPlayersTeamsMaxSelectionValid {
     if (_isPlayersSelection) {
-      return _selectedPlayers.length < widget.enuGameType.maxNbrPlayers;
+      final max = widget.enuGameType.maxNbrPlayers;
+      return max > 0 && _selectedPlayers.length < max;
     } else {
-      return _selectedTeams.length < widget.enuGameType.maxNbrTeams;
+      final max = widget.enuGameType.maxNbrTeams;
+      return max > 0 && _selectedTeams.length < max;
     }
   }
 
@@ -166,7 +203,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     final playersSlotColors = GlobalPlayersGridConfig.values.toList()
       ..sort((a, b) => a.position.compareTo(b.position));
     
-    // Sort slot alignments to match player positions
+    // Sort slot alignments to match team positions
     final teamsSlotColors = GlobalTeamsGridConfig.values.toList()
       ..sort((a, b) => a.position.compareTo(b.position));
 
@@ -468,13 +505,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                           ? SystemMouseCursors.click 
                           : SystemMouseCursors.basic,
                         child: GestureDetector(
-                          //TODO Tap and start the game
                           onTap: _isPlayersTeamsMinSelectionValid 
-                            ? () async {
-                                setState(() {
-                                  _selectedPlayers.shuffle();
-                                });
-                              }
+                            ? () => _startGame() 
                             : null,
                           child: Container(
                             decoration: BoxDecoration(
@@ -533,7 +565,29 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.max,
-                                    children: _buildPlayersSlotsH(
+                                    children: () {
+                                      final slots = _buildPlayersSlotsH(
+                                        targetPlayers: leftPlayers,
+                                        avatarHeight: avatarHeight,
+                                        avatarHeightOuterSize: avatarHeightOuterSize,
+                                        avatarSlicedWidth: avatarSlicedWidth,
+                                        avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                        onTap: (originalIndex) {
+                                          setState(() {
+                                            _selectedPlayers.removeWhere((p) => _selectedPlayers.indexOf(p) == originalIndex);
+                                          });
+                                        },
+                                      );
+                                      
+                                      if (slots.isEmpty) return <Widget>[];
+
+                                      return slots.expand((widget) => [
+                                        widget,
+                                        SizedBox(width: _responsiveTile * 0.015),
+                                      ]).toList()..removeLast();
+                                    }(),
+
+                                    /* children: leftPlayers.isEmpty ? [] : _buildPlayersSlotsH(
                                       targetPlayers: leftPlayers,
                                       avatarHeight: avatarHeight,
                                       avatarHeightOuterSize: avatarHeightOuterSize,
@@ -547,7 +601,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     ).expand((widget) => [
                                       widget,
                                       SizedBox(width: _responsiveTile * 0.015), // Adjust the gap size here
-                                    ]).toList()..removeLast(),
+                                    ]).toList()..removeLast(), */
                                   ),
                                 ),
                               ] else ...[
@@ -558,22 +612,28 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.max,
-                                    children: _buildTeamsSlotsV(
-                                      targetTeams: leftTeams,
-                                      cardHeight: cardHeight,
-                                      cardWidth: cardWidth,
-                                      cardWidthOuterSize: cardWidthOuterSize,
-                                      cardSlicedHeight: cardSlicedHeight,
-                                      cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                      onTap: (originalIndex) {
-                                        setState(() {
-                                          _selectedTeams.removeWhere((p) => _selectedTeams.indexOf(p) == originalIndex);
-                                        });
-                                      },
-                                    ).expand((widget) => [
-                                      widget,
-                                      SizedBox(height: _responsiveTile * 0.015),
-                                    ]).toList()..removeLast(),
+                                    children: () {
+                                      final slots = _buildTeamsSlotsV(
+                                        targetTeams: leftTeams,
+                                        cardHeight: cardHeight,
+                                        cardWidth: cardWidth,
+                                        cardWidthOuterSize: cardWidthOuterSize,
+                                        cardSlicedHeight: cardSlicedHeight,
+                                        cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+                                        onTap: (originalIndex) {
+                                          setState(() {
+                                            _selectedTeams.removeWhere((p) => _selectedTeams.indexOf(p) == originalIndex);
+                                          });
+                                        },
+                                      );
+
+                                      if (slots.isEmpty) return <Widget>[];
+
+                                      return slots.expand((widget) => [
+                                        widget,
+                                        SizedBox(height: _responsiveTile * 0.015),
+                                      ]).toList()..removeLast();
+                                    }(),
                                   ),
                                 ),
                               ],
@@ -717,21 +777,27 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.max,
-                                    children: _buildPlayersSlotsH(
-                                      targetPlayers: rightPlayers,
-                                      avatarHeight: avatarHeight,
-                                      avatarHeightOuterSize: avatarHeightOuterSize,
-                                      avatarSlicedWidth: avatarSlicedWidth,
-                                      avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                      onTap: (originalIndex) {
-                                        setState(() {
-                                          _selectedPlayers.removeWhere((p) => _selectedPlayers.indexOf(p) == originalIndex);
-                                        });
-                                      },
-                                    ).expand((widget) => [
-                                      widget,
-                                      SizedBox(width: _responsiveTile * 0.015), // Adjust the gap size here
-                                    ]).toList()..removeLast(),
+                                    children: () {
+                                      final slots = _buildPlayersSlotsH(
+                                        targetPlayers: rightPlayers,
+                                        avatarHeight: avatarHeight,
+                                        avatarHeightOuterSize: avatarHeightOuterSize,
+                                        avatarSlicedWidth: avatarSlicedWidth,
+                                        avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                        onTap: (originalIndex) {
+                                          setState(() {
+                                            _selectedPlayers.removeWhere((p) => _selectedPlayers.indexOf(p) == originalIndex);
+                                          });
+                                        },
+                                      );
+                                      
+                                      if (slots.isEmpty) return <Widget>[];
+
+                                      return slots.expand((widget) => [
+                                        widget,
+                                        SizedBox(width: _responsiveTile * 0.015),
+                                      ]).toList()..removeLast();
+                                    }(),
                                   ),
                                 ),
                               ] else ...[
@@ -742,22 +808,28 @@ class _RostersSelectionState extends State<RostersSelection> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.max,
-                                    children: _buildTeamsSlotsV(
-                                      targetTeams: rightTeams,
-                                      cardHeight: cardHeight,
-                                      cardWidth: cardWidth,
-                                      cardWidthOuterSize: cardWidthOuterSize,
-                                      cardSlicedHeight: cardSlicedHeight,
-                                      cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                      onTap: (originalIndex) {
-                                        setState(() {
-                                          _selectedTeams.removeWhere((p) => _selectedTeams.indexOf(p) == originalIndex);
-                                        });
-                                      },
-                                    ).expand((widget) => [
-                                      widget,
-                                      SizedBox(height: _responsiveTile * 0.015),
-                                    ]).toList()..removeLast(),
+                                    children: () {
+                                      final slots = _buildTeamsSlotsV(
+                                        targetTeams: rightTeams,
+                                        cardHeight: cardHeight,
+                                        cardWidth: cardWidth,
+                                        cardWidthOuterSize: cardWidthOuterSize,
+                                        cardSlicedHeight: cardSlicedHeight,
+                                        cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+                                        onTap: (originalIndex) {
+                                          setState(() {
+                                            _selectedTeams.removeWhere((p) => _selectedTeams.indexOf(p) == originalIndex);
+                                          });
+                                        },
+                                      );
+
+                                      if (slots.isEmpty) return <Widget>[];
+
+                                      return slots.expand((widget) => [
+                                        widget,
+                                        SizedBox(height: _responsiveTile * 0.015),
+                                      ]).toList()..removeLast();
+                                    }(),
                                   ),
                                 ),
                               ]
@@ -994,63 +1066,74 @@ class _RostersSelectionState extends State<RostersSelection> {
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: () => onTap(originalIndex),
-          child: SizedBox(
-            width: avatarSlicedWidthOuterSize,
-            height: avatarHeightOuterSize,
-            child: Stack(
-              children: [
-                Container(
-                  width: avatarSlicedWidthOuterSize,
-                  height: avatarHeightOuterSize,
-                  decoration: BoxDecoration(
-                    color: slotAlignment.bgColor,
-                    borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
-                    border: Border.all(
-                      color: Colors.yellowAccent,
-                      width: avatarHeightOuterSize * 0.012,
-                    ),
-                  ),
-                  child: ClipRect(
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: avatarHeight,
-                        height: avatarHeight,
-                        child: gBuildPlayerAvatarCard(
-                          player: player,
-                          avatarHeight: avatarHeight,
-                          bgColor: Colors.transparent,
-                          isSlicedAvatar: true,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: const Alignment(0.0, -0.94),
-                  child: SizedBox(
-                    width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
-                    height: avatarHeight * 0.20,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
-                        border: Border.all(
-                          color: Colors.yellowAccent,
-                          width: avatarSlicedWidthOuterSize * 0.015,
-                        ),
-                      ),
-                      child: Image.asset(
-                        'assets/png/mechanics/rs_tag_p_${originalIndex + 1}.png',
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    ),
-                  ),
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  //color: Colors.black.withAlpha(150),
+                  blurRadius: _responsiveTile * 0.015,
+                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
                 ),
               ],
+            ),
+            child: SizedBox(
+              width: avatarSlicedWidthOuterSize,
+              height: avatarHeightOuterSize,
+              child: Stack(
+                children: [
+                  Container(
+                    width: avatarSlicedWidthOuterSize,
+                    height: avatarHeightOuterSize,
+                    decoration: BoxDecoration(
+                      color: slotAlignment.bgColor,
+                      borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+                      border: Border.all(
+                        color: Colors.yellowAccent,
+                        width: avatarHeightOuterSize * 0.012,
+                      ),
+                    ),
+                    child: ClipRect(
+                      child: OverflowBox(
+                        maxWidth: double.infinity,
+                        maxHeight: double.infinity,
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: avatarHeight,
+                          height: avatarHeight,
+                          child: gBuildPlayerAvatarCard(
+                            player: player,
+                            avatarHeight: avatarHeight,
+                            bgColor: Colors.transparent,
+                            isSlicedAvatar: true,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: const Alignment(0.0, -0.94),
+                    child: SizedBox(
+                      width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
+                      height: avatarHeight * 0.20,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                          border: Border.all(
+                            color: Colors.yellowAccent,
+                            width: avatarSlicedWidthOuterSize * 0.015,
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/png/mechanics/rs_tag_p_${originalIndex + 1}.png',
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1131,71 +1214,82 @@ class _RostersSelectionState extends State<RostersSelection> {
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: () => onTap(originalIndex), // <--- Trigger the removal using originalIndex
-          child: SizedBox(
-            width: cardWidthOuterSize,
-            height: cardSlicedHeightOuterSize,
-            child: Stack(
-              children: [
-                Container(
-                  width: cardWidthOuterSize,
-                  height: cardSlicedHeightOuterSize,
-                  decoration: BoxDecoration(
-                    color: slotAlignment.bgColor,
-                    borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
-                    border: Border.all(
-                      color: Colors.yellowAccent,
-                      width: cardWidthOuterSize * 0.008,
-                    ),
-                  ),
-                  child: ClipRect(
-                    child: OverflowBox(
-                      maxWidth: double.infinity,
-                      maxHeight: double.infinity,
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: cardWidth,
-                        height: cardHeight,
-                        child: gBuildTeamCardH(
-                          cardHeight: cardHeight,
-                          cardWidth: cardWidth,
-                          selectedPlayer1: team.fldPlayers[0],
-                          selectedPlayer2: team.fldPlayers[1],
-                          isDummyTeam: isDummy,
-                          colorBgAvatar: Colors.transparent,
-                          isSlicedCard: true,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                
-                Align(
-                  alignment: !isDummy
-                    ? Alignment(0.0, 0.0)
-                    : originalIndex.isEven
-                      ? Alignment(-0.95, -0.80)
-                      : Alignment(0.95, -0.80),
-                  child: SizedBox(
-                    width: cardWidth * 0.15 * ratioPlayerTeamBadge,
-                    height: cardWidth * 0.15,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
-                        border: Border.all(
-                          color: Colors.yellowAccent,
-                          width: cardSlicedHeightOuterSize * 0.015,
-                        ),
-                      ),
-                      child: Image.asset(
-                        'assets/png/mechanics/rs_tag_t_${originalIndex + 1}.png',
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    ),
-                  ),
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  //color: Colors.black.withAlpha(150),
+                  blurRadius: _responsiveTile * 0.015,
+                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
                 ),
               ],
+            ),
+            child: SizedBox(
+              width: cardWidthOuterSize,
+              height: cardSlicedHeightOuterSize,
+              child: Stack(
+                children: [
+                  Container(
+                    width: cardWidthOuterSize,
+                    height: cardSlicedHeightOuterSize,
+                    decoration: BoxDecoration(
+                      color: slotAlignment.bgColor,
+                      borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+                      border: Border.all(
+                        color: Colors.yellowAccent,
+                        width: cardWidthOuterSize * 0.008,
+                      ),
+                    ),
+                    child: ClipRect(
+                      child: OverflowBox(
+                        maxWidth: double.infinity,
+                        maxHeight: double.infinity,
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: cardWidth,
+                          height: cardHeight,
+                          child: gBuildTeamCardH(
+                            cardHeight: cardHeight,
+                            cardWidth: cardWidth,
+                            selectedPlayer1: team.fldPlayers[0],
+                            selectedPlayer2: team.fldPlayers[1],
+                            isDummyTeam: isDummy,
+                            colorBgAvatar: Colors.transparent,
+                            isSlicedCard: true,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  Align(
+                    alignment: !isDummy
+                      ? Alignment(0.0, 0.0)
+                      : originalIndex.isEven
+                        ? Alignment(-0.95, -0.80)
+                        : Alignment(0.95, -0.80),
+                    child: SizedBox(
+                      width: cardWidth * 0.15 * ratioPlayerTeamBadge,
+                      height: cardWidth * 0.15,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                          border: Border.all(
+                            color: Colors.yellowAccent,
+                            width: cardSlicedHeightOuterSize * 0.015,
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/png/mechanics/rs_tag_t_${originalIndex + 1}.png',
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

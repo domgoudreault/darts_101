@@ -787,6 +787,9 @@ PreferredSizeWidget gBuildAppBar({
   return AppBar(
     toolbarHeight: gToolbarHeight,
     backgroundColor: gAppBarColorBg,
+    iconTheme: const IconThemeData(
+      color: Colors.white, // Hardcoded leading/icon color here
+    ),
     title: Row (
       children: [
         Padding(
