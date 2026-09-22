@@ -2,11 +2,9 @@
 import 'package:hive_ce/hive_ce.dart';
 
 // Database Models
+import 'package:darts_101/database/enum_game_type.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
-
-// Backend Logic
-import 'package:darts_101/global_be.dart';
 
 part 'tbl_game.g.dart';
 
@@ -14,28 +12,32 @@ part 'tbl_game.g.dart';
 class TblGame extends HiveObject {
   @HiveField(0)
   GlobalGameType fldGameType;
- 
-  @HiveField(1)
-  List<TblPlayer>? fldPlayers;
 
+  @HiveField(1, defaultValue: true)
+  bool fldPlayersGM; // true = PlayersGameMode, false = TeamsGameMode
+ 
   @HiveField(2)
-  List<TblTeam>? fldTeams;
+  List<TblPlayer> fldPlayers;
 
   @HiveField(3)
-  TblPlayer? fldPlayerWinner;
+  List<TblTeam>? fldTeams;
 
   @HiveField(4)
-  TblTeam? fldTeamWinner;
+  List<TblPlayer>? fldPlayersWinner;
 
-  @HiveField(5, defaultValue: false)
+  @HiveField(5)
+  List<TblTeam>? fldTeamsWinner;
+
+  @HiveField(6, defaultValue: false)
   bool fldIsEnded;
 
   TblGame({
     required this.fldGameType,
-    this.fldPlayers, 
+    this.fldPlayersGM = true,
+    required this.fldPlayers, 
     this.fldTeams, 
-    this.fldPlayerWinner, 
-    this.fldTeamWinner, 
+    this.fldPlayersWinner, 
+    this.fldTeamsWinner, 
     this.fldIsEnded = false,
   });
 }

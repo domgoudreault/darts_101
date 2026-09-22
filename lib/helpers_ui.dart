@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 // Database Models
 import 'package:darts_101/database/tbl_player.dart';
+import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
@@ -90,7 +91,6 @@ Widget gBuildArcadeActionBanner({
     color: Colors.transparent,
     child: Container(
       width: double.infinity,
-      //padding: EdgeInsets.symmetric(vertical: responsiveTile * 0.01),
       alignment: Alignment.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -400,6 +400,8 @@ Widget gBuildPlayerAvatarCard({
   required double avatarHeight, 
   required Color bgColor,
   required bool isSlicedAvatar,
+  required bool isSlicedVertical,
+  required bool isTagNickNameLeft,
 }) {
   return Center(
     child: AspectRatio(
@@ -455,41 +457,82 @@ Widget gBuildPlayerAvatarCard({
               ),
 
               if (isSlicedAvatar) ...[
-                Positioned(
-                  right: avatarHeight * 0.265,
-                  top: 0,
-                  bottom: 0,
-                  child: RotatedBox(
-                    quarterTurns: 3, // Rotates the pill vertically 90 degrees
-                    child: Center(
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: avatarHeight * 0.03,
-                          vertical: avatarHeight * 0.015,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.purpleAccent.shade100.withAlpha(200),
-                          borderRadius: BorderRadius.circular(avatarHeight * 0.04),
-                          border: Border.all(
-                            color: Colors.purpleAccent.shade700,
-                            width: avatarHeight * 0.006,
+                if (isSlicedVertical) ...[
+                  Positioned(
+                    right: avatarHeight * 0.265,
+                    top: 0,
+                    bottom: 0,
+                    child: RotatedBox(
+                      quarterTurns: 3, // Rotates the pill vertically 90 degrees
+                      child: Center(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: avatarHeight * 0.03,
+                            vertical: avatarHeight * 0.015,
                           ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            player.fldNickName.toUpperCase(),
-                            textAlign: TextAlign.center,
-                            style: gBuildArcadeTextStyle(
-                              avatarHeight * 0.05,
-                              gFontWeight: FontWeight.w800,
+                          decoration: BoxDecoration(
+                            color: Colors.purpleAccent.shade100.withAlpha(200),
+                            borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                            border: Border.all(
+                              color: Colors.purpleAccent.shade700,
+                              width: avatarHeight * 0.006,
+                            ),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              player.fldNickName.toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: gBuildArcadeTextStyle(
+                                avatarHeight * 0.05,
+                                gFontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ] else ...[
+                  Positioned(
+                    left: isTagNickNameLeft ? 0 : null,
+                    right: isTagNickNameLeft ? null : 0,
+                    top: -avatarHeight * 0.34,
+                    bottom: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: avatarHeight * 0.03,
+                              vertical: avatarHeight * 0.012,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.purpleAccent.shade100.withAlpha(200),
+                              borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                              border: Border.all(
+                                color: Colors.purpleAccent.shade700,
+                                width: avatarHeight * 0.006,
+                              ),
+                            ),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                player.fldNickName.toUpperCase(),
+                                textAlign: TextAlign.center,
+                                style: gBuildArcadeTextStyle(
+                                  avatarHeight * 0.05,
+                                  gFontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
+                    ),
+                  ),
+                ]
               ] else ...[
                 Positioned(
                   bottom: 0,
@@ -836,5 +879,799 @@ PreferredSizeWidget gBuildAppBar({
           ?gRightPopupMenu,
         ]
     ],
+  );
+}
+
+Widget gBuildSlicedPlayerAvatarV({
+  required TblPlayer player,
+  required double avatarHeight,
+  required double avatarHeightOuterSize,
+  required double avatarSlicedWidth,
+  required double avatarSlicedWidthOuterSize,
+  required Color slotBgColor,
+  required int playerPosition,
+  required double responsiveTile,
+}) {
+  //Fits with asset of badge P1 or T1
+  final ratioPlayerTeamBadge = 345 / 260;
+
+  return Container(
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          blurRadius: responsiveTile * 0.015,
+          offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+        ),
+      ],
+    ),
+    child: SizedBox(
+      width: avatarSlicedWidthOuterSize,
+      height: avatarHeightOuterSize,
+      child: Stack(
+        children: [
+          Container(
+            width: avatarSlicedWidthOuterSize,
+            height: avatarHeightOuterSize,
+            decoration: BoxDecoration(
+              color: slotBgColor,
+              borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+              border: Border.all(
+                color: Colors.yellowAccent,
+                width: avatarHeightOuterSize * 0.012,
+              ),
+            ),
+            child: ClipRect(
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: avatarHeight,
+                  height: avatarHeight,
+                  child: gBuildPlayerAvatarCard(
+                    player: player,
+                    avatarHeight: avatarHeight,
+                    bgColor: Colors.transparent,
+                    isSlicedAvatar: true,
+                    isSlicedVertical: true,
+                    isTagNickNameLeft: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: const Alignment(0.0, -0.94),
+            child: SizedBox(
+              width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
+              height: avatarHeight * 0.20,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                  border: Border.all(
+                    color: Colors.yellowAccent,
+                    width: avatarSlicedWidthOuterSize * 0.015,
+                  ),
+                ),
+                child: Image.asset(
+                  'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget gBuildSlicedPlayerAvatarVPanel({
+  required TblPlayer player,
+  required double avatarHeight,
+  required double avatarHeightOuterSize,
+  required double avatarSlicedWidth,
+  required double avatarSlicedWidthOuterSize,
+  required Color slotBgColor,
+  required int playerPosition,
+  required double responsiveTile,
+  required double heightBoost,
+}) {
+  //Fits with asset of badge P1 or T1
+  final ratioPlayerTeamBadge = 345 / 260;
+
+  return Container(
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          blurRadius: responsiveTile * 0.015,
+          offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+        ),
+      ],
+    ),
+    child: SizedBox(
+      width: avatarSlicedWidthOuterSize,
+      height: avatarHeightOuterSize + heightBoost,
+      child: Container(
+        width: avatarSlicedWidthOuterSize,
+        height: avatarHeightOuterSize + heightBoost,
+        decoration: BoxDecoration(
+          color: slotBgColor,
+          borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+          border: Border.all(
+            color: Colors.yellowAccent,
+            width: avatarHeightOuterSize * 0.012,
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            ClipRect(
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: avatarHeight,
+                  height: avatarHeight,
+                  child: gBuildPlayerAvatarCard(
+                    player: player,
+                    avatarHeight: avatarHeight,
+                    bgColor: Colors.transparent,
+                    isSlicedAvatar: true,
+                    isSlicedVertical: true,
+                    isTagNickNameLeft: false,
+                  ),
+                ),
+              ),
+            ),
+          
+            Align(
+              alignment: const Alignment(0.0, -0.99),
+              child: SizedBox(
+                width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
+                height: avatarHeight * 0.20,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                    border: Border.all(
+                      color: Colors.yellowAccent,
+                      width: avatarSlicedWidthOuterSize * 0.015,
+                    ),
+                  ),
+                  child: Image.asset(
+                    'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget gBuildSlicedPlayerAvatarH({
+  required TblPlayer player,
+  required double avatarHeight,
+  required double avatarHeightOuterSize,
+  required double avatarSlicedWidth,
+  required double avatarSlicedWidthOuterSize,
+  required Color slotBgColor,
+  required int playerPosition,
+  required double responsiveTile,
+  required bool isTagNickNameLeft,
+}) {
+  //Fits with asset of badge P1 or T1
+  final ratioPlayerTeamBadge = 345 / 260;
+
+  return Container(
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          blurRadius: responsiveTile * 0.015,
+          offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+        ),
+      ],
+    ),
+    child: SizedBox(
+      width: avatarHeightOuterSize,
+      height: avatarSlicedWidthOuterSize,
+      child: Stack(
+        children: [
+          Container(
+            width: avatarHeightOuterSize,
+            height: avatarSlicedWidthOuterSize,
+            decoration: BoxDecoration(
+              color: slotBgColor,
+              borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+              border: Border.all(
+                color: Colors.yellowAccent,
+                width: avatarHeightOuterSize * 0.012,
+              ),
+            ),
+            child: ClipRect(
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: avatarHeight,
+                  height: avatarHeight,
+                  child: gBuildPlayerAvatarCard(
+                    player: player,
+                    avatarHeight: avatarHeight,
+                    bgColor: Colors.transparent,
+                    isSlicedAvatar: true,
+                    isSlicedVertical: false,
+                    isTagNickNameLeft: isTagNickNameLeft,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: isTagNickNameLeft
+              ? const Alignment(-0.86, -0.1)
+              : const Alignment(0.86, -0.1),
+            child: SizedBox(
+              width: avatarHeight * 0.17 * ratioPlayerTeamBadge,
+              height: avatarHeight * 0.17,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                  border: Border.all(
+                    color: Colors.yellowAccent,
+                    width: avatarSlicedWidthOuterSize * 0.015,
+                  ),
+                ),
+                child: Image.asset(
+                  'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget gBuildSlicedTeamCardV({
+  required TblTeam team,
+  required double cardHeight,
+  required double cardWidth,
+  required double cardWidthOuterSize,
+  required double cardSlicedHeight,
+  required double cardSlicedHeightOuterSize,
+  required Color slotBgColor,
+  required int teamPosition,
+  required double responsiveTile,
+}) {
+  //Fits with asset of badge P1 or T1
+  final ratioPlayerTeamBadge = 345 / 260;
+  final isDummy = (team.fldPlayers[0] == team.fldPlayers[1]);
+
+  return Container(
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          blurRadius: responsiveTile * 0.015,
+          offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+        ),
+      ],
+    ),
+    child: SizedBox(
+      width: cardSlicedHeightOuterSize,
+      height: cardWidthOuterSize,
+      child: Stack(
+        children: [
+          Container(
+            width: cardSlicedHeightOuterSize,
+            height: cardWidthOuterSize,
+            decoration: BoxDecoration(
+              color: slotBgColor,
+              borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+              border: Border.all(
+                color: Colors.yellowAccent,
+                width: cardWidthOuterSize * 0.008,
+              ),
+            ),
+            child: ClipRect(
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: cardHeight,
+                  height: cardWidth,
+                  child: gBuildTeamCardV(
+                    team: team,
+                    cardHeight: cardWidth,
+                    cardWidth: cardHeight,
+                    colorBgAvatar: slotBgColor,
+                    isSlicedCard: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: !isDummy
+                ? const Alignment(0.0, 0.0)
+                : const Alignment(0.0, -0.96),
+            child: SizedBox(
+              width: cardHeight * 0.2 * ratioPlayerTeamBadge,
+              height: cardHeight * 0.2,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                  border: Border.all(
+                    color: Colors.yellowAccent,
+                    width: cardSlicedHeightOuterSize * 0.015,
+                  ),
+                ),
+                child: Image.asset(
+                  'assets/png/mechanics/rs_tag_t_${teamPosition + 1}.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget gBuildSlicedTeamCardVPanel({
+  required TblTeam team,
+  required double cardHeight,
+  required double cardWidth,
+  required double cardWidthOuterSize,
+  required double cardSlicedHeight,
+  required double cardSlicedHeightOuterSize,
+  required Color slotBgColor,
+  required int teamPosition,
+  required double responsiveTile,
+  required double heightBoost,
+}) {
+  //Fits with asset of badge P1 or T1
+  final ratioPlayerTeamBadge = 345 / 260;
+  final isDummy = (team.fldPlayers[0] == team.fldPlayers[1]);
+
+  return Container(
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          blurRadius: responsiveTile * 0.015,
+          offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+        ),
+      ],
+    ),
+    child: SizedBox(
+      width: cardSlicedHeightOuterSize,
+      height: cardWidthOuterSize + heightBoost,
+      child: Container(
+        width: cardSlicedHeightOuterSize,
+        height: cardWidthOuterSize + heightBoost,
+        decoration: BoxDecoration(
+          color: slotBgColor,
+          borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+          border: Border.all(
+            color: Colors.yellowAccent,
+            width: cardWidthOuterSize * 0.008,
+          ),
+        ),
+        child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              ClipRect(
+                child: OverflowBox(
+                  maxWidth: double.infinity,
+                  maxHeight: double.infinity,
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: cardHeight,
+                    height: cardWidth,
+                    child: gBuildTeamCardV(
+                      team: team,
+                      cardHeight: cardWidth,
+                      cardWidth: cardHeight,
+                      colorBgAvatar: slotBgColor,
+                      isSlicedCard: true,
+                    ),
+                  ),
+                ),
+              ),
+          
+              Align(
+                alignment: !isDummy
+                    ? const Alignment(0.0, -0.63)
+                    : const Alignment(0.0, -0.23),
+                child: SizedBox(
+                  width: cardHeight * 0.2 * ratioPlayerTeamBadge,
+                  height: cardHeight * 0.2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                      border: Border.all(
+                        color: Colors.yellowAccent,
+                        width: cardSlicedHeightOuterSize * 0.015,
+                      ),
+                    ),
+                    child: Image.asset(
+                      'assets/png/mechanics/rs_tag_t_${teamPosition + 1}.png',
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        
+      ),
+    ),
+  );
+}
+
+Widget gBuildSlicedTeamCardH({
+  required TblTeam team,
+  required double cardHeight,
+  required double cardWidth,
+  required double cardWidthOuterSize,
+  required double cardSlicedHeight,
+  required double cardSlicedHeightOuterSize,
+  required Color slotBgColor,
+  required int teamPosition,
+  required double responsiveTile,
+}) {
+  //Fits with asset of badge P1 or T1
+  final ratioPlayerTeamBadge = 345 / 260;
+  final isDummy = (team.fldPlayers[0] == team.fldPlayers[1]);
+
+  return Container(
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          blurRadius: responsiveTile * 0.015,
+          offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+        ),
+      ],
+    ),
+    child: SizedBox(
+      width: cardWidthOuterSize,
+      height: cardSlicedHeightOuterSize,
+      child: Stack(
+        children: [
+          Container(
+            width: cardWidthOuterSize,
+            height: cardSlicedHeightOuterSize,
+            decoration: BoxDecoration(
+              color: slotBgColor,
+              borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+              border: Border.all(
+                color: Colors.yellowAccent,
+                width: cardWidthOuterSize * 0.008,
+              ),
+            ),
+            child: ClipRect(
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: cardWidth,
+                  height: cardHeight,
+                  child: gBuildTeamCardH(
+                    cardHeight: cardHeight,
+                    cardWidth: cardWidth,
+                    selectedPlayer1: team.fldPlayers[0],
+                    selectedPlayer2: team.fldPlayers[1],
+                    isDummyTeam: isDummy,
+                    colorBgAvatar: Colors.transparent,
+                    isSlicedCard: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: !isDummy
+                ? const Alignment(0.0, 0.0)
+                : teamPosition.isEven
+                    ? const Alignment(-0.95, -0.80)
+                    : const Alignment(0.95, -0.80),
+            child: SizedBox(
+              width: cardWidth * 0.15 * ratioPlayerTeamBadge,
+              height: cardWidth * 0.15,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                  border: Border.all(
+                    color: Colors.yellowAccent,
+                    width: cardSlicedHeightOuterSize * 0.015,
+                  ),
+                ),
+                child: Image.asset(
+                  'assets/png/mechanics/rs_tag_t_${teamPosition + 1}.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget gBuildTeamCardV({
+  required TblTeam team,
+  required double cardHeight,
+  required double cardWidth,
+  required Color colorBgAvatar,
+  required bool isSlicedCard,
+}) {
+  final bool isDummyTeam = team.fldPlayers[0] == team.fldPlayers[1];
+
+  return Center(
+    child: AspectRatio(
+      aspectRatio: 0.6836,
+      child: FittedBox(
+        fit: BoxFit.contain, // Forces height and width to scale down together proportionally
+        child: SizedBox(
+          height: cardHeight,
+          width: cardWidth,
+          child: Stack(
+            children: [
+              // 1. Top Dynamic Circle Background Layer
+              Positioned(
+                top: cardHeight * 0.03, // Positions inside top metallic ring
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    width: cardHeight / 2,
+                    height: cardHeight / 2,
+                    decoration: BoxDecoration(
+                      color: colorBgAvatar, // Or gender color for Player 1
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 2. Bottom Dynamic Circle Background Layer
+              Positioned(
+                bottom: cardHeight * 0.03, // Positions inside bottom metallic ring
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    width: cardHeight / 2,
+                    height: cardHeight / 2,
+                    decoration: BoxDecoration(
+                      color: colorBgAvatar, // Or gender color for Player 2
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // 3. Top Player Avatar Layer
+              Positioned(
+                top: cardHeight * 0.015,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/png/avatars/avatar_${team.fldPlayers[0].fldAvatar.fldAvatarCode}_v1.png',
+                      width: cardHeight / 2,
+                      height: cardHeight / 2,
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 4. Bottom Player Avatar Layer
+              Positioned(
+                bottom: cardHeight * 0.005,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/png/avatars/avatar_${team.fldPlayers[1].fldAvatar.fldAvatarCode}_v1.png',
+                      width: cardHeight / 2,
+                      height: cardHeight / 2,
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5. PNG Frame Overlay
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/png/mechanics/team_card_frame_V.png',
+                  fit: BoxFit.fill,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+
+              // 6. Dummy Player Layer
+              if (isDummyTeam)
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/png/mechanics/player_dummy_V.png',
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
+
+              // 7. Player 1 Nickname Pill (Centered Top)
+              if (!isSlicedCard) ...[
+                Positioned(
+                  top: cardHeight * 0.01,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: cardHeight * 0.035,
+                        vertical: cardHeight * 0.006,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(
+                          cardHeight * 0.04,
+                        ),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: cardHeight * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          team.fldPlayers[0].fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                Positioned(
+                  top: 0,
+                  bottom: cardHeight * 0.5,
+                  right: cardHeight * 0.175,
+                  child: RotatedBox(
+                    quarterTurns: 3, // Rotates the pill vertically 90 degrees
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: cardWidth * 0.035,
+                          vertical: cardWidth * 0.006,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.purpleAccent.shade100.withAlpha(200),
+                          borderRadius: BorderRadius.circular(
+                            cardWidth * 0.04,
+                          ),
+                          border: Border.all(
+                            color: Colors.purpleAccent.shade700,
+                            width: cardWidth * 0.006,
+                          ),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            team.fldPlayers[0].fldNickName.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              // 8. Player 2 Nickname Pill (Centered Bottom)
+              if (!isSlicedCard) ...[
+                Positioned(
+                  bottom: cardHeight * 0.01,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: cardHeight * 0.035,
+                        vertical: cardHeight * 0.006,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purpleAccent.shade100,
+                        borderRadius: BorderRadius.circular(
+                          cardHeight * 0.04,
+                        ),
+                        border: Border.all(
+                          color: Colors.purpleAccent.shade700,
+                          width: cardHeight * 0.006,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          team.fldPlayers[1].fldNickName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(cardHeight * 0.032, gFontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                Positioned(
+                  top: cardHeight * 0.5,
+                  bottom: 0,
+                  right: cardHeight * 0.175,
+                  child: RotatedBox(
+                    quarterTurns: 3, // Rotates the pill vertically 90 degrees
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: cardWidth * 0.035,
+                          vertical: cardWidth * 0.006,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.purpleAccent.shade100.withAlpha(200),
+                          borderRadius: BorderRadius.circular(
+                            cardWidth * 0.04,
+                          ),
+                          border: Border.all(
+                            color: Colors.purpleAccent.shade700,
+                            width: cardWidth * 0.006,
+                          ),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            team.fldPlayers[1].fldNickName.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    ),
   );
 }

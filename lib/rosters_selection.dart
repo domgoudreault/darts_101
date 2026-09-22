@@ -4,6 +4,7 @@ import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:gif_view/gif_view.dart';
 
 // Database Models
+import 'package:darts_101/database/enum_game_type.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
@@ -13,8 +14,7 @@ import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 
 // UI Screens
-import 'package:darts_101/game_halfit.dart';
-//import 'package:darts_101/game_build_up.dart';
+import 'package:darts_101/game_half_it.dart';
 
 class RostersSelection extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
@@ -65,10 +65,28 @@ class _RostersSelectionState extends State<RostersSelection> {
   }
 
   Future<void> _startGame() async {
+    List<TblPlayer> resolveGamePlayers() {
+      if (_isPlayersSelection) {
+        return List<TblPlayer>.from(_selectedPlayers);
+      }
+
+      // Team mode resolution
+      List<TblPlayer> firstHalf = [];
+      List<TblPlayer> secondHalf = [];
+
+      for (var team in _selectedTeams) {
+        List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)..shuffle();
+        firstHalf.add(shuffled[0]);
+        secondHalf.add(shuffled[1]);
+      }
+      return [...firstHalf, ...secondHalf];
+    }
+    
     // 1. Instantiate the new TblGame using your model fields
     final newGame = TblGame(
       fldGameType: widget.enuGameType,
-      fldPlayers: _isPlayersSelection ? List<TblPlayer>.from(_selectedPlayers) : null,
+      fldPlayersGM: _isPlayersSelection,
+      fldPlayers: resolveGamePlayers(),
       fldTeams: !_isPlayersSelection ? List<TblTeam>.from(_selectedTeams) : null,
       fldIsEnded: false,
     );
@@ -80,39 +98,30 @@ class _RostersSelectionState extends State<RostersSelection> {
     // Guard against any async gaps if needed
     if (!mounted) return;
 
-    // 3. Determine correctly if it's a team game mode
-    final bool isTeamGameMode = !_isPlayersSelection;
-
     // 4. Navigate to the game screen if it's Half-It
-    /* if (widget.enuGameType.tileCode == 'halfit') {
+    if (widget.enuGameType.tileCode == 'half-it') {
       await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => GameHalfItScreen(
             game: newGame,
-            gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
-            tileBackgroundColor: widget.enuGameType.tileBackgroundColor,
             resumeMode: false,
           ),
         ),
       );
-    } */
+    }
     
     if (!mounted) return;
     setState(() {});
   }
 
   /* Future<void> _resumeGame(BuildContext context, TblGame game) async {
-    final bool isTeamGameMode = (game.gameMode == 2);
-
     if (game.gameType == 1) {
       await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => GameHalfItScreen(
             game: game,
-            gameText: isTeamGameMode ? 'Teams Half-It Game' : 'Players Half-It Game',
-            tileBackgroundColor: widget.enuGameType.tileBackgroundColor,
             resumeMode: true,
           ),
         ),
@@ -123,8 +132,6 @@ class _RostersSelectionState extends State<RostersSelection> {
         MaterialPageRoute(
           builder: (context) => GameBuildUpScreen(
             game: game,
-            gameText: 'Players Team Build Up Game',
-            tileBackgroundColor: widget.enuGameType.tileBackgroundColor,
             resumeMode: true,
           ),
         ),
@@ -538,27 +545,30 @@ class _RostersSelectionState extends State<RostersSelection> {
                   ],
                 ),
 
+                SizedBox(height: _isPlayersSelection ? _responsiveTile * 0.07 : _responsiveTile * 0.012),
                 
                 // 2. Middle Area: Players or Teams CarouselViews and Start Button
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.004, vertical: _responsiveTile * 0.004),
-                    padding: EdgeInsets.all(_responsiveTile * 0.004),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(width: _responsiveTile * 0.022),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.004, vertical: _responsiveTile * 0.004),
+                  padding: EdgeInsets.all(_responsiveTile * 0.004),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(width: _responsiveTile * 0.022),
 
-                        // 1. Left Players or Teams CarouselView
-                        Expanded(
-                          child:Align(
-                            alignment: Alignment.center,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_isPlayersSelection) ...[
-                                SizedBox(
+                      // 1. Left Players or Teams CarouselView
+                      Expanded(
+                        child:Align(
+                          alignment: Alignment.center,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_isPlayersSelection) ...[
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: SizedBox(
                                   height: avatarHeightOuterSize,
                                   width: (avatarSlicedWidthOuterSize * (leftPlayers.isEmpty ? 1 : leftPlayers.length)) + 
                                         (leftPlayers.isEmpty ? 0 : (leftPlayers.length - 1) * (_responsiveTile * 0.015)),
@@ -586,26 +596,14 @@ class _RostersSelectionState extends State<RostersSelection> {
                                         SizedBox(width: _responsiveTile * 0.015),
                                       ]).toList()..removeLast();
                                     }(),
-
-                                    /* children: leftPlayers.isEmpty ? [] : _buildPlayersSlotsH(
-                                      targetPlayers: leftPlayers,
-                                      avatarHeight: avatarHeight,
-                                      avatarHeightOuterSize: avatarHeightOuterSize,
-                                      avatarSlicedWidth: avatarSlicedWidth,
-                                      avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                      onTap: (originalIndex) {
-                                        setState(() {
-                                          _selectedPlayers.removeWhere((p) => _selectedPlayers.indexOf(p) == originalIndex);
-                                        });
-                                      },
-                                    ).expand((widget) => [
-                                      widget,
-                                      SizedBox(width: _responsiveTile * 0.015), // Adjust the gap size here
-                                    ]).toList()..removeLast(), */
                                   ),
                                 ),
-                              ] else ...[
-                                SizedBox(
+                              ),
+                            ] else ...[
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: SizedBox(
                                   height: (cardSlicedHeightOuterSize * (leftTeams.isEmpty ? 1 : leftTeams.length)) + 
                                       (leftTeams.isEmpty ? 0 : (leftTeams.length - 1) * (_responsiveTile * 0.015)),
                                   width: cardWidthOuterSize,
@@ -636,141 +634,145 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     }(),
                                   ),
                                 ),
-                              ],
+                              ),
                             ],
-                          ),
-                          ),
+                          ],
                         ),
+                        ),
+                      ),
 
-                        //SizedBox(width: _responsiveTile * 0.032),
-                        
-                        // 2. Center Right Start Button
-                        AnimatedOpacity(
-                          opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.3,
-                          duration: const Duration(milliseconds: 200),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // 2.1 Bottom Arrow on top side
-                              AnimatedOpacity(
-                                opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 200),
-                                child: RotatedBox(
-                                  quarterTurns: 1,
-                                  child: GifView.asset(
-                                    'assets/png/mechanics/arrow_right.png',
-                                    height: _responsiveTile * 0.08,
-                                    fit: BoxFit.contain,
-                                    filterQuality: FilterQuality.high,
-                                  ),
+                      SizedBox(width: _responsiveTile * 0.015),
+                      
+                      // 2. Center Right Start Button
+                      AnimatedOpacity(
+                        opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.3,
+                        duration: const Duration(milliseconds: 200),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // 2.1 Bottom Arrow on top side
+                            AnimatedOpacity(
+                              opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: GifView.asset(
+                                  'assets/png/mechanics/arrow_right.png',
+                                  height: _responsiveTile * 0.08,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
                                 ),
                               ),
+                            ),
 
-                              SizedBox(height: _responsiveTile * 0.015),
+                            SizedBox(height: _responsiveTile * 0.015),
 
-                              // 2.2 Shuffle Button
-                              MouseRegion(
-                                cursor: _isPlayersTeamsMinSelectionValid 
-                                  ? SystemMouseCursors.click 
-                                  : SystemMouseCursors.basic,
-                                child: GestureDetector(
-                                  onTap: _isPlayersTeamsMinSelectionValid 
-                                    ? _isPlayersSelection
-                                      ? () async {
-                                          setState(() {
-                                            _selectedPlayers.shuffle();
-                                          });
-                                        }
-                                      : () async {
-                                          setState(() {
-                                            _selectedTeams.shuffle();
-                                          });
-                                        }
-                                    : null,
-                                  child: Center(
-                                    child: Stack(
-                                      children: [
-                                        // 1. Bottom Layer: Dynamic Solid Fill Background
-                                        Positioned.fill(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.blue,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  //color: Colors.black.withAlpha(150),
-                                                  blurRadius: _responsiveTile * 0.015,
-                                                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        
-                                        // 2. Middle Layer: Crisp PNG Icon Asset
-                                        SizedBox(
-                                          width: avatarHeight * 0.5,
-                                          height: avatarHeight * 0.5,
-                                          child: Image.asset(
-                                            _isPlayersSelection 
-                                              ? 'assets/png/mechanics/shuffle_players.png' 
-                                              : 'assets/png/mechanics/shuffle_teams.png',
-                                            fit: BoxFit.contain,
-                                            filterQuality: FilterQuality.high,
-                                          ),
-                                        ),
-                                        
-                                        // 3. Top Overlay Layer: Circular Border Ring
-                                        Positioned.fill(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.amber.shade300,
-                                                width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
+                            // 2.2 Shuffle Button
+                            MouseRegion(
+                              cursor: _isPlayersTeamsMinSelectionValid 
+                                ? SystemMouseCursors.click 
+                                : SystemMouseCursors.basic,
+                              child: GestureDetector(
+                                onTap: _isPlayersTeamsMinSelectionValid 
+                                  ? _isPlayersSelection
+                                    ? () async {
+                                        setState(() {
+                                          _selectedPlayers.shuffle();
+                                        });
+                                      }
+                                    : () async {
+                                        setState(() {
+                                          _selectedTeams.shuffle();
+                                        });
+                                      }
+                                  : null,
+                                child: Center(
+                                  child: Stack(
+                                    children: [
+                                      // 1. Bottom Layer: Dynamic Solid Fill Background
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.blue,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                //color: Colors.black.withAlpha(150),
+                                                blurRadius: _responsiveTile * 0.015,
+                                                offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
                                               ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      // 2. Middle Layer: Crisp PNG Icon Asset
+                                      SizedBox(
+                                        width: avatarHeight * 0.5,
+                                        height: avatarHeight * 0.5,
+                                        child: Image.asset(
+                                          _isPlayersSelection 
+                                            ? 'assets/png/mechanics/shuffle_players.png' 
+                                            : 'assets/png/mechanics/shuffle_teams.png',
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.high,
+                                        ),
+                                      ),
+                                      
+                                      // 3. Top Overlay Layer: Circular Border Ring
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.amber.shade300,
+                                              width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
+                            ),
 
-                              // 2.3 Up Arrow on bottom side
-                              SizedBox(height: _responsiveTile * 0.015),
-                              
-                              AnimatedOpacity(
-                                opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 200),
-                                child: RotatedBox(
-                                  quarterTurns: 1,
-                                  child: GifView.asset(
-                                    'assets/png/mechanics/arrow_left.png',
-                                    height: _responsiveTile * 0.08,
-                                    fit: BoxFit.contain,
-                                    filterQuality: FilterQuality.high,
-                                  ),
+                            // 2.3 Up Arrow on bottom side
+                            SizedBox(height: _responsiveTile * 0.015),
+                            
+                            AnimatedOpacity(
+                              opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: GifView.asset(
+                                  'assets/png/mechanics/arrow_left.png',
+                                  height: _responsiveTile * 0.08,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
 
-                        //SizedBox(width: _responsiveTile * 0.032),
+                      SizedBox(width: _responsiveTile * 0.015),
 
-                        // 3. Right Players or Teams CarouselView
-                        Expanded(
-                          child:Align(
-                            alignment: Alignment.center,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_isPlayersSelection) ...[
-                                SizedBox(
+                      // 3. Right Players or Teams CarouselView
+                      Expanded(
+                        child:Align(
+                          alignment: Alignment.center,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_isPlayersSelection) ...[
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: SizedBox(
                                   height: avatarHeightOuterSize,
                                   width: (avatarSlicedWidthOuterSize * (rightPlayers.isEmpty ? 1 : rightPlayers.length)) + 
                                         (rightPlayers.isEmpty ? 0 : (rightPlayers.length - 1) * (_responsiveTile * 0.015)),
@@ -800,8 +802,12 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     }(),
                                   ),
                                 ),
-                              ] else ...[
-                                SizedBox(
+                              ),
+                            ] else ...[
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: SizedBox(
                                   height: (cardSlicedHeightOuterSize * (rightTeams.isEmpty ? 1 : rightTeams.length)) + 
                                       (rightTeams.isEmpty ? 0 : (rightTeams.length - 1) * (_responsiveTile * 0.015)),
                                   width: cardWidthOuterSize,
@@ -832,17 +838,19 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     }(),
                                   ),
                                 ),
-                              ]
-                            ],
-                          ),
-                          ),
+                              ),
+                            ]
+                          ],
                         ),
+                        ),
+                      ),
 
-                        SizedBox(width: _responsiveTile * 0.022),
-                      ],
-                    ),
+                      SizedBox(width: _responsiveTile * 0.022),
+                    ],
                   ),
                 ),
+
+                const Spacer(),
 
                 // 3. Persistent Bottom Panel (Aligned horizontally with the box above, zero safe-area interference)
                 Container(
@@ -959,7 +967,9 @@ class _RostersSelectionState extends State<RostersSelection> {
                                       avatarHeight: avatarHeight,
                                       bgColor: GlobalSettingType.players.tileBackgroundColor,
                                       isSlicedAvatar: false,
-                                       );
+                                      isSlicedVertical: false,
+                                      isTagNickNameLeft: false,
+                                      );
                                   }).toList(),
                                 );
                               },
@@ -1053,88 +1063,26 @@ class _RostersSelectionState extends State<RostersSelection> {
     required double avatarSlicedWidthOuterSize,
     required void Function(int originalIndex) onTap,
   }) {
-    final ratioPlayerTeamBadge = 345 / 260;
-
     return List.generate(targetPlayers.length, (index) {
       final item = targetPlayers[index];
       final player = item.player;
       final originalIndex = item.originalIndex;
-      final slotAlignment = item.slotConfig;
+      final slotColor = item.slotConfig;
 
       // The core visual card content
       final cardWidget = MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: () => onTap(originalIndex),
-          child: Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  //color: Colors.black.withAlpha(150),
-                  blurRadius: _responsiveTile * 0.015,
-                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
-                ),
-              ],
-            ),
-            child: SizedBox(
-              width: avatarSlicedWidthOuterSize,
-              height: avatarHeightOuterSize,
-              child: Stack(
-                children: [
-                  Container(
-                    width: avatarSlicedWidthOuterSize,
-                    height: avatarHeightOuterSize,
-                    decoration: BoxDecoration(
-                      color: slotAlignment.bgColor,
-                      borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
-                      border: Border.all(
-                        color: Colors.yellowAccent,
-                        width: avatarHeightOuterSize * 0.012,
-                      ),
-                    ),
-                    child: ClipRect(
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        maxHeight: double.infinity,
-                        alignment: Alignment.center,
-                        child: SizedBox(
-                          width: avatarHeight,
-                          height: avatarHeight,
-                          child: gBuildPlayerAvatarCard(
-                            player: player,
-                            avatarHeight: avatarHeight,
-                            bgColor: Colors.transparent,
-                            isSlicedAvatar: true,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: const Alignment(0.0, -0.94),
-                    child: SizedBox(
-                      width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
-                      height: avatarHeight * 0.20,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
-                          border: Border.all(
-                            color: Colors.yellowAccent,
-                            width: avatarSlicedWidthOuterSize * 0.015,
-                          ),
-                        ),
-                        child: Image.asset(
-                          'assets/png/mechanics/rs_tag_p_${originalIndex + 1}.png',
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: gBuildSlicedPlayerAvatarV(
+            player: player,
+            avatarHeight: avatarHeight,
+            avatarHeightOuterSize: avatarHeightOuterSize,
+            avatarSlicedWidth: avatarSlicedWidth,
+            avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+            slotBgColor: slotColor.bgColor,
+            playerPosition: originalIndex,
+            responsiveTile: _responsiveTile,
           ),
         ),
       );
@@ -1199,98 +1147,27 @@ class _RostersSelectionState extends State<RostersSelection> {
     required double cardSlicedHeightOuterSize,
     required void Function(int originalIndex) onTap,
   }) {
-    //Fits with asset of badge P1 or T1
-    final ratioPlayerTeamBadge = 345 / 260;
-
     return List.generate(targetTeams.length, (index) {
       final item = targetTeams[index];
       final team = item.team;
       final originalIndex = item.originalIndex;
-      final slotAlignment = item.slotConfig;
-      final isDummy = (team.fldPlayers[0] == team.fldPlayers[1]);
-
+      final slotColor = item.slotConfig;
+      
       // The core visual card content
       final cardWidget = MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: () => onTap(originalIndex), // <--- Trigger the removal using originalIndex
-          child: Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  //color: Colors.black.withAlpha(150),
-                  blurRadius: _responsiveTile * 0.015,
-                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
-                ),
-              ],
-            ),
-            child: SizedBox(
-              width: cardWidthOuterSize,
-              height: cardSlicedHeightOuterSize,
-              child: Stack(
-                children: [
-                  Container(
-                    width: cardWidthOuterSize,
-                    height: cardSlicedHeightOuterSize,
-                    decoration: BoxDecoration(
-                      color: slotAlignment.bgColor,
-                      borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
-                      border: Border.all(
-                        color: Colors.yellowAccent,
-                        width: cardWidthOuterSize * 0.008,
-                      ),
-                    ),
-                    child: ClipRect(
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        maxHeight: double.infinity,
-                        alignment: Alignment.center,
-                        child: SizedBox(
-                          width: cardWidth,
-                          height: cardHeight,
-                          child: gBuildTeamCardH(
-                            cardHeight: cardHeight,
-                            cardWidth: cardWidth,
-                            selectedPlayer1: team.fldPlayers[0],
-                            selectedPlayer2: team.fldPlayers[1],
-                            isDummyTeam: isDummy,
-                            colorBgAvatar: Colors.transparent,
-                            isSlicedCard: true,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  Align(
-                    alignment: !isDummy
-                      ? Alignment(0.0, 0.0)
-                      : originalIndex.isEven
-                        ? Alignment(-0.95, -0.80)
-                        : Alignment(0.95, -0.80),
-                    child: SizedBox(
-                      width: cardWidth * 0.15 * ratioPlayerTeamBadge,
-                      height: cardWidth * 0.15,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
-                          border: Border.all(
-                            color: Colors.yellowAccent,
-                            width: cardSlicedHeightOuterSize * 0.015,
-                          ),
-                        ),
-                        child: Image.asset(
-                          'assets/png/mechanics/rs_tag_t_${originalIndex + 1}.png',
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: gBuildSlicedTeamCardH(
+            team: team,
+            cardHeight: cardHeight,
+            cardWidth: cardWidth,
+            cardWidthOuterSize: cardWidthOuterSize,
+            cardSlicedHeight: cardSlicedHeight,
+            cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+            slotBgColor: slotColor.bgColor,
+            teamPosition: originalIndex,
+            responsiveTile: _responsiveTile,
           ),
         ),
       );

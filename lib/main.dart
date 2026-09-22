@@ -7,12 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Database Models
+import 'package:darts_101/database/enum_game_type.dart';
 import 'package:darts_101/database/tbl_avatar.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
-import 'package:darts_101/database/tbl_game_half_it.dart';
-import 'package:darts_101/database/tbl_game_build_up.dart';
+import 'package:darts_101/database/tbl_game_score.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
@@ -65,8 +65,7 @@ void main() async {
     Hive.openBox<TblPlayer>('playersBox'),
     Hive.openBox<TblTeam>('teamsBox'),
     Hive.openBox<TblGame>('gamesBox'),
-    Hive.openBox<TblGameHalfIt>('gameHalfItBox'),
-    Hive.openBox<TblGameBuildUp>('gameBuildUpBox'),
+    Hive.openBox<TblGameScore>('gamesScoresBox'),
   ]);
 
   // Extract the box references you need for seeding:

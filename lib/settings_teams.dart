@@ -439,7 +439,13 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                           _onTeamTapped(context, team);
                         },
                         children: teams
-                            .map((team) => _buildTeamCardV(context, team, cardHeight, cardWidth))
+                            .map((team) => gBuildTeamCardV(
+                              team: team,
+                              cardHeight: cardHeight,
+                              cardWidth: cardWidth,
+                              colorBgAvatar: widget.enuSettingType.tileColor,
+                              isSlicedCard: false
+                              ))
                             .toList(),
                       );
                     },
@@ -448,186 +454,6 @@ class _SettingsTeamsState extends State<SettingsTeams> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamCardV(
-    BuildContext context,
-    TblTeam team,
-    double cardHeight,
-    double cardWidth,
-  ) {
-    final bool isDummyTeam = team.fldPlayers[0] == team.fldPlayers[1];
-
-    return Center(
-      child: AspectRatio(
-        aspectRatio: 0.6836,
-        child: FittedBox(
-          fit: BoxFit.contain, // Forces height and width to scale down together proportionally
-          child: SizedBox(
-            height: cardHeight,
-            width: cardWidth,
-            child: Stack(
-              children: [
-                // 1. Top Dynamic Circle Background Layer
-                Positioned(
-                  top: cardHeight * 0.03, // Positions inside top metallic ring
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: cardHeight / 2,
-                      height: cardHeight / 2,
-                      decoration: BoxDecoration(
-                        color: widget.enuSettingType.tileColor, // Or gender color for Player 1
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 2. Bottom Dynamic Circle Background Layer
-                Positioned(
-                  bottom: cardHeight * 0.03, // Positions inside bottom metallic ring
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: cardHeight / 2,
-                      height: cardHeight / 2,
-                      decoration: BoxDecoration(
-                        color: widget.enuSettingType.tileColor, // Or gender color for Player 2
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-                
-                // 3. Top Player Avatar Layer
-                Positioned(
-                  top: cardHeight * 0.015,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/png/avatars/avatar_${team.fldPlayers[0].fldAvatar.fldAvatarCode}_v1.png',
-                        width: cardHeight / 2,
-                        height: cardHeight / 2,
-                        fit: BoxFit.cover,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 4. Bottom Player Avatar Layer
-                Positioned(
-                  bottom: cardHeight * 0.005,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/png/avatars/avatar_${team.fldPlayers[1].fldAvatar.fldAvatarCode}_v1.png',
-                        width: cardHeight / 2,
-                        height: cardHeight / 2,
-                        fit: BoxFit.cover,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 5. PNG Frame Overlay
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/png/mechanics/team_card_frame_V.png',
-                    fit: BoxFit.fill,
-                    filterQuality: FilterQuality.high,
-                  ),
-                ),
-
-                // 6. Dummy Player Layer
-                if (isDummyTeam)
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/png/mechanics/player_dummy_V.png',
-                      fit: BoxFit.fill,
-                      filterQuality: FilterQuality.high,
-                    ),
-                  ),
-
-                // 7. Player 1 Nickname Pill (Centered Top)
-                Positioned(
-                  top: cardHeight * 0.01,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: cardHeight * 0.035,
-                        vertical: cardHeight * 0.006,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(
-                          cardHeight * 0.04,
-                        ),
-                        border: Border.all(
-                          color: Colors.purpleAccent.shade700,
-                          width: cardHeight * 0.006,
-                        ),
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          team.fldPlayers[0].fldNickName.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 8. Player 2 Nickname Pill (Centered Bottom)
-                Positioned(
-                  bottom: cardHeight * 0.01,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: cardHeight * 0.035,
-                        vertical: cardHeight * 0.006,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(
-                          cardHeight * 0.04,
-                        ),
-                        border: Border.all(
-                          color: Colors.purpleAccent.shade700,
-                          width: cardHeight * 0.006,
-                        ),
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          team.fldPlayers[1].fldNickName.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(cardHeight * 0.032, gFontWeight: FontWeight.w800),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

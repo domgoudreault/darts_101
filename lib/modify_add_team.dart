@@ -301,6 +301,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                             avatarHeight: avatarHeight,
                             bgColor: widget.enuSettingType.tileBackgroundColor,
                             isSlicedAvatar: false,
+                            isSlicedVertical: false,
+                            isTagNickNameLeft: false,
                             );
                         }).toList(),
                       ),
@@ -610,71 +612,76 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
 
                       // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
                       Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: cardWidth,
-                              child: gBuildTeamCardH(
-                                cardWidth: cardWidth,
-                                cardHeight: cardHeight,
-                                selectedPlayer1: _selectedPlayer1,
-                                selectedPlayer2: _selectedPlayer2,
-                                isDummyTeam: _isDummyTeam,
-                                colorBgAvatar: widget.enuSettingType.tileColor,
-                                isSlicedCard: false,
-                              ),
-                            ),
-                            
-                            // Delete Team button
-                            if (widget.enuFormMode == FormMode.formModify &&
-                              widget.modifyTeam != null) ...[
-                                
-                                SizedBox(height: _responsiveTile * 0.02),
-                            
-                                MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: GestureDetector(
-                                    onTap: _deleteTeam,
-                                    child: Container(
-                                      padding: EdgeInsets.only(
-                                        left: _responsiveTile * 0.014,
-                                        right: _responsiveTile * 0.034,
-                                        top: _responsiveTile * 0.008,
-                                        bottom: _responsiveTile * 0.008,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red.shade800,
-                                        borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/svg/ui_buttons/player_team_delete.svg',
-                                            width: (_responsiveTile * 0.13).clamp(32.0, 160.0),
-                                            height: (_responsiveTile * 0.13).clamp(32.0, 160.0),
-                                            fit: BoxFit.contain,
-                                          ),
-                                          //const SizedBox(width: 2),
-                                          Text(
-                                            'DELETE THIS TEAM',
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.80).clamp(7.0, 60.0),
-                                              gTextColor: Colors.lightBlueAccent,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                        child: Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child:Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: cardWidth,
+                                  child: gBuildTeamCardH(
+                                    cardWidth: cardWidth,
+                                    cardHeight: cardHeight,
+                                    selectedPlayer1: _selectedPlayer1,
+                                    selectedPlayer2: _selectedPlayer2,
+                                    isDummyTeam: _isDummyTeam,
+                                    colorBgAvatar: widget.enuSettingType.tileColor,
+                                    isSlicedCard: false,
                                   ),
                                 ),
-                            ],
-                          ],
+                                
+                                // Delete Team button
+                                if (widget.enuFormMode == FormMode.formModify &&
+                                  widget.modifyTeam != null) ...[
+                                    
+                                    SizedBox(height: _responsiveTile * 0.02),
+                                
+                                    MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: GestureDetector(
+                                        onTap: _deleteTeam,
+                                        child: Container(
+                                          padding: EdgeInsets.only(
+                                            left: _responsiveTile * 0.014,
+                                            right: _responsiveTile * 0.034,
+                                            top: _responsiveTile * 0.008,
+                                            bottom: _responsiveTile * 0.008,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade800,
+                                            borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SvgPicture.asset(
+                                                'assets/svg/ui_buttons/player_team_delete.svg',
+                                                width: (_responsiveTile * 0.13).clamp(32.0, 160.0),
+                                                height: (_responsiveTile * 0.13).clamp(32.0, 160.0),
+                                                fit: BoxFit.contain,
+                                              ),
+                                              //const SizedBox(width: 2),
+                                              Text(
+                                                'DELETE THIS TEAM',
+                                                style: gBuildArcadeTextStyle(
+                                                  (_responsiveFontSize * 0.80).clamp(7.0, 60.0),
+                                                  gTextColor: Colors.lightBlueAccent,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ],
