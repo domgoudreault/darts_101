@@ -5,6 +5,8 @@ import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:darts_101/database/tbl_avatar.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
+import 'package:darts_101/database/tbl_game_options.dart';
+import 'package:darts_101/database/enum_game_type.dart';
 
 Future<void> gSeedHiveAvatars(Box<TblAvatar> avatarsBox) async {
   // seed Avatars
@@ -165,4 +167,30 @@ Future<void> gSeedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) as
   } 
 
   await teamsBox.addAll(listTeams);
+}
+
+Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
+  List<TblGameOptions> listOptions = [
+    TblGameOptions(fldGameType: GlobalGameType.halfIt, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 100, fldShowOptStartingScore: true),
+    TblGameOptions(fldGameType: GlobalGameType.aroundClock, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
+    TblGameOptions(fldGameType: GlobalGameType.sevenDarts, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
+    TblGameOptions(fldGameType: GlobalGameType.allFives, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
+    TblGameOptions(fldGameType: GlobalGameType.killers, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
+      fldNbrLives: 7, fldShowOptNbrLives: true, fldStartingScore: 0, fldShowOptStartingScore: false),
+    TblGameOptions(fldGameType: GlobalGameType.suddenDeath, fldMinNbrPlayers: 3, fldMinNbrTeams: 3, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
+    TblGameOptions(fldGameType: GlobalGameType.buildUp, fldMinNbrPlayers: 4, fldMinNbrTeams: 0, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 0,
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
+  ];
+
+  await optionsBox.addAll(listOptions);
+}
+
+TblGameOptions gGetGameOptions(GlobalGameType gameType) {
+  final optionsBox = Hive.box<TblGameOptions>('gameOptionsBox');
+  return optionsBox.values.firstWhere((opt) => opt.fldGameType == gameType);
 }

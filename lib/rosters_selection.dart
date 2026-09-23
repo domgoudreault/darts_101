@@ -8,10 +8,12 @@ import 'package:darts_101/database/enum_game_type.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
+import 'package:darts_101/database/tbl_game_options.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
 import 'package:darts_101/game_half_it.dart';
@@ -44,6 +46,13 @@ class _RostersSelectionState extends State<RostersSelection> {
 
   double get _responsiveTile => GlobalAppDisplay.safeHeight * 0.67;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(8.0, 60.0);
+
+  TblGameOptions get _gameOptions => gGetGameOptions(widget.enuGameType);
+  int get _minNbrPlayers => _gameOptions.fldMinNbrPlayers;
+  int get _minNbrTeams => _gameOptions.fldMinNbrTeams;
+  int get _maxNbrPlayers => _gameOptions.fldMaxNbrPlayers;
+  int get _maxNbrTeams => _gameOptions.fldMaxNbrTeams;
+
 
   @override
   void initState() {
@@ -115,48 +124,50 @@ class _RostersSelectionState extends State<RostersSelection> {
     setState(() {});
   }
 
-  /* Future<void> _resumeGame(BuildContext context, TblGame game) async {
-    if (game.gameType == 1) {
+  bool get _hasUnfinishedGame {
+    final gamesBox = Hive.box<TblGame>('gamesBox');
+    // Check if there is any game of this type where fldIsEnded is false
+    return gamesBox.values.any((g) => g.fldGameType == widget.enuGameType && !g.fldIsEnded);
+  }
+
+  Future<void> _resumeGame() async {
+    final gamesBox = Hive.box<TblGame>('gamesBox');
+    
+    // Find the last uncompleted game matching the current game type
+    final lastUnfinishedGame = gamesBox.values.lastWhere(
+      (g) => g.fldGameType == widget.enuGameType && !g.fldIsEnded,
+    );
+
+    if (widget.enuGameType.tileCode == 'half-it') {
       await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => GameHalfItScreen(
-            game: game,
-            resumeMode: true,
-          ),
-        ),
-      );
-    } else if (game.gameType == 2) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameBuildUpScreen(
-            game: game,
+            game: lastUnfinishedGame,
             resumeMode: true,
           ),
         ),
       );
     }
+    // Add other game types here if needed (e.g., build-up)
+
+    if (!mounted) return;
     setState(() {});
-  } */
+  }
 
   bool get _isPlayersTeamsMinSelectionValid {
     if (_isPlayersSelection) {
-      final min = widget.enuGameType.minNbrPlayers;
-      return min > 0 && _selectedPlayers.length >= min;
+      return _minNbrPlayers > 0 && _selectedPlayers.length >= _minNbrPlayers;
     } else {
-      final min = widget.enuGameType.minNbrTeams;
-      return min > 0 && _selectedTeams.length >= min;
+      return _minNbrTeams > 0 && _selectedTeams.length >= _minNbrTeams;
     }
   }
 
   bool get _isPlayersTeamsMaxSelectionValid {
     if (_isPlayersSelection) {
-      final max = widget.enuGameType.maxNbrPlayers;
-      return max > 0 && _selectedPlayers.length < max;
+      return _maxNbrPlayers > 0 && _selectedPlayers.length < _maxNbrPlayers;
     } else {
-      final max = widget.enuGameType.maxNbrTeams;
-      return max > 0 && _selectedTeams.length < max;
+      return _maxNbrTeams > 0 && _selectedTeams.length < _maxNbrTeams;
     }
   }
 
@@ -262,9 +273,9 @@ class _RostersSelectionState extends State<RostersSelection> {
                 opacity: 0.15,
                 child: Image.asset(
                   'assets/png/tiles/${widget.enuGameType.tileType}_${widget.enuGameType.tileCode}.png',
-                  //gameTileImageConfig.assetPath,
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
+                  filterQuality: FilterQuality.high,
                 ),
               ),
             ),
@@ -277,21 +288,14 @@ class _RostersSelectionState extends State<RostersSelection> {
                     
                     // 1.1 Resume Game Button
                     AnimatedOpacity(
-                      opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.3,
+                      opacity: _hasUnfinishedGame ? 1.0 : 0.3,
                       duration: const Duration(milliseconds: 200),
                       child: MouseRegion(
-                        cursor: _isPlayersTeamsMinSelectionValid 
+                        cursor: _hasUnfinishedGame 
                           ? SystemMouseCursors.click 
                           : SystemMouseCursors.basic,
                         child: GestureDetector(
-                          //TODO Tap and resume the game
-                          onTap: _isPlayersTeamsMinSelectionValid 
-                            ? () async {
-                                setState(() {
-                                  _selectedPlayers.shuffle();
-                                });
-                              }
-                            : null,
+                          onTap: _hasUnfinishedGame ? () => _resumeGame() : null,
                           child: Container(
                             decoration: BoxDecoration(
                               boxShadow: [
@@ -320,7 +324,7 @@ class _RostersSelectionState extends State<RostersSelection> {
 
                     // 1.2 Left Arrow pointing Resume Game Button
                     AnimatedOpacity(
-                      opacity: _isPlayersTeamsMinSelectionValid ? 1.0 : 0.0,
+                      opacity: _hasUnfinishedGame ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 200),
                       child: GifView.asset(
                           'assets/png/mechanics/arrow_left.png',
@@ -956,7 +960,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                       gShowArcadeErrorSnackBar(
                                         gContext: context,
                                         gFontSize: _responsiveFontSize,
-                                        gMessage: 'Maximum ${widget.enuGameType.maxNbrPlayers} players allowed!',
+                                        gMessage: 'Maximum $_maxNbrPlayers players allowed!',
                                         gDuration: 2,
                                       );
                                     }
@@ -1019,7 +1023,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                       gShowArcadeErrorSnackBar(
                                         gContext: context,
                                         gFontSize: _responsiveFontSize,
-                                        gMessage: 'Maximum ${widget.enuGameType.maxNbrTeams} teams allowed!',
+                                        gMessage: 'Maximum $_maxNbrTeams teams allowed!',
                                         gDuration: 2,
                                       );
                                     }

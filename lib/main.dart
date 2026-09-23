@@ -13,6 +13,7 @@ import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
 import 'package:darts_101/database/tbl_game_score.dart';
+import 'package:darts_101/database/tbl_game_options.dart';
 import 'package:darts_101/hive_registrar.g.dart';
 
 // Backend Logic
@@ -66,14 +67,21 @@ void main() async {
     Hive.openBox<TblTeam>('teamsBox'),
     Hive.openBox<TblGame>('gamesBox'),
     Hive.openBox<TblGameScore>('gamesScoresBox'),
+    Hive.openBox<TblGameOptions>('gameOptionsBox'),
   ]);
 
   // Extract the box references you need for seeding:
   final avatarsBox = results[0] as Box<TblAvatar>;
+  final optionsBox = results[5] as Box<TblGameOptions>;
   
   // Only seeds avatars if the database is empty
   if (avatarsBox.isEmpty){
     await gSeedHiveAvatars(avatarsBox);
+  }
+
+  // Only seed game options if the box is empty
+  if (optionsBox.isEmpty) {
+    await gSeedHiveGameOptions(optionsBox);
   }
 
   // Wrap runApp with DevicePreview
@@ -96,7 +104,7 @@ class Darts101App extends StatelessWidget {
       title: 'Darts 101',            
 
       builder: (context, child) {
-        GlobalAppDisplay.updateDisplayMode(context);
+        GlobalAppDisplay.globalEnumDisplayMode (context);
 
         return child!;
       },
@@ -396,10 +404,12 @@ class _MainScreenState extends State<MainScreen> {
       assetPaths.add('assets/png/tiles/${tile.tileType}_${tile.tileCode}.png');
     }
 
-    // 2. Collect core mechanics & navigation UI assets
+    // 2. Collect logos core mechanics & navigation UI assets
     assetPaths.addAll([
-      'assets/png/mechanics/arrow_right.png',
+      'assets/png/logos/LGGDS.png',
       'assets/png/mechanics/arrow_left.png',
+      'assets/png/mechanics/arrow_right.png',
+      'assets/png/mechanics/hits.png',
       'assets/png/mechanics/player_avatar.png',
       'assets/png/mechanics/player_card_bg.png',
       'assets/png/mechanics/player_card_frame.png',
@@ -408,16 +418,36 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/mechanics/player_dummy_V.png',
       'assets/png/mechanics/player_league_member.png',
       'assets/png/mechanics/resume_game.png',
+      'assets/png/mechanics/score.png',
       'assets/png/mechanics/section_games.png',
       'assets/png/mechanics/section_settings.png',
       'assets/png/mechanics/shuffle_players.png',
       'assets/png/mechanics/shuffle_teams.png',
       'assets/png/mechanics/start_game.png',
+      'assets/png/mechanics/stats.png',
       'assets/png/mechanics/team_card_frame_H.png',
       'assets/png/mechanics/team_card_frame_V.png',
+      'assets/png/mechanics/undo.png',
+      'assets/png/mechanics/target_miss.png',
+      'assets/png/mechanics/target_single.png',
+      'assets/png/mechanics/target_double.png',
+      'assets/png/mechanics/target_triple.png',
     ]);
 
-    // 3. Precache them all into memory safely
+    // 3. Collect rosters_selection tags
+    for (int i = 1; i <= 12; i++) {
+      assetPaths.add('assets/png/mechanics/rs_tag_p_$i.png');
+      assetPaths.add('assets/png/mechanics/rs_tag_t_$i.png');
+    }
+
+    // 4. Collect avatars
+    final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
+    for (var avatar in avatarsBox.values) {
+      assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png');
+      assetPaths.add('assets/png/mechanics/avatar_${avatar.fldAvatarCode}_v1.png');
+    }
+
+    // 5. Precache them all into memory safely
     for (String path in assetPaths) {
       precacheImage(AssetImage(path), context);
     }
@@ -651,44 +681,39 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      'Display Mode: ${GlobalAppDisplay.displayMode.name}',
-                      style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
-                    ),
-                    SizedBox(height: GlobalAppDisplay.safeHeight * 0.002),
-                    Text(
-                      'Safe Screen Width: ${GlobalAppDisplay.safeWidth.toStringAsFixed(1)} dp',
-                      style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
-                    ),
-                    SizedBox(height: GlobalAppDisplay.safeHeight * 0.002),
-                    Text(
-                      'Safe Screen Height: ${GlobalAppDisplay.safeHeight.toStringAsFixed(1)} dp',
-                      style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
-                    ),
-                    Divider(color: Colors.white24, height: GlobalAppDisplay.safeHeight * 0.044),
-                    Text(
-                      'Database Utilities !!!',
-                      style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0), gTextColor: Colors.amber),
-                    ),
-                    SizedBox(height: GlobalAppDisplay.safeHeight * 0.004),
+                    'Safe Screen Width: ${GlobalAppDisplay.safeWidth.toStringAsFixed(1)} dp',
+                    style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
+                  ),
+                  SizedBox(height: GlobalAppDisplay.safeHeight * 0.002),
+                  Text(
+                    'Safe Screen Height: ${GlobalAppDisplay.safeHeight.toStringAsFixed(1)} dp',
+                    style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
+                  ),
+                  Divider(color: Colors.white24, height: GlobalAppDisplay.safeHeight * 0.044),
+                  Text(
+                    'Database Utilities !!!',
+                    style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0), gTextColor: Colors.amber),
+                  ),
+                  SizedBox(height: GlobalAppDisplay.safeHeight * 0.004),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade800,
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          await _clearHiveDatabase(context);
-                        },
-                        icon: Icon(Icons.delete_sweep, size: GlobalAppDisplay.safeHeight * 0.016),
-                        label: Text(
-                          'CLEAR PLAYERS & TEAMS',
-                          style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
-                        ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await _clearHiveDatabase(context);
+                      },
+                      icon: Icon(Icons.delete_sweep, size: GlobalAppDisplay.safeHeight * 0.016),
+                      label: Text(
+                        'CLEAR PLAYERS & TEAMS',
+                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

@@ -3,9 +3,15 @@ import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 // Database Models
 import 'package:darts_101/database/enum_game_type.dart';
+import 'package:darts_101/database/tbl_game.dart';
+import 'package:darts_101/database/tbl_game_score.dart';
+
+// Backend Logic
+import 'package:darts_101/global_be.dart';
 
 final List<({int value, String label})> gTargets = [
   (value: 1, label: '1'),
@@ -45,6 +51,121 @@ final List<({int value, String label})> gTargetsHalf = [
   (value: 20, label: '20'),
   (value: 25, label: 'BULL'),
 ];
+
+class GameProgressState {
+  int activeSeatIdx;
+  int previousSeatIdx;
+  int activeDartIdx;
+  int previousDartIdx;
+  int activeRoundIdx;
+  int previousRoundIdx;
+  int activeTargetIdx;
+  int previousTargetIdx;
+  int nextTargetIdx;
+  bool endGame;
+
+  GameProgressState({
+    this.activeSeatIdx = 0,
+    this.previousSeatIdx = 0,
+    this.activeDartIdx = 0,
+    this.previousDartIdx = 0,
+    this.activeRoundIdx = 0,
+    this.previousRoundIdx = 0,
+    this.activeTargetIdx = 0,
+    this.previousTargetIdx = 0,
+    this.nextTargetIdx = 0,
+    this.endGame = false,
+  });
+}
+
+GameProgressState gStepGameState({
+  required GameProgressState currentState,
+  required GlobalGameState gameState,
+  required TblGame gameConfig,
+  required Box<TblGameScore> gamesScoresBox,
+  required int totalPlayers,
+  required List<dynamic> targetsList, // e.g. gTargetsHalf
+}) {
+  if (gameState == GlobalGameState.forwardState) {
+    // 1. Advance Dart Index
+    currentState.activeDartIdx++;
+
+    // 2. Check if turn is complete (3 darts thrown)
+    if (currentState.activeDartIdx >= 3) {
+      // 3. Shift current active states to previous before moving forward
+      currentState.previousDartIdx = currentState.activeDartIdx;
+      currentState.previousSeatIdx = currentState.activeSeatIdx;
+      currentState.previousRoundIdx = currentState.activeRoundIdx;
+      currentState.previousTargetIdx = currentState.activeTargetIdx;
+
+      // Advance Seat Index in rotation
+      currentState.activeDartIdx = 0;
+      currentState.activeSeatIdx = (currentState.activeSeatIdx + 1) % totalPlayers;
+
+      // 4. Check if a full round rotation is complete
+      if (currentState.activeSeatIdx == 0) {
+        if (currentState.activeRoundIdx < targetsList.length - 1) {
+          currentState.activeRoundIdx++;
+          currentState.activeTargetIdx = currentState.activeRoundIdx;
+          currentState.nextTargetIdx = currentState.activeRoundIdx < targetsList.length - 1 
+              ? currentState.activeRoundIdx + 1 
+              : currentState.activeRoundIdx;
+        } else {
+          currentState.endGame = true;
+        }
+      }
+    }
+  } else {
+    // BACKWARD / RESUME ENGINE
+    final updatedRecords = gamesScoresBox.values
+        .where((s) => s.fldGame == gameConfig && s.fldRound >= 0)
+        .toList();
+
+    if (updatedRecords.isEmpty) {
+      // Reset to start state
+      return GameProgressState();
+    }
+
+    final activeRec = updatedRecords.last;
+    
+    int nextSeat = activeRec.fldSeatIndex;
+    int nextDart = activeRec.fldDartIndex + 1;
+    int nextRound = activeRec.fldRound;
+    int nextTarget = activeRec.fldTargetIndex;
+    int nextTargetIdxVal = activeRec.fldNextTargetIndex ?? nextTarget;
+
+    if (nextDart >= 3) {
+      nextDart = 0;
+      nextSeat = (nextSeat + 1) % totalPlayers;
+      if (nextSeat == 0) {
+        if (nextRound < targetsList.length - 1) {
+          nextRound++;
+          nextTarget = nextRound;
+          nextTargetIdxVal = nextRound < targetsList.length - 1 ? nextRound + 1 : nextRound;
+        }
+      }
+    }
+
+    currentState.activeSeatIdx = nextSeat;
+    currentState.activeDartIdx = nextDart;
+    currentState.activeRoundIdx = nextRound;
+    currentState.activeTargetIdx = nextTarget;
+    currentState.nextTargetIdx = nextTargetIdxVal;
+
+    // Find previous player correctly
+    final prevRecord = updatedRecords.reversed.firstWhere(
+      (s) => s.fldSeatIndex != currentState.activeSeatIdx,
+      orElse: () => updatedRecords.first,
+    );
+
+    currentState.previousSeatIdx = prevRecord.fldSeatIndex;
+    currentState.previousDartIdx = prevRecord.fldDartIndex;
+    currentState.previousRoundIdx = prevRecord.fldRound;
+    currentState.previousTargetIdx = prevRecord.fldTargetIndex;
+  }
+
+  return currentState;
+}
 
 class GlobalTargetZonePainter extends CustomPainter {
   final int targetValue;

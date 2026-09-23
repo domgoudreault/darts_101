@@ -5,8 +5,6 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:darts_101/database/tbl_game.dart';
 import 'package:darts_101/database/tbl_player.dart';
 
-// Backend Logic
-
 part 'tbl_game_score.g.dart';
 
 @HiveType(typeId: 5) // Unique ID for your model
@@ -71,7 +69,7 @@ class TblGameScore extends HiveObject {
   int fldScorePlayerSnapshot; //The running total after the hits or halving.
 
   @HiveField(17)
-  int? fldsScoreTeamSnapshot; //The running total after the hits or halving.
+  int? fldScoreTeamSnapshot; //The running total after the hits or halving.
 
   TblGameScore({
     required this.fldGame,
@@ -91,6 +89,6 @@ class TblGameScore extends HiveObject {
     required this.fldHits,
     this.fldIsHalfIt = false,
     required this.fldScorePlayerSnapshot,
-    this.fldsScoreTeamSnapshot,
+    this.fldScoreTeamSnapshot,
   });
 }
