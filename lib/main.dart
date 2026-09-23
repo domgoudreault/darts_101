@@ -444,7 +444,7 @@ class _MainScreenState extends State<MainScreen> {
     final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
     for (var avatar in avatarsBox.values) {
       assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png');
-      assetPaths.add('assets/png/mechanics/avatar_${avatar.fldAvatarCode}_v1.png');
+      assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_v1.png');
     }
 
     // 5. Precache them all into memory safely
