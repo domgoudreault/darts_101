@@ -172,7 +172,7 @@ Future<void> gSeedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) as
 Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
   List<TblGameOptions> listOptions = [
     TblGameOptions(fldGameType: GlobalGameType.halfIt, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 100, fldShowOptStartingScore: true),
+      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 50, fldShowOptStartingScore: true),
     TblGameOptions(fldGameType: GlobalGameType.aroundClock, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
       fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
     TblGameOptions(fldGameType: GlobalGameType.sevenDarts, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,

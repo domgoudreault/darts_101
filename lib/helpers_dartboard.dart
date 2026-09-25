@@ -55,10 +55,12 @@ final List<({int value, String label})> gTargetsHalf = [
 class GameProgressState {
   int activeSeatIdx;
   int previousSeatIdx;
+  int nextSeatIdx;
   int activeDartIdx;
   int previousDartIdx;
   int activeRoundIdx;
   int previousRoundIdx;
+
   int activeTargetIdx;
   int previousTargetIdx;
   int nextTargetIdx;
@@ -67,6 +69,7 @@ class GameProgressState {
   GameProgressState({
     this.activeSeatIdx = 0,
     this.previousSeatIdx = 0,
+    this.nextSeatIdx = 1,
     this.activeDartIdx = 0,
     this.previousDartIdx = 0,
     this.activeRoundIdx = 0,
@@ -84,7 +87,7 @@ GameProgressState gStepGameState({
   required TblGame gameConfig,
   required Box<TblGameScore> gamesScoresBox,
   required int totalPlayers,
-  required List<dynamic> targetsList, // e.g. gTargetsHalf
+  required List<dynamic> targetsList,
 }) {
   if (gameState == GlobalGameState.forwardState) {
     // 1. Advance Dart Index
@@ -163,6 +166,8 @@ GameProgressState gStepGameState({
     currentState.previousRoundIdx = prevRecord.fldRound;
     currentState.previousTargetIdx = prevRecord.fldTargetIndex;
   }
+
+  currentState.nextSeatIdx = (currentState.activeSeatIdx + 1) % totalPlayers;
 
   return currentState;
 }

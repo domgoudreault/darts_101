@@ -979,6 +979,7 @@ Widget gBuildSlicedPlayerAvatarVPanel({
   required double responsiveTile,
   required double heightBoost,
   bool isEmptyPanel = false,
+  bool isNextPlayer = false,
 }) {
   //Fits with asset of badge P1 or T1
   final ratioPlayerTeamBadge = 345 / 260;
@@ -1016,7 +1017,7 @@ Widget gBuildSlicedPlayerAvatarVPanel({
                     child: RotatedBox(
                         quarterTurns: 3,
                         child: Text(
-                          "WAITING...",
+                          !isNextPlayer ? "WAITING..." : "NO NEXT PLAYER...",
                           style: gBuildArcadeTextStyle(responsiveTile * 0.035),
                         ),
                       ),
@@ -1069,6 +1070,22 @@ Widget gBuildSlicedPlayerAvatarVPanel({
                     ),
                   ),
                 ),
+
+                if (isNextPlayer) ...[
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            "NEXT PLAYER",
+                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                          ),
+                        ),
+                    ),
+                  )
+                ],
               ],
             ),
       ),
@@ -1292,7 +1309,10 @@ Widget gBuildSlicedTeamCardVPanel({
   required int teamPosition,
   required double responsiveTile,
   required double heightBoost,
+  required TblPlayer? focusPlayer,
+  required bool focusPlayerFirst,
   bool isEmptyPanel = false,
+  bool isNextPlayer = false,
 }) {
   //Fits with asset of badge P1 or T1
   final ratioPlayerTeamBadge = 345 / 260;
@@ -1331,7 +1351,7 @@ Widget gBuildSlicedTeamCardVPanel({
                     child: RotatedBox(
                         quarterTurns: 3,
                         child: Text(
-                          "WAITING...",
+                          !isNextPlayer ? "WAITING..." : "NO NEXT PLAYER...",
                           style: gBuildArcadeTextStyle(responsiveTile * 0.035),
                         ),
                       ),
@@ -1360,11 +1380,41 @@ Widget gBuildSlicedTeamCardVPanel({
                     ),
                   ),
                 ),
+
+                if (isDummy) ...[
+                  // Pulsing Glow Overlay for Player 1 (Top)
+                  if ((team.fldPlayers[0] == focusPlayer) && focusPlayerFirst)
+                    Align(
+                      alignment: const Alignment(0.0, -0.89),
+                      child: _buildPulsingGlowRing(responsiveTile * 0.2),
+                    ),
+
+                  // Pulsing Glow Overlay for Player 2 (Bottom)
+                  if ((team.fldPlayers[1] == focusPlayer) && !focusPlayerFirst)
+                    Align(
+                      alignment: const Alignment(0.0, -0.34),
+                      child: _buildPulsingGlowRing(responsiveTile * 0.2),
+                    ),
+                ] else ...[
+                  // Pulsing Glow Overlay for Player 1 (Top)
+                  if (team.fldPlayers[0] == focusPlayer)
+                    Align(
+                      alignment: const Alignment(0.0, -0.89),
+                      child: _buildPulsingGlowRing(responsiveTile * 0.2),
+                    ),
+
+                  // Pulsing Glow Overlay for Player 2 (Bottom)
+                  if (team.fldPlayers[1] == focusPlayer)
+                    Align(
+                      alignment: const Alignment(0.0, -0.34),
+                      child: _buildPulsingGlowRing(responsiveTile * 0.2),
+                    ),
+                ],
             
                 Align(
                   alignment: !isDummy
-                      ? const Alignment(0.0, -0.63)
-                      : const Alignment(0.0, -0.23),
+                      ? const Alignment(0.0, -0.56)
+                      : const Alignment(0.0, -0.995),
                   child: SizedBox(
                     width: cardHeight * 0.2 * ratioPlayerTeamBadge,
                     height: cardHeight * 0.2,
@@ -1385,11 +1435,98 @@ Widget gBuildSlicedTeamCardVPanel({
                     ),
                   ),
                 ),
+
+                if (isNextPlayer) ...[
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            "NEXT TEAM",
+                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                          ),
+                        ),
+                    ),
+                  )
+                ],
               ],
             ),
       ),
     ),
   );
+}
+
+Widget _buildPulsingGlowRing(double size) {
+  return _PulsingGlowWidget(size: size);
+}
+
+class _PulsingGlowWidget extends StatefulWidget {
+  final double size;
+  const _PulsingGlowWidget({required this.size});
+
+  @override
+  State<_PulsingGlowWidget> createState() => _PulsingGlowWidgetState();
+}
+
+class _PulsingGlowWidgetState extends State<_PulsingGlowWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 700),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.00, end: 1.10).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        );
+      },
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            // Hollow center with a distinct glowing border making it a real ring
+            border: Border.all(
+              color: Colors.amberAccent,
+              width: (widget.size * 0.03),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.amber.withAlpha(70),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Widget gBuildSlicedTeamCardH({
@@ -1735,6 +1872,64 @@ Widget gBuildTeamCardV({
             ],
           ),
         ),
+      ),
+    ),
+  );
+}
+
+Widget gBuildArcadeHitsBadge({
+  required String gHitsText,
+  required Color gTextColor,
+  required Color gShadowColor,
+  required double gResponsiveTile,
+  required double gResponsiveFontSize,
+}) {
+  return SizedBox(
+    width: gResponsiveTile * 0.2,
+    child: Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          RotatedBox(
+            quarterTurns: 1,
+            child: Image.asset(
+              'assets/png/mechanics/hits.png',
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+            ),
+          ),
+          Text(
+            gHitsText,
+            style: TextStyle(
+              fontSize: gResponsiveFontSize * 2.6,
+              fontWeight: FontWeight.bold,
+              color: gTextColor,
+              shadows: [
+                Shadow(
+                  offset: Offset(-(gResponsiveFontSize * 0.05), gResponsiveFontSize * 0.05),
+                  color: gShadowColor,
+                  blurRadius: 4,
+                ),
+                Shadow(
+                  offset: Offset(-(gResponsiveFontSize * 0.01), gResponsiveFontSize * 0.01),
+                  color: gShadowColor,
+                  blurRadius: 4,
+                ),
+                Shadow(
+                  offset: Offset(-(gResponsiveFontSize * 0.015), gResponsiveFontSize * 0.015),
+                  color: gShadowColor,
+                  blurRadius: 4,
+                ),
+                Shadow(
+                  offset: Offset(-(gResponsiveFontSize * 0.02), gResponsiveFontSize * 0.02),
+                  color: gShadowColor,
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     ),
   );

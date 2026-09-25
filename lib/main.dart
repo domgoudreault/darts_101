@@ -34,6 +34,11 @@ enum MainScreenSection {
   section10Settings(
     sectionCode: 'settings',
     assetPath: 'assets/svg/mechanics/section_settings.svg',
+  ),
+
+  section15Options(
+    sectionCode: 'options',
+    assetPath: 'assets/svg/mechanics/section_options.svg',
   );
 
   final String sectionCode;
@@ -421,6 +426,7 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/mechanics/score.png',
       'assets/png/mechanics/section_games.png',
       'assets/png/mechanics/section_settings.png',
+      'assets/png/mechanics/section_options.png',
       'assets/png/mechanics/shuffle_players.png',
       'assets/png/mechanics/shuffle_teams.png',
       'assets/png/mechanics/start_game.png',
@@ -530,6 +536,10 @@ class _MainScreenState extends State<MainScreen> {
                   SizedBox(width: GlobalAppDisplay.safeWidth * 0.012),
                   
                   _buildSectionToggleButton(section: MainScreenSection.section10Settings),
+
+                  SizedBox(width: GlobalAppDisplay.safeWidth * 0.012),
+                  
+                  _buildSectionToggleButton(section: MainScreenSection.section15Options),
                 ],
               ),
             ),
