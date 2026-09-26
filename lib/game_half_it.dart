@@ -176,7 +176,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
     _slashController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2), // Fast like a sword
+      duration: kIsWeb ? Duration(seconds: 30) : Duration(seconds: 2), // Fast like a sword
     );
 
     // Hide the animation overlay when it finishes playing
@@ -710,10 +710,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                           ),
                                           child:Row(
                                             children: [
-                                              gBuildArcadeHitsBadge(
+                                              gBuildArcadeOverlayHitsBadge(
                                                 gHitsText: _hasGamePreviousPlayer ? '$_previousPlayerLastRoundHits' : '-',
-                                                gTextColor: Colors.black,
-                                                gShadowColor: _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
+                                                gTextColor: Color.fromARGB(255, 207, 20, 17),
                                                 gResponsiveTile: _responsiveTile, 
                                                 gResponsiveFontSize: _responsiveFontSize
                                               ),
@@ -842,10 +841,16 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   textAlign: TextAlign.center,
                                                 ),
 
-                                                gBuildArcadeHitsBadge(
-                                                  gHitsText: '$_activePlayerCurrentRoundHits',
-                                                  gTextColor: Colors.black,
-                                                  gShadowColor: _isPlayerMode ? _activePlayerColor : _activeTeamColor,
+                                                /* gBuildArcadeHitsBadge(
+                                                  gHitsText: _activePlayerCurrentRoundHits.toString(),
+                                                  gTextColor: Color.fromARGB(255, 207, 20, 17),
+                                                  gResponsiveTile: _responsiveTile, 
+                                                  gResponsiveFontSize: _responsiveFontSize
+                                                ), */
+
+                                                gBuildArcadeOverlayHitsBadge(
+                                                  gHitsText: _activePlayerCurrentRoundHits.toString(),
+                                                  gTextColor: Color.fromARGB(255, 207, 20, 17),
                                                   gResponsiveTile: _responsiveTile, 
                                                   gResponsiveFontSize: _responsiveFontSize
                                                 ),
@@ -1135,7 +1140,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                     controller: _slashController,
                     width: GlobalAppDisplay.safeWidth,
                     height: GlobalAppDisplay.safeHeight,
-                    onLoaded: kDebugMode
+                    onLoaded: kIsWeb
                       ? (composition) { _slashController.duration = composition.duration * 20; }
                       : (composition) { _slashController.duration = composition.duration; },
                   ),

@@ -108,13 +108,23 @@ class _RostersSelectionState extends State<RostersSelection> {
     if (!mounted) return;
 
     // 4. Navigate to the game screen if it's Half-It
-    if (widget.enuGameType.tileCode == 'half-it') {
+    /* if (widget.enuGameType.tileCode == 'half-it') {
       await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => GameHalfItScreen(
             game: newGame,
             resumeMode: false,
+          ),
+        ),
+      );
+    } */
+    if (widget.enuGameType.tileCode == 'half-it') {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameMatchupScreen(
+            game: newGame,
           ),
         ),
       );
@@ -142,13 +152,14 @@ class _RostersSelectionState extends State<RostersSelection> {
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => GameHalfItScreen(
+          builder: (context) => GameMatchupScreen(
             game: lastUnfinishedGame,
-            resumeMode: true,
+            resumeMode: true, // Pass true so the splash screen knows to resume!
           ),
         ),
       );
     }
+
     // Add other game types here if needed (e.g., build-up)
 
     if (!mounted) return;
@@ -1425,4 +1436,250 @@ class _FadingEllipseAnimationState extends State<FadingEllipseAnimation>
 class PlayerDragData {
   final int originalIndex;
   PlayerDragData(this.originalIndex);
+}
+
+class GameMatchupScreen extends StatefulWidget {
+  final TblGame game;
+  final bool resumeMode;
+
+  const GameMatchupScreen({
+    super.key,
+    required this.game,
+    this.resumeMode = false,
+  });
+
+  @override
+  State<GameMatchupScreen> createState() => _GameMatchupScreenState();
+}
+
+class _GameMatchupScreenState extends State<GameMatchupScreen> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // Wait for 5 seconds, then transition to the actual game
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameHalfItScreen(
+            game: widget.game,
+            resumeMode: widget.resumeMode, // Respect whether we are resuming or starting fresh
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    MediaQuery.sizeOf(context);
+
+    // Replicate exact responsive metrics from RostersSelection
+    final responsiveTile = GlobalAppDisplay.safeHeight * 0.67;
+    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+    final avatarHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * 0.329;
+    final avatarHeightOuterSize = avatarHeight * 1.12;
+    final avatarSlicedWidth = avatarHeight * 0.42;
+    final avatarSlicedWidthOuterSize = avatarSlicedWidth * 1.12;
+    
+    final cardHeight = avatarHeight;
+    final cardWidth = cardHeight * 1.4628;
+    final cardWidthOuterSize = cardWidth * 1.12;
+    final cardSlicedHeight = cardWidth * 0.305;
+    final cardSlicedHeightOuterSize = cardSlicedHeight * 1.12;
+
+    // Slot colors alignment
+    final playersSlotColors = GlobalPlayersGridConfig.values.toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
+    final teamsSlotColors = GlobalTeamsGridConfig.values.toList()
+      ..sort((a, b) => a.position.compareTo(b.position));
+
+    final isPlayers = widget.game.fldPlayersGM;
+
+    List<Widget> leftWidgets = [];
+    List<Widget> rightWidgets = [];
+
+    if (isPlayers) {
+      final players = widget.game.fldPlayers;
+      final pairedPlayers = List.generate(players.length, (index) {
+        return (
+          player: players[index],
+          originalIndex: index,
+          slotConfig: playersSlotColors[index % playersSlotColors.length],
+        );
+      });
+
+      final leftPlayers = pairedPlayers.where((item) => item.originalIndex.isEven).toList();
+      final rightPlayers = pairedPlayers.where((item) => item.originalIndex.isOdd).toList();
+
+      leftWidgets = leftPlayers.map((item) {
+        return gBuildSlicedPlayerAvatarV(
+          player: item.player,
+          avatarHeight: avatarHeight,
+          avatarHeightOuterSize: avatarHeightOuterSize,
+          avatarSlicedWidth: avatarSlicedWidth,
+          avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+          slotBgColor: item.slotConfig.bgColor,
+          playerPosition: item.originalIndex,
+          responsiveTile: responsiveTile,
+        );
+      }).toList();
+
+      rightWidgets = rightPlayers.map((item) {
+        return gBuildSlicedPlayerAvatarV(
+          player: item.player,
+          avatarHeight: avatarHeight,
+          avatarHeightOuterSize: avatarHeightOuterSize,
+          avatarSlicedWidth: avatarSlicedWidth,
+          avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+          slotBgColor: item.slotConfig.bgColor,
+          playerPosition: item.originalIndex,
+          responsiveTile: responsiveTile,
+        );
+      }).toList();
+
+    } else if (!isPlayers && widget.game.fldTeams != null) {
+      final teams = widget.game.fldTeams!;
+      final pairedTeams = List.generate(teams.length, (index) {
+        return (
+          team: teams[index],
+          originalIndex: index,
+          slotConfig: teamsSlotColors[index % teamsSlotColors.length],
+        );
+      });
+
+      final leftTeams = pairedTeams.where((item) => item.originalIndex.isEven).toList();
+      final rightTeams = pairedTeams.where((item) => item.originalIndex.isOdd).toList();
+
+      leftWidgets = leftTeams.map((item) {
+        return gBuildSlicedTeamCardH(
+          team: item.team,
+          cardHeight: cardHeight,
+          cardWidth: cardWidth,
+          cardWidthOuterSize: cardWidthOuterSize,
+          cardSlicedHeight: cardSlicedHeight,
+          cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+          slotBgColor: item.slotConfig.bgColor,
+          teamPosition: item.originalIndex,
+          responsiveTile: responsiveTile,
+        );
+      }).toList();
+
+      rightWidgets = rightTeams.map((item) {
+        return gBuildSlicedTeamCardH(
+          team: item.team,
+          cardHeight: cardHeight,
+          cardWidth: cardWidth,
+          cardWidthOuterSize: cardWidthOuterSize,
+          cardSlicedHeight: cardSlicedHeight,
+          cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+          slotBgColor: item.slotConfig.bgColor,
+          teamPosition: item.originalIndex,
+          responsiveTile: responsiveTile,
+        );
+      }).toList();
+    }
+
+    // Switch layout mode: Vertical stack for teams, 3-on-top / 3-on-bottom rows for players
+    Widget buildSideRoster(List<Widget> widgets) {
+      if (!isPlayers) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: widgets.expand((w) => [w, SizedBox(height: responsiveTile * 0.065)]).toList()..removeLast(),
+        );
+      }
+
+      final topRow = widgets.take(3).toList();
+      final bottomRow = widgets.skip(3).take(3).toList();
+
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (topRow.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: topRow.expand((w) => [w, SizedBox(width: responsiveTile * 0.035)]).toList()..removeLast(),
+            ),
+          if (bottomRow.isNotEmpty) ...[
+            SizedBox(height: responsiveTile * 0.12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: bottomRow.expand((w) => [w, SizedBox(width: responsiveTile * 0.035)]).toList()..removeLast(),
+            ),
+          ],
+        ],
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // 1. LEFT COLUMN
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: responsiveTile * 0.02),
+                  child: buildSideRoster(leftWidgets),
+                ),
+              ),
+            ),
+
+            // 2. CENTER COLUMN: Game Tile Frame
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: responsiveTile * 0.02),
+              child: SizedBox(
+                width: GlobalAppDisplay.safeHeight * 0.50,
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: SizedBox(
+                      width: GlobalAppDisplay.safeHeight * 0.50,
+                      height: GlobalAppDisplay.safeHeight * 0.50,
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: FractionallySizedBox(
+                              widthFactor: 0.94,
+                              heightFactor: 0.94,
+                              child: Container(color: widget.game.fldGameType.tileColor),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: Image.asset(
+                              'assets/png/tiles/games_${widget.game.fldGameType.tileCode}.png',
+                              fit: BoxFit.fill,
+                              filterQuality: FilterQuality.high,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // 3. RIGHT COLUMN
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: responsiveTile * 0.02),
+                  child: buildSideRoster(rightWidgets),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
