@@ -399,10 +399,18 @@ class _RostersSelectionState extends State<RostersSelection> {
                                       ? ValueListenableBuilder<Box<TblPlayer>>(
                                         valueListenable: playersBox.listenable(),
                                         builder: (context, box, _) {
-                                          final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
+                                          // 1. All active (non-deleted) players that are NOT yet selected (Always 12 when 3 are selected)
+                                          final availablePlayers = box.values
+                                              .where((player) => !player.fldIsDeleted && !_selectedPlayers.contains(player))
+                                              .toList();
+
+                                          // 2. Total count of available players (The fixed denominator: e.g., 12)
+                                          final totalAvailableCount = availablePlayers.length;
+
+                                          // 3. Out of those available players, how many match the search query? (The numerator: e.g., 6, then 2)
                                           final filteredCount = _searchQuery.isEmpty
-                                            ? activePlayers.length
-                                            : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).length;
+                                              ? totalAvailableCount
+                                              : availablePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).length;
 
                                           return Container(
                                             margin: EdgeInsets.only(
@@ -426,8 +434,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                                                 fit: BoxFit.scaleDown,
                                                 child: Text(
                                                   _searchQuery.isEmpty 
-                                                      ? '$filteredCount' 
-                                                      : '$filteredCount/${activePlayers.length}',
+                                                      ? '$totalAvailableCount' 
+                                                      : '$filteredCount/$totalAvailableCount',
                                                   style: gBuildArcadeTextStyle(
                                                     _responsiveFontSize,
                                                     gTextColor: Colors.amber,
@@ -442,10 +450,23 @@ class _RostersSelectionState extends State<RostersSelection> {
                                     : ValueListenableBuilder<Box<TblTeam>>(
                                         valueListenable: teamsBox.listenable(),
                                         builder: (context, box, _) {
-                                          final activeTeams = box.values.where((team) => !team.fldIsDeleted).toList();
+                                          // 1. All active, unselected teams whose players are not already taken
+                                          final activeTeams = box.values.where((team) {
+                                            if (team.fldIsDeleted || _selectedTeams.contains(team)) return false;
+                                            
+                                            final isPlayerAlreadySelected = team.fldPlayers.any((player) =>
+                                                _selectedTeams.any((selectedTeam) => selectedTeam.fldPlayers.contains(player)));
+
+                                            return !isPlayerAlreadySelected;
+                                          }).toList();
+
+                                          // 2. Total count of available teams (The fixed denominator: e.g., total remaining teams)
+                                          final totalAvailableCount = activeTeams.length;
+
+                                          // 3. Out of those available teams, how many match the search query? (The numerator)
                                           final filteredCount = _searchQuery.isEmpty
-                                            ? activeTeams.length
-                                            : activeTeams.where((team) => _matchesTeamQuery(team, _searchQuery)).length;
+                                              ? totalAvailableCount
+                                              : activeTeams.where((team) => _matchesTeamQuery(team, _searchQuery)).length;
 
                                           return Container(
                                             margin: EdgeInsets.only(
@@ -469,8 +490,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                                                 fit: BoxFit.scaleDown,
                                                 child: Text(
                                                   _searchQuery.isEmpty 
-                                                      ? '$filteredCount' 
-                                                      : '$filteredCount/${activeTeams.length}',
+                                                      ? '$totalAvailableCount' 
+                                                      : '$filteredCount/$totalAvailableCount',
                                                   style: gBuildArcadeTextStyle(
                                                     _responsiveFontSize,
                                                     gTextColor: Colors.amber,
@@ -1458,7 +1479,7 @@ class _GameMatchupScreenState extends State<GameMatchupScreen> {
     super.initState();
     
     // Wait for 5 seconds, then transition to the actual game
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
       
       Navigator.pushReplacement(

@@ -34,6 +34,9 @@ class GameHalfItScreen extends StatefulWidget {
 class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProviderStateMixin {
   late AnimationController _slashController;
   bool _showSlash = false;
+  // flags for animation HitsBadge
+  bool _previousHitsBadgeAnime = false;
+  bool _activeHitsBadgeAnime = false;
 
   late Box<TblGameScore> gamesScoresBox;
   late Box<TblPlayer> playersBox;
@@ -272,10 +275,25 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   void _processThrow(int hits) {
     setState(() {
+      bool isMiss = (hits == 0);
+
       // 1. Save the record and persist to Hive
       _recordThrow(hits);
+
+      // 2. Set the animation flag if a round was just completed
+      if (_progress.activeDartIdx == 2) {
+        _previousHitsBadgeAnime = true;
+        _activeHitsBadgeAnime = false;
+      } else {
+        _previousHitsBadgeAnime = false;
+        if (!isMiss){
+          _activeHitsBadgeAnime = true;
+        } else {
+          _activeHitsBadgeAnime = false;
+        }
+      }
     
-      // 2. Advance the state machine pointers for the next turn
+      // 3. Advance the state machine pointers for the next turn
       // Step state forward using the global helper function
       _progress = gStepGameState(
         currentState: _progress,
@@ -361,6 +379,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         .toList();
 
     setState(() {
+      // turn off the animation flag so it never pops up on rollback
+      _previousHitsBadgeAnime = false;
+      _activeHitsBadgeAnime = false;
+
       // 2. Delete the absolute latest record from Hive
       gamesScoresBox.delete(gameRecords.last.key);
       
@@ -530,6 +552,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      // Previous player
                                       if (_isPlayerMode) ...[
                                         gBuildSlicedPlayerAvatarH(
                                           player: _previousPlayer,
@@ -560,6 +583,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     ],
                                   ),
 
+                                  // Previous player
                                   SizedBox(
                                     width: _responsiveTile * 0.18,
                                     height: _responsiveTile * 0.18,
@@ -569,8 +593,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                         padding: EdgeInsets.zero,
                                         elevation: 4,
                                       ),
-                                      onPressed: () => _hasGamePreviousPlayer 
-                                        ? _showPlayerStatsDialog(
+                                      onPressed: _hasGamePreviousPlayer 
+                                        ? () => _showPlayerStatsDialog(
                                           context, 
                                           _previousPlayer,
                                           _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
@@ -631,6 +655,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     ),
                                   ),
 
+                                  // Active player
                                   SizedBox(
                                     width: _responsiveTile * 0.18,
                                     height: _responsiveTile * 0.18,
@@ -654,6 +679,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     ),
                                   ),
 
+                                  // Active player
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -714,7 +740,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                 gHitsText: _hasGamePreviousPlayer ? '$_previousPlayerLastRoundHits' : '-',
                                                 gTextColor: Color.fromARGB(255, 207, 20, 17),
                                                 gResponsiveTile: _responsiveTile, 
-                                                gResponsiveFontSize: _responsiveFontSize
+                                                gResponsiveFontSize: _responsiveFontSize,
+                                                gForceAnimate : _previousHitsBadgeAnime,
                                               ),
 
                                               // Header label right above the previous player table
@@ -841,18 +868,12 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   textAlign: TextAlign.center,
                                                 ),
 
-                                                /* gBuildArcadeHitsBadge(
-                                                  gHitsText: _activePlayerCurrentRoundHits.toString(),
-                                                  gTextColor: Color.fromARGB(255, 207, 20, 17),
-                                                  gResponsiveTile: _responsiveTile, 
-                                                  gResponsiveFontSize: _responsiveFontSize
-                                                ), */
-
                                                 gBuildArcadeOverlayHitsBadge(
                                                   gHitsText: _activePlayerCurrentRoundHits.toString(),
                                                   gTextColor: Color.fromARGB(255, 207, 20, 17),
                                                   gResponsiveTile: _responsiveTile, 
-                                                  gResponsiveFontSize: _responsiveFontSize
+                                                  gResponsiveFontSize: _responsiveFontSize,
+                                                  gForceAnimate : _activeHitsBadgeAnime,
                                                 ),
                                               ],
                                             ),
@@ -1100,8 +1121,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                         padding: EdgeInsets.zero,
                                         elevation: 4,
                                       ),
-                                      onPressed: () => _hasGameNextPlayer 
-                                        ? _showPlayerStatsDialog(
+                                      onPressed: _hasGameNextPlayer
+                                        ? () => _showPlayerStatsDialog(
                                           context,
                                           _nextPlayer,
                                           _isPlayerMode ? _nextPlayerColor : _nextTeamColor,

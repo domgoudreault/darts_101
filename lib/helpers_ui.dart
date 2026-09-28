@@ -1891,97 +1891,13 @@ Widget gBuildTeamCardV({
   );
 }
 
-Widget gBuildArcadeHitsBadge_old({
-  required String gHitsText,
-  required Color gTextColor,
-  Color gShadowColor = Colors.black,
-  required double gResponsiveTile,
-  required double gResponsiveFontSize,
-}) {
-  return ArcadeHitsBadge(
-    key: ValueKey(gHitsText),
-    hitsText: gHitsText,
-    textColor: gTextColor,
-    responsiveTile: gResponsiveTile, 
-    responsiveFontSize: gResponsiveFontSize
-  );
-}
-
-class ArcadeHitsBadge extends StatelessWidget {
-  final String hitsText;
-  final Color textColor;
-  final Color shadowColor;
-  final double responsiveTile;
-  final double responsiveFontSize;
-
-  const ArcadeHitsBadge({
-    super.key,
-    required this.hitsText,
-    required this.textColor,
-    this.shadowColor = Colors.black,
-    required this.responsiveTile,
-    required this.responsiveFontSize,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      key: ValueKey(hitsText), // Triggers scale punch whenever the text string updates
-      tween: hitsText == '0' || hitsText == '-'
-          ? Tween<double>(begin: 1.0, end: 1.0) // Zero: stays completely still
-          : Tween<double>(begin: 2.5, end: 1.0),
-      duration: kIsWeb ? Duration(milliseconds: 70000) : Duration(milliseconds: 5000),
-      curve: Curves.easeOutBack,
-      builder: (context, scale, child) {
-        return Transform.scale(
-          scale: scale,
-          child: child,
-        );
-      },
-      child: SizedBox(
-        width: responsiveTile * 0.2,
-        child: Center(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              RotatedBox(
-                quarterTurns: 1,
-                child: Image.asset(
-                  'assets/png/mechanics/hits2.png',
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
-              ),
-              Text(
-                hitsText,
-                style: TextStyle(
-                  fontSize: responsiveFontSize * 2.6,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(-(responsiveFontSize * 0.07), responsiveFontSize * 0.07),
-                      color: shadowColor,
-                      blurRadius: 0.5,
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 Widget gBuildArcadeOverlayHitsBadge({
   required String gHitsText,
   required Color gTextColor,
   Color gShadowColor = Colors.black,
   required double gResponsiveTile,
   required double gResponsiveFontSize,
+  required bool gForceAnimate,
 }) {
   return ArcadeOverlayHitsBadge(
     hitsText: gHitsText,
@@ -1989,6 +1905,7 @@ Widget gBuildArcadeOverlayHitsBadge({
     shadowColor: gShadowColor,
     responsiveTile: gResponsiveTile,
     responsiveFontSize: gResponsiveFontSize,
+    forceAnimate : gForceAnimate,
   );
 }
 
@@ -1998,6 +1915,7 @@ class ArcadeOverlayHitsBadge extends StatefulWidget {
   final Color shadowColor;
   final double responsiveTile;
   final double responsiveFontSize;
+  final bool forceAnimate;
 
   const ArcadeOverlayHitsBadge({
     super.key,
@@ -2006,6 +1924,7 @@ class ArcadeOverlayHitsBadge extends StatefulWidget {
     this.shadowColor = Colors.black,
     required this.responsiveTile,
     required this.responsiveFontSize,
+    required this.forceAnimate,
   });
 
   @override
@@ -2018,18 +1937,14 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
   @override
   void didUpdateWidget(ArcadeOverlayHitsBadge oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (widget.hitsText != oldWidget.hitsText) {
-      bool isResetOrMiss = widget.hitsText == '0' || widget.hitsText == '-';
-      
-      if (!isResetOrMiss) {
-        // Defer overlay creation to the next frame to avoid 'setState during build' errors
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _showBadgeOverlay();
-          }
-        });
-      }
+    
+    if (widget.forceAnimate) {
+      // Defer overlay creation to the next frame to avoid 'setState during build' errors
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showBadgeOverlay();
+        }
+      });
     }
   }
 
@@ -2055,7 +1970,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
             tween: widget.hitsText == '0' || widget.hitsText == '-'
               ? Tween<double>(begin: 1.0, end: 1.0) // Zero: stays completely still
               : Tween<double>(begin: 2.5, end: 1.0),
-            duration: kIsWeb ? Duration(milliseconds: 20000) : Duration(milliseconds: 5000),
+            duration: kIsWeb ? Duration(milliseconds: 20000) : Duration(milliseconds: 1000),
             curve: Curves.easeOut,
             onEnd: _removeOverlay,
             builder: (context, scale, child) {
@@ -2073,7 +1988,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
                     RotatedBox(
                       quarterTurns: 1,
                       child: Image.asset(
-                        'assets/png/mechanics/hits2.png',
+                        'assets/png/mechanics/hits.png',
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.high,
                       ),
@@ -2135,7 +2050,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
               RotatedBox(
                 quarterTurns: 1,
                 child: Image.asset(
-                  'assets/png/mechanics/hits2.png',
+                  'assets/png/mechanics/hits.png',
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
                 ),
