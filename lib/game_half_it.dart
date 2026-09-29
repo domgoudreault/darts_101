@@ -103,6 +103,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   TblPlayer get _previousPlayer => _gamePlayers[_progress.previousSeatIdx].player;
   int get _previousPlayerIndex => _gamePlayers[_progress.previousSeatIdx].originalIndex;
   Color get _previousPlayerColor => _gamePlayers[_progress.previousSeatIdx].playerColor;
+  int get _previousPlayerLastScore {
+    return gamesScoresBox.values.lastWhere(
+      (gamesScores) => gamesScores.fldGame == _gameConfig && gamesScores.fldPlayer == _previousPlayer,
+    ).fldScorePlayerSnapshot;
+  }
 
   TblPlayer get _nextPlayer => _gamePlayers[_progress.nextSeatIdx].player;
   int get _nextPlayerIndex => _gamePlayers[_progress.nextSeatIdx].originalIndex;
@@ -122,6 +127,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   TblTeam get _previousTeam => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].team;
   int get _previousTeamIndex => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].originalIndex;
   Color get _previousTeamColor => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].teamColor;
+  int get _previousTeamLastScore {
+    final teamScores = gamesScoresBox.values.where((gamesScores) =>
+      gamesScores.fldGame == _gameConfig &&
+      _gameTeams.any((gameTeams) => gameTeams.team == _previousTeam && gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer))
+    );
+    return teamScores.last.fldScoreTeamSnapshot!;
+  }
 
   TblTeam get _nextTeam => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].team;
   int get _nextTeamIndex => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].originalIndex;
@@ -259,7 +271,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }
 
   bool get _hasGameNextPlayer {
-    return _progress.activeRoundIdx < (gTargetsHalf.length - 1);
+    return _progress.activeRoundIdx <= (gTargetsHalf.length - 1);
   }
 
   bool _checkIfHalfIt() {
@@ -484,6 +496,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     responsiveTile: _responsiveTile,
                                     heightBoost: heightBoostPlayerPanel,
                                     isEmptyPanel: !_hasGamePreviousPlayer,
+                                    isPreviousPlayer: true,
                                   )
                                 : gBuildSlicedTeamCardVPanel(
                                     team: _previousTeam,
@@ -499,6 +512,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     focusPlayer: _hasGamePreviousPlayer? _previousPlayer : null,
                                     focusPlayerFirst: _progress.previousSeatIdx < (_gamePlayers.length / 2),
                                     isEmptyPanel: !_hasGamePreviousPlayer,
+                                    isPreviousPlayer: true,
                                   ),
                               
                               // Floating Score Table for all players button
@@ -582,6 +596,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       ]
                                     ],
                                   ),
+
+                                  SizedBox(width: _responsiveTile * 0.004),
 
                                   // Previous player
                                   SizedBox(
@@ -679,6 +695,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     ),
                                   ),
 
+                                  SizedBox(width: _responsiveTile * 0.004),
+
                                   // Active player
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -715,211 +733,222 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                               ),
                             ),
 
-                            // Row for Previous Player score, Rankings, Active Player (Interactive Dartboard)
-                            Expanded(
+                            // Row HITS && SCORES
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: _responsiveTile * 0.015,
+                                horizontal: _responsiveTile * 0.004,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.transparent, // Choose your background color here!
+                                borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15), // Optional: rounds the corners nicely
+                              ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  // Previous Player
-                                  Expanded(
-                                    flex: 4,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          alignment: Alignment.center,
-                                          padding: EdgeInsets.only(
-                                            top: _responsiveTile * 0.017,
-                                            bottom: _responsiveTile * 0.004,
-                                            right: _responsiveTile * 0.008,
+                                  // Previous player Score
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          gBuildArcadeOverlayHitsBadge(
+                                            gHitsText: _hasGamePreviousPlayer ? '$_previousPlayerLastRoundHits' : '-',
+                                            gTextColor: Color.fromARGB(255, 207, 20, 17),
+                                            gResponsiveTile: _responsiveTile, 
+                                            gResponsiveFontSize: _responsiveFontSize,
+                                            gForceAnimate : _previousHitsBadgeAnime,
                                           ),
-                                          child:Row(
-                                            children: [
-                                              gBuildArcadeOverlayHitsBadge(
-                                                gHitsText: _hasGamePreviousPlayer ? '$_previousPlayerLastRoundHits' : '-',
-                                                gTextColor: Color.fromARGB(255, 207, 20, 17),
-                                                gResponsiveTile: _responsiveTile, 
-                                                gResponsiveFontSize: _responsiveFontSize,
-                                                gForceAnimate : _previousHitsBadgeAnime,
-                                              ),
 
-                                              // Header label right above the previous player table
-                                              Container(
-                                                alignment: Alignment.center,
-                                                //color: Colors.white,
-                                                padding: EdgeInsets.only(
-                                                  top: _responsiveTile * 0.017,
-                                                  bottom: _responsiveTile * 0.004,
-                                                  left: _responsiveTile * 0.008,
-                                                ),
-                                                child: Text(
-                                                  _isPlayerMode ? "PREVIOUS\nPLAYER" : "PREVIOUS\nTEAM",
-                                                  style: gBuildArcadeTextStyle(_responsiveFontSize, 
-                                                    gFontWeight: FontWeight.bold, 
-                                                    gTextColor: _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        
-                                        Expanded(
-                                          child: Container(
-                                            alignment: Alignment.center,
-                                            padding: EdgeInsets.only(
-                                              bottom: _responsiveTile * 0.010,
-                                              left: _responsiveTile * 0.008,
-                                              right: _responsiveTile * 0.008,
-                                            ),
-                                            //color: Colors.orange.shade900.withAlpha(40), // Soft background tint
-                                            width: double.infinity,
-                                            child: _buildPreviousPlayerTable(),
-                                          ),
-                                        ),
+                                          SizedBox(width: _responsiveTile * 0.008),
 
-                                        SizedBox(height: _responsiveTile * 0.017),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Rankings
-                                  Expanded(
-                                    flex: 4,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(height: _responsiveTile * 0.007),
-                                        
-                                        // Header label right above the player rankings table
-                                        Container(
-                                          alignment: Alignment.center,
-                                          padding: EdgeInsets.only(
-                                            top: _responsiveTile * 0.010,
-                                            bottom: _responsiveTile * 0.004,
-                                            left: _responsiveTile * 0.008,
+                                          _buildScoreContainer(
+                                            avatarHeightOuterSize: avatarHeightOuterSize,
+                                            containerColor: _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
+                                            isPreviousPlayer: true,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade800.withAlpha(200),
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(_responsiveTile * 0.03),
-                                              topRight: Radius.circular(_responsiveTile * 0.03),
-                                            )
-                                          ),
-                                          child: Text(
-                                            _isPlayerMode ? "PLAYER RANKINGS" : "TEAM RANKINGS",
-                                            style: gBuildArcadeTextStyle(_responsiveFontSize, 
-                                              gFontWeight: FontWeight.bold, 
-                                              gTextColor: Colors.amber,
-                                            ),
-                                          ),
-                                        ),
-                                        
-                                        Expanded(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Expanded(
-                                                child: SizedBox(
-                                                  width: double.infinity,
-                                                  child: _buildRankingWidget(),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        SizedBox(height: _responsiveTile * 0.017),
-                                      ],
-                                    ),
-                                  ),
-
-                                  Expanded(
-                                    flex: 6,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        left: _responsiveTile * 0.010
+                                        ],
                                       ),
+                                    ],
+                                  ),
+
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Active player Score
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          _buildScoreContainer(
+                                            avatarHeightOuterSize: avatarHeightOuterSize,
+                                            containerColor: _isPlayerMode ? _activePlayerColor : _activeTeamColor,
+                                            isPreviousPlayer: false,
+                                          ),
+                                          
+                                          SizedBox(width: _responsiveTile * 0.008),
+                                          
+                                          gBuildArcadeOverlayHitsBadge(
+                                            gHitsText: _activePlayerCurrentRoundHits.toString(),
+                                            gTextColor: Color.fromARGB(255, 207, 20, 17),
+                                            gResponsiveTile: _responsiveTile, 
+                                            gResponsiveFontSize: _responsiveFontSize,
+                                            gForceAnimate : _activeHitsBadgeAnime,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Row Rankings and Interactive Dartboard)
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: _responsiveTile * 0.004,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    // Rankings
+                                    Expanded(
+                                      flex: 4,
                                       child: Column(
                                         mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          // Header label right above the active player table
+                                          // Header label right above the players ranking table
                                           Container(
                                             alignment: Alignment.center,
                                             padding: EdgeInsets.only(
-                                              top: _responsiveTile * 0.017,
+                                              top: _responsiveTile * 0.010,
                                               bottom: _responsiveTile * 0.004,
                                               left: _responsiveTile * 0.008,
                                             ),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.end,
-                                              children: [
-                                                Text(
-                                                  _isPlayerMode ? "ACTIVE\nPLAYER" : "ACTIVE\nTEAM",
-                                                  style: gBuildArcadeTextStyle(_responsiveFontSize, 
-                                                    gFontWeight: FontWeight.bold, 
-                                                    gTextColor: _isPlayerMode ? _activePlayerColor : _activeTeamColor,
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                ),
-
-                                                gBuildArcadeOverlayHitsBadge(
-                                                  gHitsText: _activePlayerCurrentRoundHits.toString(),
-                                                  gTextColor: Color.fromARGB(255, 207, 20, 17),
-                                                  gResponsiveTile: _responsiveTile, 
-                                                  gResponsiveFontSize: _responsiveFontSize,
-                                                  gForceAnimate : _activeHitsBadgeAnime,
-                                                ),
-                                              ],
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade800.withAlpha(200),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(_responsiveTile * 0.03),
+                                                topRight: Radius.circular(_responsiveTile * 0.03),
+                                              )
                                             ),
-                                          ),
-
-                                          // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
-                                          Padding(
-                                            padding: EdgeInsets.only(top: _responsiveTile * 0.008, right: _responsiveTile * 0.005),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                ...List.generate(3, (dIdx) {
-                                                  bool isThrown = dIdx < _progress.activeDartIdx;
-                                                  return Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                                                    child: Icon(
-                                                      Icons.circle,
-                                                      size: _responsiveFontSize * 1.5,
-                                                      color: isThrown ? Colors.amber : Colors.grey.shade800,
-                                                    ),
-                                                  );
-                                                }),
-                                              ],
-                                            ),
-                                          ),
-
-                                          Expanded(
-                                            child: gBuildDartboardInputZone(
-                                                gActiveTargetIdx: _progress.activeRoundIdx, 
-                                                gGametype: _gameConfig.fldGameType, 
-                                                gOnTap: (leap) {
-                                                  _processThrow(leap);
-                                                },
+                                            child: Text(
+                                              _isPlayerMode ? "PLAYERS RANKING" : "TEAMS RANKING",
+                                              style: gBuildArcadeTextStyle(_responsiveFontSize * 1.1, 
+                                                gFontWeight: FontWeight.bold, 
+                                                gTextColor: Colors.amber,
                                               ),
+                                            ),
+                                          ),
+                                          
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: SizedBox(
+                                                    width: double.infinity,
+                                                    child: _buildRankingWidget(),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
 
                                           SizedBox(height: _responsiveTile * 0.017),
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ],
+
+                                    Expanded(
+                                      flex: 6,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                          left: _responsiveTile * 0.010
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Expanded(
+                                              child: gBuildDartboardInputZone(
+                                                  gActiveTargetIdx: _progress.activeRoundIdx, 
+                                                  gGametype: _gameConfig.fldGameType, 
+                                                  gOnTap: (leap) {
+                                                    _processThrow(leap);
+                                                  },
+                                                ),
+                                            ),
+
+                                            Container(
+                                              alignment: Alignment.center,
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: _responsiveTile * 0.004, 
+                                                horizontal: _responsiveTile * 0.008
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade800.withAlpha(200),
+                                                border: BoxBorder.all(
+                                                  color: Colors.yellowAccent,
+                                                  width: _responsiveTile * 0.006,
+                                                ),
+                                                borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+                                              ),
+                                              child:Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  ... "DARTS".split('').map((letter) => Text(
+                                                    letter,
+                                                    style: gBuildArcadeTextStyle(
+                                                      _responsiveFontSize * 1.2,
+                                                      gFontWeight: FontWeight.bold,
+                                                      gTextColor: Colors.white,
+                                                    ),
+                                                  )),
+
+                                                  SizedBox(height: _responsiveTile * 0.03),
+
+                                                  // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
+                                                  ...List.generate(3, (dIdx) {
+                                                    bool isThrown = dIdx < _progress.activeDartIdx;
+                                                    return Padding(
+                                                      padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.004),
+                                                      child: Icon(
+                                                        Icons.circle,
+                                                        size: _responsiveFontSize * 2.5,
+                                                        color: isThrown ? Colors.yellowAccent : Colors.grey.shade900,
+                                                      ),
+                                                    );
+                                                  }),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+                            
+                            SizedBox(height: _responsiveTile * 0.017),
                           ]
                         ),
+                        
                       ),
 
                       SizedBox(width: _responsiveTile * 0.008),
@@ -1277,6 +1306,63 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     );
   }
 
+  Widget _buildScoreContainer({
+    required double avatarHeightOuterSize,
+    required Color containerColor,
+    required bool isPreviousPlayer,
+  }) {
+    return Container(
+      width: avatarHeightOuterSize - (_responsiveTile * 0.172),
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(
+        vertical: _responsiveTile * 0.004, 
+        horizontal: _responsiveTile * 0.008
+      ),
+      decoration: BoxDecoration(
+        color: containerColor,
+        border: BoxBorder.all(
+          color: Colors.yellowAccent,
+          width: _responsiveTile * 0.006,
+        ),
+        borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: _responsiveFontSize * 0.35,
+            offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            "SCORE",
+            style: gBuildArcadeTextStyle(_responsiveFontSize, 
+              gFontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          Text(
+            isPreviousPlayer ? _hasGamePreviousPlayer ? _previousPlayerLastScore.toString() : '-' : _activePlayerLastScore.toString(),
+            style: TextStyle(
+              fontSize: _responsiveFontSize * 2.6,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  offset: Offset(-(_responsiveFontSize * 0.12), _responsiveFontSize * 0.12),
+                  color: Colors.black,
+                  blurRadius: 0.5,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlayerStatsTable({
     required TblPlayer player,
     required Color playerColor,
@@ -1455,15 +1541,6 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     );
   }
 
-  Widget _buildPreviousPlayerTable() {
-    return _buildPlayerStatsTable(
-      player: _previousPlayer,
-      playerColor: _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
-      seatIdx: _progress.previousSeatIdx,
-      includeCurrentRound: false,
-    );
-  }
-
   Widget _buildRankingWidget() {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -1471,24 +1548,24 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         vertical: _responsiveTile * 0.010,
       ),
       decoration: BoxDecoration(
-        color: Colors.grey.shade800.withAlpha(120),
+        color: Colors.grey.shade800.withAlpha(150),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(_responsiveTile * 0.03),
           bottomRight: Radius.circular(_responsiveTile * 0.03),
-        )
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _isPlayerMode ? _buildPlayerRankingsList() : _buildTeamRankingsList(),
+            child: _isPlayerMode ? _buildPlayersRankingList() : _buildTeamsRankingList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPlayerRankingsList() {
+  Widget _buildPlayersRankingList() {
     // Gather latest score for each player
     final List<({TblPlayer player, int score, Color color, int originalIdx})> playerScores = [];
 
@@ -1511,9 +1588,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         final item = playerScores[index];
         return Container(
           padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.010, horizontal: _responsiveTile * 0.015),
-          margin: EdgeInsets.only(bottom: _responsiveTile * 0.015),
+          margin: EdgeInsets.only(bottom: _responsiveTile * 0.013),
           decoration: BoxDecoration(
-            color: Colors.grey.shade800.withAlpha(150),
+            color: Colors.grey.shade800.withAlpha(170),
             borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
           ),
           child: Row(
@@ -1524,23 +1601,23 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                   index == 0 
                     ? Text(
                         "${index + 1}.",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: _responsiveTile * 0.04),
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: _responsiveTile * 0.0425),
                       )
                     : Text(
                         "${index + 1}.",
-                        style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.0325),
+                        style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.04),
                       ),
 
-                  SizedBox(width: _responsiveTile * 0.010),
+                  SizedBox(width: _responsiveTile * 0.005),
                   
                   index == 0
                     ? Text(
                         item.player.fldNickName,
-                        style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.04),
+                        style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.0425),
                       )
                     : Text(
                         item.player.fldNickName,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: _responsiveTile * 0.0325),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: _responsiveTile * 0.04),
                       ),
                 ],
               ),
@@ -1548,11 +1625,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
               index == 0
                 ? Text(
                     "${item.score}",
-                    style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.04),
+                    style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.0425),
                   )
                 : Text(
                     "${item.score}",
-                    style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.0325),
+                    style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.04),
                   ),
             ],
           ),
@@ -1561,7 +1638,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     );
   }
 
-  Widget _buildTeamRankingsList() {
+  Widget _buildTeamsRankingList() {
     if (_gameTeams.isEmpty) return const SizedBox.shrink();
 
     final List<({TblTeam team, int score, Color color})> teamScores = [];

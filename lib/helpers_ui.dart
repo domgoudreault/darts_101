@@ -980,6 +980,7 @@ Widget gBuildSlicedPlayerAvatarVPanel({
   required double heightBoost,
   bool isEmptyPanel = false,
   bool isNextPlayer = false,
+  bool isPreviousPlayer = false,
 }) {
   //Fits with asset of badge P1 or T1
   final ratioPlayerTeamBadge = 345 / 260;
@@ -1022,7 +1023,23 @@ Widget gBuildSlicedPlayerAvatarVPanel({
                         ),
                       ),
                   ),
-                )
+                ),
+
+                if (isPreviousPlayer) ...[
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            "PREVIOUS PLAYER",
+                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                          ),
+                        ),
+                    ),
+                  )
+                ],
               ]
             )
           : Stack(
@@ -1070,6 +1087,22 @@ Widget gBuildSlicedPlayerAvatarVPanel({
                     ),
                   ),
                 ),
+
+                if (isPreviousPlayer) ...[
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            "PREVIOUS PLAYER",
+                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                          ),
+                        ),
+                    ),
+                  )
+                ],
 
                 if (isNextPlayer) ...[
                   Align(
@@ -1313,6 +1346,7 @@ Widget gBuildSlicedTeamCardVPanel({
   required bool focusPlayerFirst,
   bool isEmptyPanel = false,
   bool isNextPlayer = false,
+  bool isPreviousPlayer = false,
 }) {
   //Fits with asset of badge P1 or T1
   final ratioPlayerTeamBadge = 345 / 260;
@@ -1356,7 +1390,23 @@ Widget gBuildSlicedTeamCardVPanel({
                         ),
                       ),
                   ),
-                )
+                ),
+
+                if (isPreviousPlayer) ...[
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            "PREVIOUS TEAM",
+                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                          ),
+                        ),
+                    ),
+                  )
+                ],
               ]
             )
           : Stack(
@@ -1435,6 +1485,22 @@ Widget gBuildSlicedTeamCardVPanel({
                     ),
                   ),
                 ),
+
+                if (isPreviousPlayer) ...[
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            "PREVIOUS TEAM",
+                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                          ),
+                        ),
+                    ),
+                  )
+                ],
 
                 if (isNextPlayer) ...[
                   Align(
@@ -1980,7 +2046,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
               );
             },
             child: SizedBox(
-              width: widget.responsiveTile * 0.2,
+              width: widget.responsiveTile * 0.16,
               child: Center(
                 child: Stack(
                   alignment: Alignment.center,
@@ -1996,7 +2062,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
                     Text(
                       widget.hitsText,
                       style: TextStyle(
-                        fontSize: widget.responsiveFontSize * 2.6,
+                        fontSize: widget.responsiveFontSize * 2.4,
                         fontWeight: FontWeight.bold,
                         color: widget.textColor,
                         shadows: [
@@ -2040,7 +2106,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: widget.responsiveTile * 0.2,
+      width: widget.responsiveTile * 0.16,
       child: Center(
         child: Opacity(
           opacity: _overlayEntry != null ? 0.0 : 1.0,
@@ -2058,7 +2124,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
               Text(
                 widget.hitsText,
                 style: TextStyle(
-                  fontSize: widget.responsiveFontSize * 2.6,
+                  fontSize: widget.responsiveFontSize * 2.4,
                   fontWeight: FontWeight.bold,
                   color: widget.textColor,
                   shadows: [
