@@ -318,20 +318,53 @@ class _RostersSelectionState extends State<RostersSelection> {
                               ],
                             ),
                             child: Center(
-                              child: SizedBox(
-                                width: avatarHeight * 0.5,
-                                height: avatarHeight * 0.5,
-                                child: Image.asset(
-                                  'assets/png/mechanics/resume_game.png',
-                                  fit: BoxFit.contain,
-                                  filterQuality: FilterQuality.high,
-                                ),
+                              child: Stack(
+                                children: [
+                                  // 1. Bottom Layer: Dynamic Solid Fill Background
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            blurRadius: _responsiveTile * 0.015,
+                                            offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(
+                                    width: avatarHeight * 0.5,
+                                    height: avatarHeight * 0.5,
+                                    child: Image.asset(
+                                      'assets/png/mechanics/resume_game.png',
+                                      fit: BoxFit.contain,
+                                      filterQuality: FilterQuality.high,
+                                    ),
+                                  ),
+
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.yellowAccent,
+                                          width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
+
+                    SizedBox(width: _responsiveTile * 0.008),
 
                     // 1.2 Left Arrow pointing Resume Game Button
                     AnimatedOpacity(
@@ -538,6 +571,8 @@ class _RostersSelectionState extends State<RostersSelection> {
                           filterQuality: FilterQuality.high,
                         ),
                     ),
+
+                    SizedBox(width: _responsiveTile * 0.008),
                     
                     // 1.5 Start Button
                     AnimatedOpacity(
@@ -551,26 +586,45 @@ class _RostersSelectionState extends State<RostersSelection> {
                           onTap: _isPlayersTeamsMinSelectionValid 
                             ? () => _startGame() 
                             : null,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(150),
-                                  blurRadius: _responsiveTile * 0.012,
-                                  offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
+                          child: Center(
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: _responsiveTile * 0.015,
+                                          offset: Offset(_responsiveTile * 0.006, _responsiveTile * 0.006), // Casts shadow upward onto the screen content
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                SizedBox(
+                                  width: avatarHeight * 0.5,
+                                  height: avatarHeight * 0.5,
+                                  child: Image.asset(
+                                    'assets/png/mechanics/start_game.png',
+                                    fit: BoxFit.contain,
+                                    filterQuality: FilterQuality.high,
+                                  ),
+                                ),
+
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.yellowAccent,
+                                        width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
-                            ),
-                            child: Center(
-                              child: SizedBox(
-                                width: avatarHeight * 0.5,
-                                height: avatarHeight * 0.5,
-                                child: Image.asset(
-                                  'assets/png/mechanics/start_game.png',
-                                  fit: BoxFit.contain,
-                                  filterQuality: FilterQuality.high,
-                                ),
-                              ),
                             ),
                           ),
                         ),
@@ -762,7 +816,7 @@ class _RostersSelectionState extends State<RostersSelection> {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Colors.amber.shade300,
+                                              color: Colors.yellowAccent,
                                               width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
                                             ),
                                           ),

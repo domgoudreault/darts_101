@@ -149,6 +149,8 @@ GameProgressState gStepGameState({
       }
     }
 
+    currentState.endGame = false;
+    
     currentState.activeSeatIdx = nextSeat;
     currentState.activeDartIdx = nextDart;
     currentState.activeRoundIdx = nextRound;

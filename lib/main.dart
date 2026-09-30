@@ -414,6 +414,7 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/logos/LGGDS.png',
       'assets/png/mechanics/arrow_left.png',
       'assets/png/mechanics/arrow_right.png',
+      'assets/png/mechanics/database.png',
       'assets/png/mechanics/hits.png',
       'assets/png/mechanics/player_avatar.png',
       'assets/png/mechanics/player_card_bg.png',
@@ -423,7 +424,7 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/mechanics/player_dummy_V.png',
       'assets/png/mechanics/player_league_member.png',
       'assets/png/mechanics/resume_game.png',
-      'assets/png/mechanics/score.png',
+      'assets/png/mechanics/scoreboard.png',
       'assets/png/mechanics/section_games.png',
       'assets/png/mechanics/section_settings.png',
       'assets/png/mechanics/section_options.png',
@@ -438,6 +439,7 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/mechanics/target_single.png',
       'assets/png/mechanics/target_double.png',
       'assets/png/mechanics/target_triple.png',
+      'assets/png/mechanics/trophy.png',
     ]);
 
     // 3. Collect rosters_selection tags

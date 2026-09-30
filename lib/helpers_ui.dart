@@ -1396,7 +1396,7 @@ Widget gBuildSlicedTeamCardVPanel({
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                      padding: EdgeInsets.only(bottom: responsiveTile * 0.19),
                       child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
@@ -1975,6 +1975,13 @@ Widget gBuildArcadeOverlayHitsBadge({
   );
 }
 
+// Global callback to trigger overlay removal from anywhere
+VoidCallback? gGlobalClearOverlaysCallback;
+
+void gClearAllArcadeOverlays() {
+  gGlobalClearOverlaysCallback?.call();
+}
+
 class ArcadeOverlayHitsBadge extends StatefulWidget {
   final String hitsText;
   final Color textColor;
@@ -2098,7 +2105,16 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    gGlobalClearOverlaysCallback = _removeOverlay; // <-- Hooks up your existing _removeOverlay function!
+  }
+
+  @override
   void dispose() {
+    if (gGlobalClearOverlaysCallback == _removeOverlay) {
+      gGlobalClearOverlaysCallback = null;
+    }
     _removeOverlay();
     super.dispose();
   }
@@ -2139,6 +2155,118 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+Widget gBuildArcadeActiveTarget({
+  required int currentTarget,
+  required double responsiveTile,
+  required Color targetBgColor,
+}) {
+  return ArcadeActiveTarget(
+    currentTarget: currentTarget,
+    responsiveTile: responsiveTile,
+    targetBgColor: targetBgColor,
+  );
+}
+
+class ArcadeActiveTarget extends StatefulWidget {
+  final int currentTarget;
+  final double responsiveTile;
+  final Color targetBgColor;
+
+  const ArcadeActiveTarget({
+    super.key,
+    required this.currentTarget,
+    required this.responsiveTile,
+    required this.targetBgColor,
+  });
+
+  @override
+  State<ArcadeActiveTarget> createState() => _ArcadeActiveTargetState();
+}
+
+class _ArcadeActiveTargetState extends State<ArcadeActiveTarget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..repeat(reverse: true); // Loops continuously back and forth
+
+    // Moves slightly to the right (or left) and snaps back like a heartbeat rhythm
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0.15, 0.0), // Moves 15% of its width horizontally. Change to Offset(0.0, 0.15) for vertical!
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant ArcadeActiveTarget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentTarget != widget.currentTarget) {
+      _controller.repeat(reverse: true); // Restarts the continuous loop cleanly
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double responsiveTile = widget.responsiveTile;
+
+    return SlideTransition(
+      position: _slideAnimation,
+      child: Container(
+        width: responsiveTile * 0.18,
+        height: responsiveTile * 0.18,
+        decoration: BoxDecoration(
+          color: widget.targetBgColor, // Or your preferred solid/gradient background
+          shape: BoxShape.circle, // Perfect circular rounded box decoration
+          border: Border.all(
+            color: Colors.yellowAccent,
+            width: responsiveTile * 0.007,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black,
+              blurRadius: responsiveTile * 0.015,
+              offset: Offset(responsiveTile * 0.006, responsiveTile * 0.006),
+            ),
+          ],
+        ),
+        child: Text(
+          '${widget.currentTarget}',
+          style: TextStyle(
+                fontSize: (responsiveTile * 0.035) * 3.2,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    offset: Offset(-((responsiveTile * 0.035) * 0.12), (responsiveTile * 0.035) * 0.12),
+                    color: Colors.black,
+                    blurRadius: 0.5,
+                  ),
+                ],
+              ),
+              textAlign: TextAlign.center,
         ),
       ),
     );
