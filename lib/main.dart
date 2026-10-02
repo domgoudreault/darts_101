@@ -424,6 +424,7 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/mechanics/player_dummy_V.png',
       'assets/png/mechanics/player_league_member.png',
       'assets/png/mechanics/resume_game.png',
+      'assets/png/mechanics/save_game.png',
       'assets/png/mechanics/scoreboard.png',
       'assets/png/mechanics/section_games.png',
       'assets/png/mechanics/section_settings.png',
@@ -451,7 +452,10 @@ class _MainScreenState extends State<MainScreen> {
     // 4. Collect avatars
     final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
     for (var avatar in avatarsBox.values) {
-      assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png');
+      if (avatar.fldAvatarCode != 'question') {
+        assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png');
+      }
+      
       assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_v1.png');
     }
 
@@ -655,6 +659,8 @@ class _MainScreenState extends State<MainScreen> {
 
 Future<void> _clearHiveDatabase(BuildContext context) async {
   // Clear primary user data and game logs
+  await Hive.box<TblGameScore>('gamesScoresBox').clear();
+  await Hive.box<TblGame>('gamesBox').clear();
   await Hive.box<TblPlayer>('playersBox').clear();
   await Hive.box<TblTeam>('teamsBox').clear();
   gSelectedPlayers.clear();
@@ -665,6 +671,21 @@ Future<void> _clearHiveDatabase(BuildContext context) async {
       gContext: context,
       gFontSize: 16,
       gMessage: 'PLAYERS & TEAMS CLEARED!',
+      gDuration: 2
+    );
+  }
+}
+
+Future<void> _clearHiveGames(BuildContext context) async {
+  // Clear primary user data and game logs
+  await Hive.box<TblGameScore>('gamesScoresBox').clear();
+  await Hive.box<TblGame>('gamesBox').clear();
+  
+  if (context.mounted) {
+    gShowArcadeErrorSnackBar(
+      gContext: context,
+      gFontSize: 16,
+      gMessage: 'GAMES CLEARED!',
       gDuration: 2
     );
   }
@@ -721,7 +742,98 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                       },
                       icon: Icon(Icons.delete_sweep, size: GlobalAppDisplay.safeHeight * 0.016),
                       label: Text(
-                        'CLEAR PLAYERS & TEAMS',
+                        'DELETE PLAYERS & TEAMS',
+                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await _clearHiveGames(context);
+                      },
+                      icon: Icon(Icons.delete_sweep, size: GlobalAppDisplay.safeHeight * 0.016),
+                      label: Text(
+                        'DELETE GAMES & SCORES',
+                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await gSeedHiveGameHalfItPlayerWinner();
+                      },
+                      icon: Icon(Icons.add_alarm, size: GlobalAppDisplay.safeHeight * 0.016),
+                      label: Text(
+                        'CREATE HALF-IT PLAYER WINNER',
+                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await gSeedHiveGameHalfItPlayerTie();
+                      },
+                      icon: Icon(Icons.add_link, size: GlobalAppDisplay.safeHeight * 0.016),
+                      label: Text(
+                        'CREATE HALF-IT PLAYER TIE',
+                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await gSeedHiveGameHalfItTeamWinner();
+                      },
+                      icon: Icon(Icons.add_alarm, size: GlobalAppDisplay.safeHeight * 0.016),
+                      label: Text(
+                        'CREATE HALF-IT TEAM WINNER',
+                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await gSeedHiveGameHalfItTeamTie();
+                      },
+                      icon: Icon(Icons.add_link, size: GlobalAppDisplay.safeHeight * 0.016),
+                      label: Text(
+                        'CREATE HALF-IT TEAM TIE',
                         style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
                       ),
                     ),

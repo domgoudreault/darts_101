@@ -321,6 +321,23 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       }
       return b.hitsBull.compareTo(a.hitsBull);
     });
+
+    // 3. Compute proper rankings handling ties
+    int currentRank = 1;
+    for (int i = 0; i < finalResults.length; i++) {
+      if (i > 0) {
+        final prev = finalResults[i - 1];
+        final curr = finalResults[i];
+        bool isIdentical = (curr.lastScore == prev.lastScore &&
+            curr.triplesCount == prev.triplesCount &&
+            curr.doublesCount == prev.doublesCount &&
+            curr.hitsBull == prev.hitsBull);
+        if (!isIdentical) {
+          currentRank = i + 1;
+        }
+      }
+      finalResults[i].ranking = currentRank; // Direct write!
+    }
     
     // 3. Extract top record & collect all winners (handles ties)
     final topScore = finalResults.first;
@@ -341,7 +358,6 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     if (_isPlayerMode) {
       winningPlayers = winners
           .map((r) => r.objReference as TblPlayer)
-          .toSet()
           .toList();
     } else {
       winningTeams = winners
@@ -368,261 +384,209 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_responsiveTile * 0.03)),
         // We leave 'title' and 'actions' null to give all space to 'content'
         content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
+          width: GlobalAppDisplay.safeWidth * 0.9,
+          height: GlobalAppDisplay.safeHeight * 0.9,
+          child: Padding(
+            padding: EdgeInsets.all(_responsiveTile * 0.03),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    // Save button
-                    SizedBox(
-                      width: _responsiveTile * 0.18,
-                      height: _responsiveTile * 0.18,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          padding: EdgeInsets.zero,
-                          elevation: 4,
-                        ),
-                        onPressed: () {                  
-                          null;
-                        },
-                        child: Center(
-                          child: Stack( 
-                            children: [
-                              Positioned.fill(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: _responsiveTile * 0.015,
-                                        offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                _buildWinnerTopBanner(winners: winners, winningPlayers: winningPlayers, winningTeams: winningTeams),
+                
+                SizedBox(height: _responsiveTile * 0.03),
+
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Left Trophy
+                      Column(
+                        children: [
+                          if (!_isPlayerMode) ...[
+                            if (!isTie) ...[
+                              gBuildSlicedPlayerAvatarH(
+                                player: winners[0].objReference.fldPlayers[0],
+                                avatarHeight: avatarHeight,
+                                avatarHeightOuterSize: avatarHeightOuterSize,
+                                avatarSlicedWidth: avatarSlicedWidth,
+                                avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                slotBgColor: winners[0].color,
+                                playerPosition: winners[0].playerPosition1,
+                                responsiveTile: _responsiveTile,
+                                isTagNickNameLeft: true,
+                                isEmptyPanel: false,
                               ),
 
-                              Image.asset(
-                                'assets/png/mechanics/undo.png',
+                              SizedBox(height: _responsiveTile * 0.02),
+                            ],
+                          ],
+
+                          Center(
+                            child: SizedBox( 
+                              height: _responsiveTile * 0.3,
+                              width: _responsiveTile * 0.3,
+                              child:Image.asset(
+                                'assets/png/mechanics/trophy.png',
                                 fit: BoxFit.contain,
                                 filterQuality: FilterQuality.high,
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-
-                    Expanded(
-                      child: Column(
-                        children: [
-                          if (_isPlayerMode) ...[
-                            gBuildSlicedPlayerAvatarH(
-                              player: winners[0].objReference,
-                              avatarHeight: avatarHeight,
-                              avatarHeightOuterSize: avatarHeightOuterSize,
-                              avatarSlicedWidth: avatarSlicedWidth,
-                              avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                              slotBgColor: winners[0].color,
-                              playerPosition: winners[0].playerPosition1,
-                              responsiveTile: _responsiveTile,
-                              isTagNickNameLeft: true,
-                              isEmptyPanel: false,
-                            ),
-                          ] else ...[
-                            gBuildSlicedTeamCardH(
-                              team: winners[0].objReference,
-                              cardHeight: cardHeight,
-                              cardWidth: cardWidth,
-                              cardWidthOuterSize: cardWidthOuterSize,
-                              cardSlicedHeight: cardSlicedHeight,
-                              cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                              slotBgColor: winners[0].color,
-                              teamPosition: winners[0].originalIndex,
-                              responsiveTile: _responsiveTile,
-                            ),
-                          ],
                         ],
                       ),
-                    ),
 
-                    // Undo Button
-                    SizedBox(
-                      width: _responsiveTile * 0.18,
-                      height: _responsiveTile * 0.18,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          padding: EdgeInsets.zero,
-                          elevation: 4,
-                        ),
-                        onPressed: () {                  
-                          Navigator.of(context).pop();
-                          _undoLastThrow();
-                        },
-                        child: Center(
-                          child: Stack( 
+                      SizedBox(width: _responsiveTile * 0.02),
+
+                      // Final Standings
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: (winners[0].color).withAlpha(100),
+                            borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+                          ),
+                          child: Column(
                             children: [
-                              Positioned.fill(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: _responsiveTile * 0.015,
-                                        offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                              SingleChildScrollView(
+                                padding: EdgeInsets.all(_responsiveTile * 0.005),
+                                child: Column(
+                                  children: [
+                                    // 3. STANDINGS LIST
+                                    Container(
+                                      width: double.infinity,
+                                      alignment: Alignment.center,
+                                      padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.01),
+                                      decoration: BoxDecoration(
+                                        color: (winners[0].color).withAlpha(220),
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(_responsiveTile * 0.025),
+                                          bottom: Radius.zero,
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                                      child: Text(
+                                        "FINAL STANDINGS", 
+                                        style: gBuildArcadeTextStyle(
+                                          _responsiveFontSize,
+                                          gFontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    
+                                    SizedBox(height: _responsiveTile * 0.015),
+                                    
+                                    Row( 
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(flex: 2, child: Text(
+                                            "RANK", 
+                                            textAlign: TextAlign.center, 
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
+                                              gFontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(flex: 5, child: Text(
+                                            !_isPlayerMode ? "TEAMS" : "PLAYERS",
+                                            textAlign: TextAlign.left,
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
+                                              gFontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(flex: 2, child: Text(
+                                            "TRIPLES",
+                                            textAlign: TextAlign.center,
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
+                                              gFontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(flex: 2, child: Text(
+                                            "DOUBLES",
+                                            textAlign: TextAlign.center,
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
+                                              gFontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(flex: 2, child: Text(
+                                            "BULLS",
+                                            textAlign: TextAlign.center,
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
+                                              gFontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(flex: 2, child: Text(
+                                            "POINTS",
+                                            textAlign: TextAlign.end,
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
+                                              gFontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    
+                                    const Divider(color: Colors.white),
+                                    
+                                    // Map the results directly into the column
+                                    ...finalResults.map((res) {
+                                      final bool isWinner = res.ranking == 1;
 
-                              Image.asset(
-                                'assets/png/mechanics/undo.png',
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
+                                      return _buildCreateListResults(res, isWinner);
+                                    }),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                
-                SizedBox(height: _responsiveTile * 0.02),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (!_isPlayerMode) ...[
-                      gBuildSlicedPlayerAvatarH(
-                        player: winners[0].objReference.fldPlayers[0],
-                        avatarHeight: avatarHeight,
-                        avatarHeightOuterSize: avatarHeightOuterSize,
-                        avatarSlicedWidth: avatarSlicedWidth,
-                        avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                        slotBgColor: winners[0].color,
-                        playerPosition: winners[0].playerPosition1,
-                        responsiveTile: _responsiveTile,
-                        isTagNickNameLeft: true,
-                        isEmptyPanel: false,
+                      SizedBox(width: _responsiveTile * 0.02),
+
+                      // Right Trophy
+                      Column(
+                        children: [
+                          if (!_isPlayerMode) ...[
+                            if (!isTie) ...[
+                              gBuildSlicedPlayerAvatarH(
+                                player: winners[0].objReference.fldPlayers[1],
+                                avatarHeight: avatarHeight,
+                                avatarHeightOuterSize: avatarHeightOuterSize,
+                                avatarSlicedWidth: avatarSlicedWidth,
+                                avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                slotBgColor: winners[0].color,
+                                playerPosition: winners[0].playerPosition2,
+                                responsiveTile: _responsiveTile,
+                                isTagNickNameLeft: true,
+                                isEmptyPanel: false,
+                              ),
+
+                              SizedBox(height: _responsiveTile * 0.02),
+                            ],
+                          ],
+
+                          Center(
+                            child: SizedBox( 
+                              height: _responsiveTile * 0.3,
+                              width: _responsiveTile * 0.3,
+                              child:Image.asset(
+                                'assets/png/mechanics/trophy.png',
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-
-                    Center(
-                      child: SizedBox( 
-                        height: _responsiveTile * 0.4,
-                        width: _responsiveTile * 0.4,
-                        child:Image.asset(
-                          'assets/png/mechanics/trophy.png',
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                        ),
-                      ),
-                    ),
-
-                    if (!_isPlayerMode) ...[
-                      gBuildSlicedPlayerAvatarH(
-                        player: winners[0].objReference.fldPlayers[1],
-                        avatarHeight: avatarHeight,
-                        avatarHeightOuterSize: avatarHeightOuterSize,
-                        avatarSlicedWidth: avatarSlicedWidth,
-                        avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                        slotBgColor: winners[0].color,
-                        playerPosition: winners[0].playerPosition2,
-                        responsiveTile: _responsiveTile,
-                        isTagNickNameLeft: true,
-                        isEmptyPanel: false,
-                      ),
-                    ],
-                  ],
-                ),
-                
-                SizedBox(height: _responsiveTile * 0.02),
-                
-                Text(
-                  isTie 
-                    ? "IT'S A TIE!" 
-                    : _isPlayerMode 
-                      ? "WINNER" 
-                      : "WINNERS", 
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                
-                const SizedBox(height: 4),
-
-                // 2. WINNER HIGHLIGHT
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: winners[0].color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: winners[0].color, width: 2),
                   ),
-                  child: Column(
-                    children: [
-                      Text(_isPlayerMode ? winners[0].displayName : "Team: ${winners[0].displayName}", 
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: winners[0].color)
-                      ),
-                      Text("${winners[0].lastScore} pts", 
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // 3. STANDINGS LIST
-                const Text("FINAL STANDINGS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                const SizedBox(height: 8),
-                Row( 
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(!_isPlayerMode ? "TEAMS" : "PLAYERS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                    Text("POINTS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                  ]
-                ),
-                const Divider(),
-                
-                // Map the results directly into the column
-                ...finalResults.map((res) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(res.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text("${res.lastScore}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                )),
-
-                const SizedBox(height: 24),
-
-                // 4. BOTTOM BUTTONS (Moved from Actions)
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: const Text(
-                    "CLOSE AND SAVE THE GAME",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrange.shade400,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 4,
-                  ),
-                  onPressed: null, //() => _gameClosed(isTeamMode, isTie, finalResults),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "** If you want to keep your statistics, you must press 'CLOSE AND SAVE'. Otherwise, this game's data will be lost.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10, color: Colors.grey.shade700, fontStyle: FontStyle.italic),
                 ),
               ],
             ),
@@ -632,26 +596,89 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     );    
   }
 
-  /* void _gameClosed(bool isTie, List<Map<String, dynamic>> finalResults) {    
-    // if it's a tie, for me.. their is no winner
-    if (!isTie) {
-      if (widget.game.fldPlayersGM) {        
-        //TO DO add multiple players winner if it'S the case
-        //widget.game.fldPlayersWinner = players;         
-      } else {
-        //TO DO add multiple teams winner if it'S the case
-        //widget.game.fldTeamsWinner = teams;         
-      }
+  Widget _buildCreateListResults(GameResultRecord<dynamic> res, bool isWinner){
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.01, horizontal: _responsiveTile * 0.015),
+      margin: EdgeInsets.symmetric(vertical: _responsiveTile * 0.001),
+      decoration: BoxDecoration(
+        color: isWinner ? res.color : Colors.transparent,
+        borderRadius: BorderRadius.circular(_responsiveTile * 0.01),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 2, 
+            child: Text(
+              "${res.ranking}.", 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+            ),
+          ),
+          Expanded(
+            flex: 5, 
+            child: Text(
+              res.displayName, 
+              textAlign: TextAlign.left,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.8, color: isWinner ? Colors.white : Colors.black,),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 2, 
+            child: Text(
+              "${res.triplesCount}", 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+            ),
+          ),
+          Expanded(
+            flex: 2, 
+            child: Text(
+              "${res.doublesCount}", 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+            ),
+          ),
+          Expanded(
+            flex: 2, 
+            child: Text(
+              "${res.hitsBull}", 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+            ),
+          ),
+          Expanded(
+            flex: 2, 
+            child: Text(
+              "${res.lastScore}", 
+              textAlign: TextAlign.end,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.8, color: isWinner ? Colors.white : Colors.black,),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _gameClosed({
+    required List<TblPlayer> winningPlayers,
+    required List<TblTeam> winningTeams,
+  }) {    
+    // Save the winning teams if in team mode
+    if (!_isPlayerMode) {
+      widget.game.fldTeamsWinner = winningTeams;
     }
 
     // Save and end the game :)
+    widget.game.fldPlayersWinner = winningPlayers;
     widget.game.fldIsEnded = true;
     widget.game.save();
     
     // 2. Clear the Navigation stack back to the very first screen
     // This will dismiss the Dialog AND the GameScoreScreen in one go.
     Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-  } */
+  }
 
   void _initGameStartingScores() {
     // Check if scores for this game already exist in the box
@@ -2474,6 +2501,205 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     );
   }
 
+  Widget _buildWinnerTopBanner({
+    required List<GameResultRecord<dynamic>> winners,
+    required List<TblPlayer> winningPlayers,
+    required List<TblTeam> winningTeams,
+  }){
+    final bool isTie = winners.length > 1;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: (winners[0].color).withAlpha(100),
+        borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+      ),
+      child: Row(
+        children: [
+          SizedBox(width: _responsiveTile * 0.01),
+          
+          // Save button
+          SizedBox(
+            width: _responsiveTile * 0.18,
+            height: _responsiveTile * 0.18,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                padding: EdgeInsets.zero,
+                elevation: 4,
+              ),
+              onPressed: () {                  
+                _gameClosed(winningPlayers: winningPlayers, winningTeams: winningTeams);
+              },
+              child: Center(
+                child: Stack( 
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: _responsiveTile * 0.015,
+                              offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Image.asset(
+                      'assets/png/mechanics/save_game.png',
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: _responsiveTile * 0.01,
+                    horizontal: _responsiveTile * 0.03,
+                  ),
+                  decoration: BoxDecoration(
+                    color: (winners[0].color).withAlpha(220),
+                    borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
+                  ),
+                  child: Text(
+                    isTie 
+                      ? "IT'S A TIE!" 
+                      : _isPlayerMode 
+                        ? "WINNER" 
+                        : "WINNERS", 
+                    style: gBuildArcadeTextStyle(
+                      _responsiveFontSize * 1.1,
+                      gFontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (!isTie) ...[
+            Expanded(
+              child: Column(
+                children: [
+                  if (_isPlayerMode) ...[
+                    gBuildSlicedPlayerAvatarH(
+                      player: winners[0].objReference,
+                      avatarHeight: avatarHeight,
+                      avatarHeightOuterSize: avatarHeightOuterSize,
+                      avatarSlicedWidth: avatarSlicedWidth,
+                      avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                      slotBgColor: winners[0].color,
+                      playerPosition: winners[0].playerPosition1,
+                      responsiveTile: _responsiveTile,
+                      isTagNickNameLeft: true,
+                      isEmptyPanel: false,
+                    ),
+                  ] else ...[
+                    gBuildSlicedTeamCardH(
+                      team: winners[0].objReference,
+                      cardHeight: cardHeight,
+                      cardWidth: cardWidth,
+                      cardWidthOuterSize: cardWidthOuterSize,
+                      cardSlicedHeight: cardSlicedHeight,
+                      cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+                      slotBgColor: winners[0].color,
+                      teamPosition: winners[0].originalIndex,
+                      responsiveTile: _responsiveTile,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+
+          if (!isTie) ...[
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: _responsiveTile * 0.01,
+                      horizontal: _responsiveTile * 0.03,
+                    ),
+                    decoration: BoxDecoration(
+                      color: (winners[0].color).withAlpha(220),
+                      borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
+                    ),
+                    child: Text(
+                      _isPlayerMode 
+                        ? "WINNER" 
+                        : "WINNERS", 
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 1.1,
+                        gFontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // Undo Button
+          SizedBox(
+            width: _responsiveTile * 0.18,
+            height: _responsiveTile * 0.18,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                padding: EdgeInsets.zero,
+                elevation: 4,
+              ),
+              onPressed: () {                  
+                Navigator.of(context).pop();
+                _undoLastThrow();
+              },
+              child: Center(
+                child: Stack( 
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: _responsiveTile * 0.015,
+                              offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Image.asset(
+                      'assets/png/mechanics/undo.png',
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(width: _responsiveTile * 0.01),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFullScoreboardTable() {
     final totalColumns = _gamePlayers.length + 1;
     
@@ -2788,6 +3014,7 @@ class GameResultRecord<objRef> {
   final int triplesCount;
   final int doublesCount;
   final int hitsBull;
+  int ranking;
 
   GameResultRecord({
     required this.objReference,
@@ -2800,5 +3027,6 @@ class GameResultRecord<objRef> {
     this.triplesCount = 0,
     this.doublesCount = 0,
     this.hitsBull = 0,
+    this.ranking = 999,
   });
 }
