@@ -383,33 +383,35 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {  
+class _MainScreenState extends State<MainScreen> {
   // Accordion State: GAMES active by default
   MainScreenSection _activeSection = MainScreenSection.section05Games;
 
   bool _isCached = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isCached) {
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isCached || !mounted) {
+        return;
+      }
+
       _isCached = true;
-      _precacheAllAssets(context);
-    }
+      _precacheAllAssets();
+    });
   }
 
-  Future<void> _precacheAllAssets(BuildContext context) async {
-    // 1. Collect all dynamic game and setting tile asset paths
+  Future<void> _precacheAllAssets() async {
     final assetPaths = <String>[];
 
-    for (var tile in GlobalGameType.values) {
+    for (final tile in GlobalGameType.values) {
       assetPaths.add('assets/png/tiles/${tile.tileType}_${tile.tileCode}.png');
     }
-    for (var tile in GlobalSettingType.values) {
+    for (final tile in GlobalSettingType.values) {
       assetPaths.add('assets/png/tiles/${tile.tileType}_${tile.tileCode}.png');
     }
 
-    // 2. Collect logos core mechanics & navigation UI assets
     assetPaths.addAll([
       'assets/png/logos/LGGDS.png',
       'assets/png/mechanics/arrow_left.png',
@@ -443,122 +445,104 @@ class _MainScreenState extends State<MainScreen> {
       'assets/png/mechanics/trophy.png',
     ]);
 
-    // 3. Collect rosters_selection tags
     for (int i = 1; i <= 12; i++) {
       assetPaths.add('assets/png/mechanics/rs_tag_p_$i.png');
       assetPaths.add('assets/png/mechanics/rs_tag_t_$i.png');
     }
 
-    // 4. Collect avatars
     final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
-    for (var avatar in avatarsBox.values) {
+    for (final avatar in avatarsBox.values) {
       if (avatar.fldAvatarCode != 'question') {
         assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png');
       }
-      
       assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_v1.png');
     }
 
-    // 5. Precache them all into memory safely
-    for (String path in assetPaths) {
-      precacheImage(AssetImage(path), context);
-    }
+    if (!mounted) return;
+
+    await Future.wait(
+      assetPaths.map((path) => precacheImage(AssetImage(path), context)),
+    );
   }
 
   // Fonction de navigation when a button is pressed
-  void _onTileTapped(BuildContext context, dynamic tile) {    
+  void _onTileTapped(BuildContext context, dynamic tile) {
     Widget? destination;
 
     if (tile is GlobalGameType) {
-      destination = RostersSelection(
-        enuGameType: tile,
-      );
+      destination = RostersSelection(enuGameType: tile);
     } else if (tile is GlobalSettingType) {
       destination = switch (tile) {
-        GlobalSettingType.players => SettingsPlayers(
-            enuSettingType: tile,
-          ),
-        GlobalSettingType.teams => SettingsTeams(
-            enuSettingType: tile,
-          ),
+        GlobalSettingType.players => SettingsPlayers(enuSettingType: tile),
+        GlobalSettingType.teams => SettingsTeams(enuSettingType: tile),
       };
     }
 
     if (destination != null) {
-      final formDestination = destination;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => formDestination),
+        MaterialPageRoute(builder: (_) => destination!),
       );
-    } else {
-      gShowArcadeErrorSnackBar(
-        gContext: context, 
-        gFontSize: (GlobalAppDisplay.safeWidth * 0.011).clamp(14.0, 28.0), 
-        gMessage: '${tile.tileDisplayName} was clicked!',
-        gDuration: 2,
-      );
+      return;
     }
+
+    gShowArcadeErrorSnackBar(
+      gContext: context,
+      gFontSize: (GlobalAppDisplay.safeWidth * 0.011).clamp(14.0, 28.0),
+      gMessage: '${tile.tileDisplayName} was clicked!',
+      gDuration: 2,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    MediaQuery.sizeOf(context);
-    
-    // Select active dataset based on section toggle    
-    final List<dynamic> activeTiles = 
-    _activeSection == MainScreenSection.section05Games 
-        ? GlobalGameType.values 
+    final size = MediaQuery.sizeOf(context);
+    final safeWidth = size.width;
+    final safeHeight = size.height;
+    final activeTiles = _activeSection == MainScreenSection.section05Games
+        ? GlobalGameType.values
         : GlobalSettingType.values;
-    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+    final toolbarHeight = (safeHeight * 0.10).clamp(56.0, 142.0);
+    final contentHeight = safeHeight - toolbarHeight;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade800,
-      appBar: 
-        gBuildAppBar(
-          gToolbarHeight: toolbarHeight,
-          gAppBarTitle: widget.title, 
-          gAppBarColorBg: Colors.grey.shade800,
-          gCallFromMainScreen: true,
-          gOnPressed: () => _showDebugCarouselImageDialog(context),
-          gRightPopupMenu: const MainScreenPopupMenu(),
+      appBar: gBuildAppBar(
+        gToolbarHeight: toolbarHeight,
+        gAppBarTitle: widget.title,
+        gAppBarColorBg: Colors.grey.shade800,
+        gCallFromMainScreen: true,
+        gOnPressed: () => _showDebugCarouselImageDialog(context),
+        gRightPopupMenu: const MainScreenPopupMenu(),
       ),
-      
-      // The body starts right under the AppBar      
       body: SafeArea(
         child: Column(
           children: [
-            // 1. TOP SEGMENTED TOGGLE BAR (Takes 1/4 - toolbarHeight of screen free space)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: GlobalAppDisplay.safeWidth * 0.008,
-                vertical: GlobalAppDisplay.safeHeight * 0.008,
+                horizontal: safeWidth * 0.008,
+                vertical: safeHeight * 0.008,
               ),
-              height: (GlobalAppDisplay.safeHeight-toolbarHeight) * (1/4),
+              height: contentHeight * (1 / 4),
               color: Colors.grey.shade900,
               child: Row(
                 children: [
                   _buildSectionToggleButton(section: MainScreenSection.section05Games),
-                  
-                  SizedBox(width: GlobalAppDisplay.safeWidth * 0.012),
-                  
+                  SizedBox(width: safeWidth * 0.012),
                   _buildSectionToggleButton(section: MainScreenSection.section10Settings),
-
-                  SizedBox(width: GlobalAppDisplay.safeWidth * 0.012),
-                  
+                  SizedBox(width: safeWidth * 0.012),
                   _buildSectionToggleButton(section: MainScreenSection.section15Options),
                 ],
               ),
             ),
-
-            // 2. FIXED CAROUSEL DISPLAY AREA (Takes 3/4 - toolbarHeight of screen free space)
             Expanded(
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  width: ((GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4)) * activeTiles.length,
+                  width: (contentHeight * (3 / 4)) * activeTiles.length,
                   child: CarouselView(
-                    itemExtent: (GlobalAppDisplay.safeHeight-toolbarHeight) * (3/4),
-                    shrinkExtent: (GlobalAppDisplay.safeHeight-toolbarHeight) * 0.15,
+                    itemExtent: contentHeight * (3 / 4),
+                    shrinkExtent: contentHeight * 0.15,
                     backgroundColor: Colors.transparent,
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
                     shape: const RoundedRectangleBorder(
@@ -568,7 +552,7 @@ class _MainScreenState extends State<MainScreen> {
                       _onTileTapped(context, activeTiles[index]);
                     },
                     children: activeTiles
-                        .map((tile) => _buildMainScreenTile(context, tile))
+                        .map((tile) => _buildMainScreenTile(context, tile, safeWidth))
                         .toList(),
                   ),
                 ),
@@ -579,28 +563,25 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-  
-  Widget _buildMainScreenTile(BuildContext context, dynamic tile) {
+
+  Widget _buildMainScreenTile(BuildContext context, dynamic tile, double safeWidth) {
     return Center(
       child: AspectRatio(
         aspectRatio: 1.0,
         child: SizedBox(
-          width: GlobalAppDisplay.safeWidth * 0.40,
+          width: safeWidth * 0.40,
           child: Stack(
             children: [
               Align(
                 alignment: Alignment.center,
                 child: FractionallySizedBox(
-                  widthFactor: 0.94, // Adjust percentage to taste (e.g. 0.94 leaves a clean 3% border)
+                  widthFactor: 0.94,
                   heightFactor: 0.94,
                   child: Container(color: tile.tileColor),
                 ),
               ),
-              
-              // 2. PNG frame overlaid on top
               Positioned.fill(
                 child: Image.asset(
-                  //gameTileImageConfig.assetPath,
                   'assets/png/tiles/${tile.tileType}_${tile.tileCode}.png',
                   fit: BoxFit.fill,
                   filterQuality: FilterQuality.high,
@@ -617,7 +598,10 @@ class _MainScreenState extends State<MainScreen> {
     required MainScreenSection section,
   }) {
     final bool isSelected = _activeSection == section;
-    
+    final size = MediaQuery.sizeOf(context);
+    final safeWidth = size.width;
+    final safeHeight = size.height;
+
     return Expanded(
       child: InkWell(
         onTap: () {
@@ -629,19 +613,19 @@ class _MainScreenState extends State<MainScreen> {
           duration: const Duration(milliseconds: 200),
           opacity: isSelected ? 1.0 : 0.5,
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.004),
+            padding: EdgeInsets.symmetric(vertical: safeHeight * 0.004),
             decoration: BoxDecoration(
               border: Border.all(
                 color: isSelected ? Colors.amber : Colors.transparent,
-                width: GlobalAppDisplay.safeWidth * 0.004,
+                width: safeWidth * 0.004,
               ),
-              borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.012),
+              borderRadius: BorderRadius.circular(safeWidth * 0.012),
             ),
             child: Center(
               child: AspectRatio(
                 aspectRatio: 2.04266,
                 child: SizedBox(
-                  width: (GlobalAppDisplay.safeWidth * 0.20),
+                  width: safeWidth * 0.20,
                   child: Image.asset(
                     'assets/png/mechanics/section_${section.sectionCode}.png',
                     fit: BoxFit.contain,
