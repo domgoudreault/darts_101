@@ -103,15 +103,17 @@ GameProgressState gStepGameState({
 
       // Advance Seat Index in rotation
       currentState.activeDartIdx = 0;
-      currentState.activeSeatIdx = (currentState.activeSeatIdx + 1) % totalPlayers;
+      currentState.activeSeatIdx =
+          (currentState.activeSeatIdx + 1) % totalPlayers;
 
       // 4. Check if a full round rotation is complete
       if (currentState.activeSeatIdx == 0) {
         if (currentState.activeRoundIdx < targetsList.length - 1) {
           currentState.activeRoundIdx++;
           currentState.activeTargetIdx = currentState.activeRoundIdx;
-          currentState.nextTargetIdx = currentState.activeRoundIdx < targetsList.length - 1 
-              ? currentState.activeRoundIdx + 1 
+          currentState.nextTargetIdx =
+              currentState.activeRoundIdx < targetsList.length - 1
+              ? currentState.activeRoundIdx + 1
               : currentState.activeRoundIdx;
         } else {
           currentState.endGame = true;
@@ -130,7 +132,7 @@ GameProgressState gStepGameState({
     }
 
     final activeRec = updatedRecords.last;
-    
+
     int nextSeat = activeRec.fldSeatIndex;
     int nextDart = activeRec.fldDartIndex + 1;
     int nextRound = activeRec.fldRound;
@@ -144,13 +146,15 @@ GameProgressState gStepGameState({
         if (nextRound < targetsList.length - 1) {
           nextRound++;
           nextTarget = nextRound;
-          nextTargetIdxVal = nextRound < targetsList.length - 1 ? nextRound + 1 : nextRound;
+          nextTargetIdxVal = nextRound < targetsList.length - 1
+              ? nextRound + 1
+              : nextRound;
         }
       }
     }
 
     currentState.endGame = false;
-    
+
     currentState.activeSeatIdx = nextSeat;
     currentState.activeDartIdx = nextDart;
     currentState.activeRoundIdx = nextRound;
@@ -182,10 +186,26 @@ class GlobalTargetZonePainter extends CustomPainter {
   // Standard dartboard angles mapping...
   static double getAngleForValue(int val) {
     Map<int, double> angles = {
-      20: 270, 1: 288, 18: 306, 4: 324, 13: 342, 
-      6: 0, 10: 18, 15: 36, 2: 54, 17: 72, 
-      3: 90, 19: 108, 7: 126, 16: 144, 8: 162, 
-      11: 180, 14: 198, 9: 216, 12: 234, 5: 252
+      20: 270,
+      1: 288,
+      18: 306,
+      4: 324,
+      13: 342,
+      6: 0,
+      10: 18,
+      15: 36,
+      2: 54,
+      17: 72,
+      3: 90,
+      19: 108,
+      7: 126,
+      16: 144,
+      8: 162,
+      11: 180,
+      14: 198,
+      9: 216,
+      12: 234,
+      5: 252,
     };
     return angles[val] ?? 0;
   }
@@ -198,29 +218,58 @@ class GlobalTargetZonePainter extends CustomPainter {
     }
 
     double angle = getAngleForValue(targetValue);
-    
+
     // RECALIBRATED RATIOS (to pull highlights away from the number ring)
     // Double Zone (Outer Ring)
-    _drawArcSegment(canvas, size, angle, 0.69, 0.77, Colors.purpleAccent.withValues(alpha: 0.9));
+    _drawArcSegment(
+      canvas,
+      size,
+      angle,
+      0.69,
+      0.77,
+      Colors.purpleAccent.withValues(alpha: 0.9),
+    );
     // Triple Zone (Inner Ring)
-    _drawArcSegment(canvas, size, angle, 0.405, 0.485, Colors.purpleAccent.withValues(alpha: 0.9));
+    _drawArcSegment(
+      canvas,
+      size,
+      angle,
+      0.405,
+      0.485,
+      Colors.purpleAccent.withValues(alpha: 0.9),
+    );
     // Single Zone 1 (Main Area)
-    _drawArcSegment(canvas, size, angle, 0.095, 0.403, Colors.yellow.withValues(alpha: 0.9));
+    _drawArcSegment(
+      canvas,
+      size,
+      angle,
+      0.095,
+      0.403,
+      Colors.yellow.withValues(alpha: 0.9),
+    );
     // Single Zone 2 (Main Area)
-    _drawArcSegment(canvas, size, angle, 0.487, 0.687, Colors.yellow.withValues(alpha: 0.9));
+    _drawArcSegment(
+      canvas,
+      size,
+      angle,
+      0.487,
+      0.687,
+      Colors.yellow.withValues(alpha: 0.9),
+    );
   }
 
   @override
-  bool shouldRepaint(covariant GlobalTargetZonePainter oldDelegate) => oldDelegate.targetValue != targetValue;
+  bool shouldRepaint(covariant GlobalTargetZonePainter oldDelegate) =>
+      oldDelegate.targetValue != targetValue;
 
   void _paintBullseye(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
     final paintOuterBull = Paint()
-      ..color = Colors.yellow.withValues(alpha: 0.9) 
+      ..color = Colors.yellow.withValues(alpha: 0.9)
       ..style = PaintingStyle.fill;
-    
+
     final paintInnerBull = Paint()
       ..color = Colors.purpleAccent.withValues(alpha: 0.9)
       ..style = PaintingStyle.fill;
@@ -229,8 +278,17 @@ class GlobalTargetZonePainter extends CustomPainter {
     canvas.drawCircle(center, radius * 0.04, paintInnerBull);
   }
 
-  void _drawArcSegment(Canvas canvas, Size size, double centerAngle, double innerRadiusRatio, double outerRadiusRatio, Color color) {
-    final paint = Paint()..color = color..style = PaintingStyle.fill;
+  void _drawArcSegment(
+    Canvas canvas,
+    Size size,
+    double centerAngle,
+    double innerRadiusRatio,
+    double outerRadiusRatio,
+    Color color,
+  ) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
     double startAngle = (centerAngle - 9) * (pi / 180);
     double sweepAngle = 18 * (pi / 180);
     double radius = size.width / 2;
@@ -238,9 +296,19 @@ class GlobalTargetZonePainter extends CustomPainter {
 
     Path path = Path();
     // Start at outer arc
-    path.arcTo(Rect.fromCircle(center: center, radius: radius * outerRadiusRatio), startAngle, sweepAngle, true);
+    path.arcTo(
+      Rect.fromCircle(center: center, radius: radius * outerRadiusRatio),
+      startAngle,
+      sweepAngle,
+      true,
+    );
     // Line to inner arc and sweep back
-    path.arcTo(Rect.fromCircle(center: center, radius: radius * innerRadiusRatio), startAngle + sweepAngle, -sweepAngle, false);
+    path.arcTo(
+      Rect.fromCircle(center: center, radius: radius * innerRadiusRatio),
+      startAngle + sweepAngle,
+      -sweepAngle,
+      false,
+    );
     path.close();
     canvas.drawPath(path, paint);
   }
@@ -269,11 +337,10 @@ int processZoneTap(Offset localPosition, Size size, int targetVal) {
 
     if (dist >= 0.405 && dist <= 0.485) {
       leap = 3;
-    }
-    else if (dist >= 0.69 && dist <= 0.77) {
+    } else if (dist >= 0.69 && dist <= 0.77) {
       leap = 2;
-    }
-    else if ((dist >= 0.095 && dist <= 0.403) || (dist >= 0.487 && dist <= 0.687)) {
+    } else if ((dist >= 0.095 && dist <= 0.403) ||
+        (dist >= 0.487 && dist <= 0.687)) {
       leap = 1;
     }
   }
@@ -292,7 +359,7 @@ Widget gBuildDartboardInputZone({
   required GlobalGameType gGametype,
   required Function(int leap) gOnTap,
   bool gIsFrozen = false,
-  }) {
+}) {
   // Determine the correct target list based on the game type
   List<({int value, String label})> targetsList;
   switch (gGametype) {
@@ -313,84 +380,111 @@ Widget gBuildDartboardInputZone({
             IgnorePointer(
               ignoring: gIsFrozen, // Locks the GestureDetector
               child: Center(
-                child: LayoutBuilder(builder: (context, c) {
-                  double size = min(c.maxWidth, c.maxHeight);
-                  int currentTargetValue = targetsList[gActiveTargetIdx].value;
-                  
-                  // --- REFINED VIEWPORT LOGIC ---
-                  double zoomScale = 1.6; 
-                  Alignment zoomAlignment;
+                child: LayoutBuilder(
+                  builder: (context, c) {
+                    double size = min(c.maxWidth, c.maxHeight);
+                    int currentTargetValue =
+                        targetsList[gActiveTargetIdx].value;
 
-                  if (currentTargetValue == 12 || currentTargetValue == 20 || currentTargetValue == 18) {
-                    // Push Top down slightly more to see the "20" label
-                    zoomAlignment = const Alignment(0.0, -0.9); 
-                  } else if (currentTargetValue == 13 || currentTargetValue == 10 || currentTargetValue == 15) {
-                    // Push Right further left to see the numbers 10, 13, 15
-                    zoomAlignment = const Alignment(0.95, 0.0);  
-                  } else if (currentTargetValue == 17 || currentTargetValue == 19) {
-                    // Push Bottom up to see 17 and 19 labels
-                    zoomAlignment = const Alignment(0.0, 0.9);  
-                  } else if (currentTargetValue == 16 || currentTargetValue == 11 || currentTargetValue == 14) {
-                    // Push Left further right to see 11, 14, 16
-                    zoomAlignment = const Alignment(-0.95, 0.0); 
-                  } else if (currentTargetValue == 25) {
-                    zoomAlignment = Alignment.center;
-                    zoomScale = 2.5; 
-                  } else {
-                    zoomAlignment = Alignment.center;
-                    zoomScale = 1.0;
-                  }
+                    // --- REFINED VIEWPORT LOGIC ---
+                    double zoomScale = 1.6;
+                    Alignment zoomAlignment;
 
-                  return MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTapUp: (d) {
-                        double centerX = size / 2;
-                        double centerY = size / 2;
-                        
-                        // 1. Calculate how much the alignment shifted the board
-                        double shiftX = zoomAlignment.x * centerX * (zoomScale - 1);
-                        double shiftY = zoomAlignment.y * centerY * (zoomScale - 1);
-                        
-                        // 2. Reverse the shift and the scale
-                        // We subtract the shift first, then scale back to 1:1, then move back to center
-                        double touchX = (d.localPosition.dx - centerX + shiftX) / zoomScale + centerX;
-                        double touchY = (d.localPosition.dy - centerY + shiftY) / zoomScale + centerY;
-                        
-                        gOnTap(processZoneTap(Offset(touchX, touchY), Size(size, size), currentTargetValue));
-                      },
-                      child: SizedBox(
-                        width: size,
-                        height: size,
-                        child: ClipRect(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 350),
-                            curve: Curves.easeOutCubic,
-                            child: Transform.scale(
-                              scale: zoomScale,
-                              alignment: zoomAlignment,
-                              child: Stack(
-                                children: [
-                                  SvgPicture.asset('assets/svg/games/dartboard.svg', width: size, height: size),
-                                  CustomPaint(
-                                    size: Size(size, size), 
-                                    painter: GlobalTargetZonePainter(currentTargetValue),
-                                  ),
-                                ],
+                    if (currentTargetValue == 12 ||
+                        currentTargetValue == 20 ||
+                        currentTargetValue == 18) {
+                      // Push Top down slightly more to see the "20" label
+                      zoomAlignment = const Alignment(0.0, -0.9);
+                    } else if (currentTargetValue == 13 ||
+                        currentTargetValue == 10 ||
+                        currentTargetValue == 15) {
+                      // Push Right further left to see the numbers 10, 13, 15
+                      zoomAlignment = const Alignment(0.95, 0.0);
+                    } else if (currentTargetValue == 17 ||
+                        currentTargetValue == 19) {
+                      // Push Bottom up to see 17 and 19 labels
+                      zoomAlignment = const Alignment(0.0, 0.9);
+                    } else if (currentTargetValue == 16 ||
+                        currentTargetValue == 11 ||
+                        currentTargetValue == 14) {
+                      // Push Left further right to see 11, 14, 16
+                      zoomAlignment = const Alignment(-0.95, 0.0);
+                    } else if (currentTargetValue == 25) {
+                      zoomAlignment = Alignment.center;
+                      zoomScale = 2.5;
+                    } else {
+                      zoomAlignment = Alignment.center;
+                      zoomScale = 1.0;
+                    }
+
+                    return MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTapUp: (d) {
+                          double centerX = size / 2;
+                          double centerY = size / 2;
+
+                          // 1. Calculate how much the alignment shifted the board
+                          double shiftX =
+                              zoomAlignment.x * centerX * (zoomScale - 1);
+                          double shiftY =
+                              zoomAlignment.y * centerY * (zoomScale - 1);
+
+                          // 2. Reverse the shift and the scale
+                          // We subtract the shift first, then scale back to 1:1, then move back to center
+                          double touchX =
+                              (d.localPosition.dx - centerX + shiftX) /
+                                  zoomScale +
+                              centerX;
+                          double touchY =
+                              (d.localPosition.dy - centerY + shiftY) /
+                                  zoomScale +
+                              centerY;
+
+                          gOnTap(
+                            processZoneTap(
+                              Offset(touchX, touchY),
+                              Size(size, size),
+                              currentTargetValue,
+                            ),
+                          );
+                        },
+                        child: SizedBox(
+                          width: size,
+                          height: size,
+                          child: ClipRect(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 350),
+                              curve: Curves.easeOutCubic,
+                              child: Transform.scale(
+                                scale: zoomScale,
+                                alignment: zoomAlignment,
+                                child: Stack(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/svg/games/dartboard.svg',
+                                      width: size,
+                                      height: size,
+                                    ),
+                                    CustomPaint(
+                                      size: Size(size, size),
+                                      painter: GlobalTargetZonePainter(
+                                        currentTargetValue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }),
-              ),  
-            ),
-            if (gIsFrozen)
-              Positioned.fill(
-                child: _buildFrostedOverlay(),
+                    );
+                  },
+                ),
               ),
+            ),
+            if (gIsFrozen) Positioned.fill(child: _buildFrostedOverlay()),
           ],
         ),
       ),

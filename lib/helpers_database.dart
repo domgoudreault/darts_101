@@ -55,36 +55,140 @@ Future<void> gSeedHiveLeaguePlayers(Box<TblPlayer> playersBox) async {
 
   // seed Players
   List<TblPlayer> listPlayers = [
-    TblPlayer(fldFirstName: 'Dominique', fldLastName: 'Goudreault', fldNickName: 'Domi', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'domi')),
-    TblPlayer(fldFirstName: 'Éric', fldLastName: 'St-Pierre', fldNickName: 'Ricky', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'ricky')),
-    TblPlayer(fldFirstName: 'Christopher', fldLastName: 'Lafond', fldNickName: 'Christo', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'christo')),
-    TblPlayer(fldFirstName: 'Frédéric', fldLastName: 'Gagnon', fldNickName: 'Marcel', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'marcel')),
-    TblPlayer(fldFirstName: 'Frederik', fldLastName: 'Peeters Bélanger', fldNickName: 'Fred', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'fred')),
-    TblPlayer(fldFirstName: 'Simon', fldLastName: 'Drouin', fldNickName: 'Drou', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'drou')),
-    TblPlayer(fldFirstName: 'Étienne', fldLastName: 'Lefrançois', fldNickName: 'Ti-ti', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'titi')),
-    TblPlayer(fldFirstName: 'Marc-Olivier', fldLastName: 'Fortin', fldNickName: 'Marco', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'marco')),
-    TblPlayer(fldFirstName: 'Ludovick', fldLastName: 'Gosselin', fldNickName: 'Ludo', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'ludo')),
-    TblPlayer(fldFirstName: 'Maxime', fldLastName: 'Gagnon', fldNickName: 'Max', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'max')),
-    TblPlayer(fldFirstName: 'Michel', fldLastName: 'Deschênes', fldNickName: 'Papy', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'papy')),
-    TblPlayer(fldFirstName: 'Charles', fldLastName: 'Lirette', fldNickName: 'Charles', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'charles')),
-    TblPlayer(fldFirstName: 'Bryan', fldLastName: 'Bryan', fldNickName: 'Bryan', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'bryan')),
-    TblPlayer(fldFirstName: 'Carl', fldLastName: 'Dubé', fldNickName: 'Le Livreur', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'carl')),
-    TblPlayer(fldFirstName: 'Carmel', fldLastName: 'Fortin', fldNickName: 'Carmel', fldIsDeleted: false, 
-      fldIsLeagueMember: true, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'carmel')),
+    TblPlayer(
+      fldFirstName: 'Dominique',
+      fldLastName: 'Goudreault',
+      fldNickName: 'Domi',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'domi'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Éric',
+      fldLastName: 'St-Pierre',
+      fldNickName: 'Ricky',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'ricky',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Christopher',
+      fldLastName: 'Lafond',
+      fldNickName: 'Christo',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'christo',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Frédéric',
+      fldLastName: 'Gagnon',
+      fldNickName: 'Marcel',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'marcel',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Frederik',
+      fldLastName: 'Peeters Bélanger',
+      fldNickName: 'Fred',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'fred'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Simon',
+      fldLastName: 'Drouin',
+      fldNickName: 'Drou',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'drou'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Étienne',
+      fldLastName: 'Lefrançois',
+      fldNickName: 'Ti-ti',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'titi'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Marc-Olivier',
+      fldLastName: 'Fortin',
+      fldNickName: 'Marco',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'marco',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Ludovick',
+      fldLastName: 'Gosselin',
+      fldNickName: 'Ludo',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'ludo'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Maxime',
+      fldLastName: 'Gagnon',
+      fldNickName: 'Max',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'max'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Michel',
+      fldLastName: 'Deschênes',
+      fldNickName: 'Papy',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'papy'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Charles',
+      fldLastName: 'Lirette',
+      fldNickName: 'Charles',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'charles',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Bryan',
+      fldLastName: 'Bryan',
+      fldNickName: 'Bryan',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'bryan',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Carl',
+      fldLastName: 'Dubé',
+      fldNickName: 'Le Livreur',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'carl'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Carmel',
+      fldLastName: 'Fortin',
+      fldNickName: 'Carmel',
+      fldIsDeleted: false,
+      fldIsLeagueMember: true,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'carmel',
+      ),
+    ),
   ];
 
   await playersBox.addAll(listPlayers);
@@ -94,67 +198,247 @@ Future<void> gSeedHiveGenericPlayers(Box<TblPlayer> playersBox) async {
   final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
   // seed Players
   List<TblPlayer> listPlayers = [
-    TblPlayer(fldFirstName: 'Don Juan', fldLastName: 'De Marco', fldNickName: 'Bow Tie', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'domi')),
-    TblPlayer(fldFirstName: 'Viktor', fldLastName: 'Vance', fldNickName: 'Lucky', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'ricky')),
-    TblPlayer(fldFirstName: 'Stella', fldLastName: 'Rogue', fldNickName: 'Sniper', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '02')),
-    TblPlayer(fldFirstName: 'Diesel', fldLastName: 'Nitro', fldNickName: 'War Hawk', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'christo')),
-    TblPlayer(fldFirstName: 'Marcel', fldLastName: 'Steele', fldNickName: 'Double Out', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'marcel')),
-    TblPlayer(fldFirstName: 'Elektra', fldLastName: 'Volt', fldNickName: 'Rebel Red', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '01')),
-    TblPlayer(fldFirstName: 'Maverick', fldLastName: 'Thunderbolt', fldNickName: 'Turbo', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'fred')),
-    TblPlayer(fldFirstName: 'Spike', fldLastName: 'Prowler', fldNickName: 'Clutch', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'drou')),
-    TblPlayer(fldFirstName: 'Anita', fldLastName: 'McGee', fldNickName: 'Bounce Out', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '03')),
-    TblPlayer(fldFirstName: 'Low', fldLastName: 'Rollings', fldNickName: 'Nerdy', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'titi')),
-    TblPlayer(fldFirstName: 'Jimmy', fldLastName: 'Swift', fldNickName: 'Outlaw', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'marco')),
-    TblPlayer(fldFirstName: 'Roxie', fldLastName: 'Razor', fldNickName: 'Vixen', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '08')),
-    TblPlayer(fldFirstName: 'Duke', fldLastName: 'Sterling', fldNickName: 'Jackpot', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'ludo')),
-    TblPlayer(fldFirstName: 'Dizzy', fldLastName: 'Blowgun', fldNickName: 'Dr. Darts', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'max')),
-    TblPlayer(fldFirstName: 'Charlotte', fldLastName: 'Purrfect', fldNickName: 'Catnip', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '07')),
-    TblPlayer(fldFirstName: 'Earl', fldLastName: 'Montgomery', fldNickName: 'Pops', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'papy')),
-    TblPlayer(fldFirstName: 'Roman', fldLastName: 'Vortex', fldNickName: 'The Wizard', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'charles')),
-    TblPlayer(fldFirstName: 'Pamela', fldLastName: 'Pennyworth', fldNickName: 'Gold Digger', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '10')),
-    TblPlayer(fldFirstName: 'Clay', fldLastName: 'Bentonite', fldNickName: 'Pixie', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '04')),
-    TblPlayer(fldFirstName: 'Leo', fldLastName: 'Pawfur', fldNickName: 'Magic Paws', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '05')),
-    TblPlayer(fldFirstName: 'Siren', fldLastName: 'Scream', fldNickName: 'Banshee', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '09')),
-    TblPlayer(fldFirstName: 'Rex', fldLastName: 'Stone', fldNickName: 'Dart Vader', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'bryan')),
-    TblPlayer(fldFirstName: 'Ronald', fldLastName: 'Cummings', fldNickName: 'Preacher', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '06')),
-    TblPlayer(fldFirstName: 'Bonnie', fldLastName: 'Banks', fldNickName: 'Cashflow', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '11')),
-    TblPlayer(fldFirstName: 'Johnny', fldLastName: 'Danger', fldNickName: 'Bullseye', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'carmel')),
-    TblPlayer(fldFirstName: 'Mario', fldLastName: 'Crustini', fldNickName: 'The Slice', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'carl')),
-    TblPlayer(fldFirstName: 'Harley', fldLastName: 'Stitcher', fldNickName: 'Fatal Sting', fldIsDeleted: false, 
-      fldIsLeagueMember: false, fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '12')),
+    TblPlayer(
+      fldFirstName: 'Don Juan',
+      fldLastName: 'De Marco',
+      fldNickName: 'Bow Tie',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'domi'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Viktor',
+      fldLastName: 'Vance',
+      fldNickName: 'Lucky',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'ricky',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Stella',
+      fldLastName: 'Rogue',
+      fldNickName: 'Sniper',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '02'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Diesel',
+      fldLastName: 'Nitro',
+      fldNickName: 'War Hawk',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'christo',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Marcel',
+      fldLastName: 'Steele',
+      fldNickName: 'Double Out',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'marcel',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Elektra',
+      fldLastName: 'Volt',
+      fldNickName: 'Rebel Red',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '01'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Maverick',
+      fldLastName: 'Thunderbolt',
+      fldNickName: 'Turbo',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'fred'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Spike',
+      fldLastName: 'Prowler',
+      fldNickName: 'Clutch',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'drou'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Anita',
+      fldLastName: 'McGee',
+      fldNickName: 'Bounce Out',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '03'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Low',
+      fldLastName: 'Rollings',
+      fldNickName: 'Nerdy',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'titi'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Jimmy',
+      fldLastName: 'Swift',
+      fldNickName: 'Outlaw',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'marco',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Roxie',
+      fldLastName: 'Razor',
+      fldNickName: 'Vixen',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '08'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Duke',
+      fldLastName: 'Sterling',
+      fldNickName: 'Jackpot',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'ludo'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Dizzy',
+      fldLastName: 'Blowgun',
+      fldNickName: 'Dr. Darts',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'max'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Charlotte',
+      fldLastName: 'Purrfect',
+      fldNickName: 'Catnip',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '07'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Earl',
+      fldLastName: 'Montgomery',
+      fldNickName: 'Pops',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'papy'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Roman',
+      fldLastName: 'Vortex',
+      fldNickName: 'The Wizard',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'charles',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Pamela',
+      fldLastName: 'Pennyworth',
+      fldNickName: 'Gold Digger',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '10'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Clay',
+      fldLastName: 'Bentonite',
+      fldNickName: 'Pixie',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '04'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Leo',
+      fldLastName: 'Pawfur',
+      fldNickName: 'Magic Paws',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '05'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Siren',
+      fldLastName: 'Scream',
+      fldNickName: 'Banshee',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '09'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Rex',
+      fldLastName: 'Stone',
+      fldNickName: 'Dart Vader',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'bryan',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Ronald',
+      fldLastName: 'Cummings',
+      fldNickName: 'Preacher',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '06'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Bonnie',
+      fldLastName: 'Banks',
+      fldNickName: 'Cashflow',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '11'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Johnny',
+      fldLastName: 'Danger',
+      fldNickName: 'Bullseye',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == 'carmel',
+      ),
+    ),
+    TblPlayer(
+      fldFirstName: 'Mario',
+      fldLastName: 'Crustini',
+      fldNickName: 'The Slice',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == 'carl'),
+    ),
+    TblPlayer(
+      fldFirstName: 'Harley',
+      fldLastName: 'Stitcher',
+      fldNickName: 'Fatal Sting',
+      fldIsDeleted: false,
+      fldIsLeagueMember: false,
+      fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == '12'),
+    ),
   ];
 
   await playersBox.addAll(listPlayers);
 }
 
-Future<void> gSeedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) async {  
-  final players = playersBox.values.toList(); // Grab all saved players from Hive
+Future<void> gSeedHiveTeams(
+  Box<TblPlayer> playersBox,
+  Box<TblTeam> teamsBox,
+) async {
+  final players = playersBox.values
+      .toList(); // Grab all saved players from Hive
   final List<TblTeam> listTeams = []; // List to collect teams in memory
 
   // Dynamically Generate Unique Teams & Self Teams ---
@@ -163,34 +447,92 @@ Future<void> gSeedHiveTeams(Box<TblPlayer> playersBox, Box<TblTeam> teamsBox) as
       final p1 = players[i];
       final p2 = players[j];
 
-      listTeams.add(
-        TblTeam(
-          fldPlayers: [p1, p2],
-          fldIsDeleted: false,
-        ),
-      );
+      listTeams.add(TblTeam(fldPlayers: [p1, p2], fldIsDeleted: false));
     }
-  } 
+  }
 
   await teamsBox.addAll(listTeams);
 }
 
 Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
   List<TblGameOptions> listOptions = [
-    TblGameOptions(fldGameType: GlobalGameType.halfIt, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 50, fldShowOptStartingScore: true),
-    TblGameOptions(fldGameType: GlobalGameType.aroundClock, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
-    TblGameOptions(fldGameType: GlobalGameType.sevenDarts, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
-    TblGameOptions(fldGameType: GlobalGameType.allFives, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
-    TblGameOptions(fldGameType: GlobalGameType.killers, fldMinNbrPlayers: 2, fldMinNbrTeams: 2, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 7, fldShowOptNbrLives: true, fldStartingScore: 0, fldShowOptStartingScore: false),
-    TblGameOptions(fldGameType: GlobalGameType.suddenDeath, fldMinNbrPlayers: 3, fldMinNbrTeams: 3, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 6,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
-    TblGameOptions(fldGameType: GlobalGameType.buildUp, fldMinNbrPlayers: 4, fldMinNbrTeams: 0, fldMaxNbrPlayers: 12, fldMaxNbrTeams: 0,
-      fldNbrLives: 0, fldShowOptNbrLives: false, fldStartingScore: 0, fldShowOptStartingScore: false),
+    TblGameOptions(
+      fldGameType: GlobalGameType.halfIt,
+      fldMinNbrPlayers: 2,
+      fldMinNbrTeams: 2,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 6,
+      fldNbrLives: 0,
+      fldShowOptNbrLives: false,
+      fldStartingScore: 50,
+      fldShowOptStartingScore: true,
+    ),
+    TblGameOptions(
+      fldGameType: GlobalGameType.aroundClock,
+      fldMinNbrPlayers: 2,
+      fldMinNbrTeams: 2,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 6,
+      fldNbrLives: 0,
+      fldShowOptNbrLives: false,
+      fldStartingScore: 0,
+      fldShowOptStartingScore: false,
+    ),
+    TblGameOptions(
+      fldGameType: GlobalGameType.sevenDarts,
+      fldMinNbrPlayers: 2,
+      fldMinNbrTeams: 2,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 6,
+      fldNbrLives: 0,
+      fldShowOptNbrLives: false,
+      fldStartingScore: 0,
+      fldShowOptStartingScore: false,
+    ),
+    TblGameOptions(
+      fldGameType: GlobalGameType.allFives,
+      fldMinNbrPlayers: 2,
+      fldMinNbrTeams: 2,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 6,
+      fldNbrLives: 0,
+      fldShowOptNbrLives: false,
+      fldStartingScore: 0,
+      fldShowOptStartingScore: false,
+    ),
+    TblGameOptions(
+      fldGameType: GlobalGameType.killers,
+      fldMinNbrPlayers: 2,
+      fldMinNbrTeams: 2,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 6,
+      fldNbrLives: 7,
+      fldShowOptNbrLives: true,
+      fldStartingScore: 0,
+      fldShowOptStartingScore: false,
+    ),
+    TblGameOptions(
+      fldGameType: GlobalGameType.suddenDeath,
+      fldMinNbrPlayers: 3,
+      fldMinNbrTeams: 3,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 6,
+      fldNbrLives: 0,
+      fldShowOptNbrLives: false,
+      fldStartingScore: 0,
+      fldShowOptStartingScore: false,
+    ),
+    TblGameOptions(
+      fldGameType: GlobalGameType.buildUp,
+      fldMinNbrPlayers: 4,
+      fldMinNbrTeams: 0,
+      fldMaxNbrPlayers: 12,
+      fldMaxNbrTeams: 0,
+      fldNbrLives: 0,
+      fldShowOptNbrLives: false,
+      fldStartingScore: 0,
+      fldShowOptStartingScore: false,
+    ),
   ];
 
   await optionsBox.addAll(listOptions);
@@ -205,7 +547,7 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
   final gamesBox = Hive.box<TblGame>('gamesBox');
   final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
   final playersBox = Hive.box<TblPlayer>('playersBox');
-  
+
   final gamePlayers = playersBox.values.toList().sublist(0, 12);
 
   final game = TblGame(
@@ -247,7 +589,9 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
   // Seed throws across targets
   for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
     final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1) ? gTargetsHalf[rIdx + 1].value : 0;
+    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
+        ? gTargetsHalf[rIdx + 1].value
+        : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       final player = gamePlayers[seatIdx];
@@ -268,7 +612,9 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
       int newScore = currentScore + (targetValue * hits);
 
       // Check if this is the very last player on the final round
-      bool isLastPlayerFinalRound = (rIdx == gTargetsHalf.length - 1 && seatIdx == gamePlayers.length - 1);
+      bool isLastPlayerFinalRound =
+          (rIdx == gTargetsHalf.length - 1 &&
+          seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
@@ -281,7 +627,9 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1 ? rIdx + 1 : rIdx,
+            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
+                ? rIdx + 1
+                : rIdx,
             fldNextTargetValue: nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
@@ -302,7 +650,7 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
   final gamesBox = Hive.box<TblGame>('gamesBox');
   final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
   final playersBox = Hive.box<TblPlayer>('playersBox');
-  
+
   final gamePlayers = playersBox.values.toList().sublist(0, 12);
 
   final game = TblGame(
@@ -338,13 +686,15 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
       ),
     );
   }
-  
+
   final random = Random();
 
   // Seed throws across targets ensuring Seat 0, Seat 1 and Seat 2 tie on points
   for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
     final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1) ? gTargetsHalf[rIdx + 1].value : 0;
+    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
+        ? gTargetsHalf[rIdx + 1].value
+        : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       final player = gamePlayers[seatIdx];
@@ -357,7 +707,7 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
 
       int hits;
       if (seatIdx == 0 || seatIdx == 1 || seatIdx == 2) {
-        hits = 3; 
+        hits = 3;
       } else {
         // Randomize between 1 and 3 so there are no misses/half-its
         hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
@@ -367,7 +717,9 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
       int newTeamScore = currentTeamScore + (targetValue * hits);
 
       // Check if this is the very last player on the final round
-      bool isLastPlayerFinalRound = (rIdx == gTargetsHalf.length - 1 && seatIdx == gamePlayers.length - 1);
+      bool isLastPlayerFinalRound =
+          (rIdx == gTargetsHalf.length - 1 &&
+          seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
@@ -380,7 +732,9 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1 ? rIdx + 1 : rIdx,
+            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
+                ? rIdx + 1
+                : rIdx,
             fldNextTargetValue: nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
@@ -401,16 +755,16 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
   final gamesBox = Hive.box<TblGame>('gamesBox');
   final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
   final teamsBox = Hive.box<TblTeam>('teamsBox');
-  
+
   final List<TblTeam> gameTeams = [];
   List<TblPlayer> gamePlayers = [];
 
   for (var team in teamsBox.values.toList()) {
     if (gameTeams.length >= 6) break;
-    
+
     // 1. Exclude dummy teams where the same player is used twice
     if (team.fldPlayers[0] == team.fldPlayers[1]) continue;
-    
+
     // 2. Check if either player is already playing in a previously selected game team
     bool playerAlreadyUsed = false;
     for (var existingTeam in gameTeams) {
@@ -420,7 +774,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
         break;
       }
     }
-    
+
     if (playerAlreadyUsed) continue;
 
     // 3. Add to our valid list
@@ -433,7 +787,8 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
     List<TblPlayer> secondHalf = [];
 
     for (var team in gameTeams) {
-      List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)..shuffle();
+      List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)
+        ..shuffle();
       firstHalf.add(shuffled[0]);
       secondHalf.add(shuffled[1]);
     }
@@ -443,7 +798,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
   gamePlayers = resolveGamePlayers();
 
   // This guarantees exactly 12 unique players across the 6 unique teams
-  
+
   final game = TblGame(
     fldGameType: GlobalGameType.halfIt,
     fldPlayersGM: false,
@@ -484,7 +839,9 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
   // Seed throws across targets
   for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
     final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1) ? gTargetsHalf[rIdx + 1].value : 0;
+    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
+        ? gTargetsHalf[rIdx + 1].value
+        : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       final player = gamePlayers[seatIdx];
@@ -507,7 +864,9 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
       int newTeamScore = currentTeamScore + (targetValue * hits);
 
       // Check if this is the very last player on the final round
-      bool isLastPlayerFinalRound = (rIdx == gTargetsHalf.length - 1 && seatIdx == gamePlayers.length - 1);
+      bool isLastPlayerFinalRound =
+          (rIdx == gTargetsHalf.length - 1 &&
+          seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
@@ -520,7 +879,9 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1 ? rIdx + 1 : rIdx,
+            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
+                ? rIdx + 1
+                : rIdx,
             fldNextTargetValue: nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
@@ -541,16 +902,16 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
   final gamesBox = Hive.box<TblGame>('gamesBox');
   final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
   final teamsBox = Hive.box<TblTeam>('teamsBox');
-  
+
   final List<TblTeam> gameTeams = [];
   List<TblPlayer> gamePlayers = [];
 
   for (var team in teamsBox.values.toList()) {
     if (gameTeams.length >= 6) break;
-    
+
     // 1. Exclude dummy teams where the same player is used twice
     if (team.fldPlayers[0] == team.fldPlayers[1]) continue;
-    
+
     // 2. Check if either player is already playing in a previously selected game team
     bool playerAlreadyUsed = false;
     for (var existingTeam in gameTeams) {
@@ -560,7 +921,7 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
         break;
       }
     }
-    
+
     if (playerAlreadyUsed) continue;
 
     // 3. Add to our valid list
@@ -573,7 +934,8 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
     List<TblPlayer> secondHalf = [];
 
     for (var team in gameTeams) {
-      List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)..shuffle();
+      List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)
+        ..shuffle();
       firstHalf.add(shuffled[0]);
       secondHalf.add(shuffled[1]);
     }
@@ -583,7 +945,7 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
   gamePlayers = resolveGamePlayers();
 
   // This guarantees exactly 12 unique players across the 6 unique teams
-  
+
   final game = TblGame(
     fldGameType: GlobalGameType.halfIt,
     fldPlayersGM: false,
@@ -624,7 +986,9 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
   // Seed throws across targets
   for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
     final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1) ? gTargetsHalf[rIdx + 1].value : 0;
+    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
+        ? gTargetsHalf[rIdx + 1].value
+        : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       final player = gamePlayers[seatIdx];
@@ -636,8 +1000,13 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
       int currentTeamScore = playerScores.last.fldScoreTeamSnapshot!;
 
       int hits;
-      if (seatIdx == 0 || seatIdx == 1 || seatIdx == 2 || seatIdx == 6 || seatIdx == 7 || seatIdx == 8) {
-        hits = 3; 
+      if (seatIdx == 0 ||
+          seatIdx == 1 ||
+          seatIdx == 2 ||
+          seatIdx == 6 ||
+          seatIdx == 7 ||
+          seatIdx == 8) {
+        hits = 3;
       } else {
         // Randomize between 1 and 3 so there are no misses/half-its
         hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
@@ -647,7 +1016,9 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
       int newTeamScore = currentTeamScore + (targetValue * hits);
 
       // Check if this is the very last player on the final round
-      bool isLastPlayerFinalRound = (rIdx == gTargetsHalf.length - 1 && seatIdx == gamePlayers.length - 1);
+      bool isLastPlayerFinalRound =
+          (rIdx == gTargetsHalf.length - 1 &&
+          seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
@@ -660,7 +1031,9 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1 ? rIdx + 1 : rIdx,
+            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
+                ? rIdx + 1
+                : rIdx,
             fldNextTargetValue: nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,

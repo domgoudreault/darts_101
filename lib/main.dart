@@ -44,10 +44,7 @@ enum MainScreenSection {
   final String sectionCode;
   final String assetPath;
 
-  const MainScreenSection({
-    required this.sectionCode,
-    required this.assetPath,
-  });
+  const MainScreenSection({required this.sectionCode, required this.assetPath});
 }
 
 void main() async {
@@ -64,7 +61,7 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapters(); // Register all adapters automatically in one line:
-  
+
   // Open ALL 6 boxes concurrently
   final results = await Future.wait([
     Hive.openBox<TblAvatar>('avatarsBox'),
@@ -78,9 +75,9 @@ void main() async {
   // Extract the box references you need for seeding:
   final avatarsBox = results[0] as Box<TblAvatar>;
   final optionsBox = results[5] as Box<TblGameOptions>;
-  
+
   // Only seeds avatars if the database is empty
-  if (avatarsBox.isEmpty){
+  if (avatarsBox.isEmpty) {
     await gSeedHiveAvatars(avatarsBox);
   }
 
@@ -91,10 +88,7 @@ void main() async {
 
   // Wrap runApp with DevicePreview
   runApp(
-    DevicePreview(
-      enabled: false,
-      builder: (context) => const Darts101App(),
-    ),
+    DevicePreview(enabled: false, builder: (context) => const Darts101App()),
   );
 }
 
@@ -106,10 +100,10 @@ class Darts101App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Darts 101',            
+      title: 'Darts 101',
 
       builder: (context, child) {
-        GlobalAppDisplay.globalEnumDisplayMode (context);
+        GlobalAppDisplay.globalEnumDisplayMode(context);
 
         return child!;
       },
@@ -127,12 +121,15 @@ class MainScreenPopupMenu extends StatelessWidget {
       useSafeArea: true,
       builder: (BuildContext context) {
         MediaQuery.sizeOf(context);
-        
+
         return AlertDialog(
           title: Text(
             'Darts 101 - Privacy Policy',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.026))
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: (GlobalAppDisplay.safeWidth * 0.026),
             ),
+          ),
           content: SizedBox(
             height: GlobalAppDisplay.safeHeight * 0.7,
             width: GlobalAppDisplay.safeWidth * 0.8,
@@ -145,46 +142,126 @@ class MainScreenPopupMenu extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
-                          child: Text("Overview", style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.020))),
+                          padding: EdgeInsets.symmetric(
+                            vertical: GlobalAppDisplay.safeHeight * 0.022,
+                          ),
+                          child: Text(
+                            "Overview",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
+                            ),
+                          ),
                         ),
-                        Text(gGetPrivacyPolicySection(1), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                        Text(
+                          gGetPrivacyPolicySection(1),
+                          style: TextStyle(
+                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
+                          ),
+                        ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
-                          child: Text("Information Collection and Use", style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.020))),
+                          padding: EdgeInsets.symmetric(
+                            vertical: GlobalAppDisplay.safeHeight * 0.022,
+                          ),
+                          child: Text(
+                            "Information Collection and Use",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
+                            ),
+                          ),
                         ),
-                        Text(gGetPrivacyPolicySection(2), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                        Text(
+                          gGetPrivacyPolicySection(2),
+                          style: TextStyle(
+                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
+                          ),
+                        ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
-                          child: Text("Third-Party Services & Analytics", style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.020))),
+                          padding: EdgeInsets.symmetric(
+                            vertical: GlobalAppDisplay.safeHeight * 0.022,
+                          ),
+                          child: Text(
+                            "Third-Party Services & Analytics",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
+                            ),
+                          ),
                         ),
-                        
-                        Text(gGetPrivacyPolicySection(3), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+
+                        Text(
+                          gGetPrivacyPolicySection(3),
+                          style: TextStyle(
+                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
+                          ),
+                        ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
-                          child: Text("Log Data & Device Permissions",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.020))),
+                          padding: EdgeInsets.symmetric(
+                            vertical: GlobalAppDisplay.safeHeight * 0.022,
+                          ),
+                          child: Text(
+                            "Log Data & Device Permissions",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
+                            ),
+                          ),
                         ),
-                        Text(gGetPrivacyPolicySection(4), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                        Text(
+                          gGetPrivacyPolicySection(4),
+                          style: TextStyle(
+                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
+                          ),
+                        ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
-                          child: Text("Data Retention & Account Deletion",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.020))),
+                          padding: EdgeInsets.symmetric(
+                            vertical: GlobalAppDisplay.safeHeight * 0.022,
+                          ),
+                          child: Text(
+                            "Data Retention & Account Deletion",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
+                            ),
+                          ),
                         ),
-                        Text(gGetPrivacyPolicySection(5), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                        Text(
+                          gGetPrivacyPolicySection(5),
+                          style: TextStyle(
+                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
+                          ),
+                        ),
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
-                          child: Text("Contact Us",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: (GlobalAppDisplay.safeWidth * 0.020))),
+                          padding: EdgeInsets.symmetric(
+                            vertical: GlobalAppDisplay.safeHeight * 0.022,
+                          ),
+                          child: Text(
+                            "Contact Us",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
+                            ),
+                          ),
                         ),
-                        Text(gGetPrivacyPolicySection(6), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                        Text(
+                          gGetPrivacyPolicySection(6),
+                          style: TextStyle(
+                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
+                          ),
+                        ),
                         MouseRegion(
                           cursor: SystemMouseCursors.click,
                           child: GestureDetector(
                             onTap: () async {
-                              final Uri url = Uri.parse(gGetPrivacyPolicySection(7));
+                              final Uri url = Uri.parse(
+                                gGetPrivacyPolicySection(7),
+                              );
                               if (await canLaunchUrl(url)) {
-                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                                await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                );
                               }
                             },
                             child: Text(
@@ -203,7 +280,10 @@ class MainScreenPopupMenu extends StatelessWidget {
                   ),
                 ),
                 // 2. FIXED DIVIDER AND BUTTON
-                Divider(thickness: GlobalAppDisplay.safeHeight * 0.003, height: GlobalAppDisplay.safeHeight * 0.04),
+                Divider(
+                  thickness: GlobalAppDisplay.safeHeight * 0.003,
+                  height: GlobalAppDisplay.safeHeight * 0.04,
+                ),
                 SizedBox(
                   width: double.infinity,
                   height: GlobalAppDisplay.safeWidth * 0.052,
@@ -211,10 +291,19 @@ class MainScreenPopupMenu extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey.shade800,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.012)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          GlobalAppDisplay.safeWidth * 0.012,
+                        ),
+                      ),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Close', style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.014)),
+                    child: Text(
+                      'Close',
+                      style: gBuildArcadeTextStyle(
+                        GlobalAppDisplay.safeWidth * 0.014,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -257,68 +346,98 @@ class MainScreenPopupMenu extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: GlobalAppDisplay.safeHeight * 0.022,
+                                ),
                                 child: Text(
                                   gGetInformationSection(1),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: GlobalAppDisplay.safeWidth * 0.020,
+                                    fontSize:
+                                        GlobalAppDisplay.safeWidth * 0.020,
                                   ),
                                 ),
                               ),
                               Text(
                                 "Version: ${packageInfo.version}\nBuild: ${packageInfo.buildNumber}",
-                                style: TextStyle(fontSize: GlobalAppDisplay.safeWidth * 0.017),
+                                style: TextStyle(
+                                  fontSize: GlobalAppDisplay.safeWidth * 0.017,
+                                ),
                               ),
                               Padding(
-                                padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: GlobalAppDisplay.safeHeight * 0.022,
+                                ),
                                 child: Text(
                                   "\nLatest Changes:",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: GlobalAppDisplay.safeWidth * 0.020,
+                                    fontSize:
+                                        GlobalAppDisplay.safeWidth * 0.020,
                                   ),
                                 ),
                               ),
-                              Text(gGetInformationSection(2), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                              Text(
+                                gGetInformationSection(2),
+                                style: TextStyle(
+                                  fontSize:
+                                      (GlobalAppDisplay.safeWidth * 0.017),
+                                ),
+                              ),
                               Padding(
-                                padding: EdgeInsets.symmetric(vertical: GlobalAppDisplay.safeHeight * 0.022),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: GlobalAppDisplay.safeHeight * 0.022,
+                                ),
                                 child: Text(
                                   "Artwork Attributions:",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: GlobalAppDisplay.safeWidth * 0.020,
+                                    fontSize:
+                                        GlobalAppDisplay.safeWidth * 0.020,
                                   ),
                                 ),
                               ),
-                              Text(gGetInformationSection(3), style: TextStyle(fontSize: (GlobalAppDisplay.safeWidth * 0.017))),
+                              Text(
+                                gGetInformationSection(3),
+                                style: TextStyle(
+                                  fontSize:
+                                      (GlobalAppDisplay.safeWidth * 0.017),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        SizedBox(width: GlobalAppDisplay.safeWidth * 0.007), // Space between text and image
+                        SizedBox(
+                          width: GlobalAppDisplay.safeWidth * 0.007,
+                        ), // Space between text and image
                         // THE IMAGE ON THE RIGHT
                         Expanded(
                           flex: 1,
                           child: Center(
-                            child:AspectRatio(
-                            aspectRatio: 1.0,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.012),
-                              child: Image.asset(
-                                'assets/png/logos/LGGDS.png',
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
+                            child: AspectRatio(
+                              aspectRatio: 1.0,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  GlobalAppDisplay.safeWidth * 0.012,
+                                ),
+                                child: Image.asset(
+                                  'assets/png/logos/LGGDS.png',
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                         ),
                       ],
                     ),
                   ),
                 ),
                 // 2. FIXED DIVIDER AND BUTTON
-                Divider(thickness: GlobalAppDisplay.safeHeight * 0.003, height: GlobalAppDisplay.safeHeight * 0.04),
+                Divider(
+                  thickness: GlobalAppDisplay.safeHeight * 0.003,
+                  height: GlobalAppDisplay.safeHeight * 0.04,
+                ),
                 SizedBox(
                   width: double.infinity,
                   height: GlobalAppDisplay.safeWidth * 0.052,
@@ -327,11 +446,18 @@ class MainScreenPopupMenu extends StatelessWidget {
                       backgroundColor: Colors.grey.shade800,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.012),
+                        borderRadius: BorderRadius.circular(
+                          GlobalAppDisplay.safeWidth * 0.012,
+                        ),
                       ),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Close', style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.014)),
+                    child: Text(
+                      'Close',
+                      style: gBuildArcadeTextStyle(
+                        GlobalAppDisplay.safeWidth * 0.014,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -354,7 +480,7 @@ class MainScreenPopupMenu extends StatelessWidget {
             break;
           case 'main_pop_menu_info':
             _showInformationDialog(context);
-            break;          
+            break;
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -367,7 +493,12 @@ class MainScreenPopupMenu extends StatelessWidget {
   PopupMenuItem<String> _buildMenuItem(String value, String text) {
     return PopupMenuItem<String>(
       value: value,
-      child: Text(text, style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0))),
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
       //child: Text(text, style: const TextStyle(color: Colors.white)),
     );
   }
@@ -453,9 +584,13 @@ class _MainScreenState extends State<MainScreen> {
     final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
     for (final avatar in avatarsBox.values) {
       if (avatar.fldAvatarCode != 'question') {
-        assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png');
+        assetPaths.add(
+          'assets/png/avatars/avatar_${avatar.fldAvatarCode}_player_card.png',
+        );
       }
-      assetPaths.add('assets/png/avatars/avatar_${avatar.fldAvatarCode}_v1.png');
+      assetPaths.add(
+        'assets/png/avatars/avatar_${avatar.fldAvatarCode}_v1.png',
+      );
     }
 
     if (!mounted) return;
@@ -479,10 +614,7 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     if (destination != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => destination!),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => destination!));
       return;
     }
 
@@ -527,11 +659,17 @@ class _MainScreenState extends State<MainScreen> {
               color: Colors.grey.shade900,
               child: Row(
                 children: [
-                  _buildSectionToggleButton(section: MainScreenSection.section05Games),
+                  _buildSectionToggleButton(
+                    section: MainScreenSection.section05Games,
+                  ),
                   SizedBox(width: safeWidth * 0.012),
-                  _buildSectionToggleButton(section: MainScreenSection.section10Settings),
+                  _buildSectionToggleButton(
+                    section: MainScreenSection.section10Settings,
+                  ),
                   SizedBox(width: safeWidth * 0.012),
-                  _buildSectionToggleButton(section: MainScreenSection.section15Options),
+                  _buildSectionToggleButton(
+                    section: MainScreenSection.section15Options,
+                  ),
                 ],
               ),
             ),
@@ -552,7 +690,10 @@ class _MainScreenState extends State<MainScreen> {
                       _onTileTapped(context, activeTiles[index]);
                     },
                     children: activeTiles
-                        .map((tile) => _buildMainScreenTile(context, tile, safeWidth))
+                        .map(
+                          (tile) =>
+                              _buildMainScreenTile(context, tile, safeWidth),
+                        )
                         .toList(),
                   ),
                 ),
@@ -564,7 +705,11 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildMainScreenTile(BuildContext context, dynamic tile, double safeWidth) {
+  Widget _buildMainScreenTile(
+    BuildContext context,
+    dynamic tile,
+    double safeWidth,
+  ) {
     return Center(
       child: AspectRatio(
         aspectRatio: 1.0,
@@ -594,9 +739,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildSectionToggleButton({
-    required MainScreenSection section,
-  }) {
+  Widget _buildSectionToggleButton({required MainScreenSection section}) {
     final bool isSelected = _activeSection == section;
     final size = MediaQuery.sizeOf(context);
     final safeWidth = size.width;
@@ -649,13 +792,13 @@ Future<void> _clearHiveDatabase(BuildContext context) async {
   await Hive.box<TblTeam>('teamsBox').clear();
   gSelectedPlayers.clear();
   gSelectedTeams.clear();
-  
+
   if (context.mounted) {
     gShowArcadeErrorSnackBar(
       gContext: context,
       gFontSize: 16,
       gMessage: 'PLAYERS & TEAMS CLEARED!',
-      gDuration: 2
+      gDuration: 2,
     );
   }
 }
@@ -664,13 +807,13 @@ Future<void> _clearHiveGames(BuildContext context) async {
   // Clear primary user data and game logs
   await Hive.box<TblGameScore>('gamesScoresBox').clear();
   await Hive.box<TblGame>('gamesBox').clear();
-  
+
   if (context.mounted) {
     gShowArcadeErrorSnackBar(
       gContext: context,
       gFontSize: 16,
       gMessage: 'GAMES CLEARED!',
-      gDuration: 2
+      gDuration: 2,
     );
   }
 }
@@ -681,156 +824,200 @@ void _showDebugCarouselImageDialog(BuildContext context) {
     useSafeArea: true,
     builder: (BuildContext context) {
       MediaQuery.sizeOf(context);
-      
+
       return AlertDialog(
         backgroundColor: Colors.grey.shade900,
         title: Text(
           'Carousel Image Debug Info',
-          style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.015).clamp(14.0, 32.0)),
+          style: gBuildArcadeTextStyle(
+            (GlobalAppDisplay.safeWidth * 0.015).clamp(14.0, 32.0),
+          ),
         ),
-        content: 
-          SizedBox(
-            height: GlobalAppDisplay.safeHeight * 0.7,
-            width: GlobalAppDisplay.safeWidth * 0.8,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Safe Screen Width: ${GlobalAppDisplay.safeWidth.toStringAsFixed(1)} dp',
-                    style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
+        content: SizedBox(
+          height: GlobalAppDisplay.safeHeight * 0.7,
+          width: GlobalAppDisplay.safeWidth * 0.8,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Safe Screen Width: ${GlobalAppDisplay.safeWidth.toStringAsFixed(1)} dp',
+                  style: gBuildArcadeTextStyle(
+                    (GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0),
                   ),
-                  SizedBox(height: GlobalAppDisplay.safeHeight * 0.002),
-                  Text(
-                    'Safe Screen Height: ${GlobalAppDisplay.safeHeight.toStringAsFixed(1)} dp',
-                    style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0)),
+                ),
+                SizedBox(height: GlobalAppDisplay.safeHeight * 0.002),
+                Text(
+                  'Safe Screen Height: ${GlobalAppDisplay.safeHeight.toStringAsFixed(1)} dp',
+                  style: gBuildArcadeTextStyle(
+                    (GlobalAppDisplay.safeWidth * 0.011).clamp(10.0, 28.0),
                   ),
-                  Divider(color: Colors.white24, height: GlobalAppDisplay.safeHeight * 0.044),
-                  Text(
-                    'Database Utilities !!!',
-                    style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0), gTextColor: Colors.amber),
+                ),
+                Divider(
+                  color: Colors.white24,
+                  height: GlobalAppDisplay.safeHeight * 0.044,
+                ),
+                Text(
+                  'Database Utilities !!!',
+                  style: gBuildArcadeTextStyle(
+                    (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
+                    gTextColor: Colors.amber,
                   ),
-                  SizedBox(height: GlobalAppDisplay.safeHeight * 0.004),
+                ),
+                SizedBox(height: GlobalAppDisplay.safeHeight * 0.004),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade800,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await _clearHiveDatabase(context);
-                      },
-                      icon: Icon(Icons.delete_sweep, size: GlobalAppDisplay.safeHeight * 0.016),
-                      label: Text(
-                        'DELETE PLAYERS & TEAMS',
-                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await _clearHiveDatabase(context);
+                    },
+                    icon: Icon(
+                      Icons.delete_sweep,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'DELETE PLAYERS & TEAMS',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade800,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await _clearHiveGames(context);
-                      },
-                      icon: Icon(Icons.delete_sweep, size: GlobalAppDisplay.safeHeight * 0.016),
-                      label: Text(
-                        'DELETE GAMES & SCORES',
-                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await _clearHiveGames(context);
+                    },
+                    icon: Icon(
+                      Icons.delete_sweep,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'DELETE GAMES & SCORES',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade800,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await gSeedHiveGameHalfItPlayerWinner();
-                      },
-                      icon: Icon(Icons.add_alarm, size: GlobalAppDisplay.safeHeight * 0.016),
-                      label: Text(
-                        'CREATE HALF-IT PLAYER WINNER',
-                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGameHalfItPlayerWinner();
+                    },
+                    icon: Icon(
+                      Icons.add_alarm,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE HALF-IT PLAYER WINNER',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade800,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await gSeedHiveGameHalfItPlayerTie();
-                      },
-                      icon: Icon(Icons.add_link, size: GlobalAppDisplay.safeHeight * 0.016),
-                      label: Text(
-                        'CREATE HALF-IT PLAYER TIE',
-                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGameHalfItPlayerTie();
+                    },
+                    icon: Icon(
+                      Icons.add_link,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE HALF-IT PLAYER TIE',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),
                     ),
                   ),
+                ),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade800,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await gSeedHiveGameHalfItTeamWinner();
-                      },
-                      icon: Icon(Icons.add_alarm, size: GlobalAppDisplay.safeHeight * 0.016),
-                      label: Text(
-                        'CREATE HALF-IT TEAM WINNER',
-                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGameHalfItTeamWinner();
+                    },
+                    icon: Icon(
+                      Icons.add_alarm,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE HALF-IT TEAM WINNER',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade800,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await gSeedHiveGameHalfItTeamTie();
-                      },
-                      icon: Icon(Icons.add_link, size: GlobalAppDisplay.safeHeight * 0.016),
-                      label: Text(
-                        'CREATE HALF-IT TEAM TIE',
-                        style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0)),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGameHalfItTeamTie();
+                    },
+                    icon: Icon(
+                      Icons.add_link,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE HALF-IT TEAM TIE',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        
+        ),
+
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close', style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.014)),
+            child: Text(
+              'Close',
+              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.014),
+            ),
           ),
         ],
       );

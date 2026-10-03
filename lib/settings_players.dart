@@ -19,10 +19,7 @@ class SettingsPlayers extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
   final GlobalSettingType enuSettingType;
 
-  const SettingsPlayers({
-    super.key,
-    required this.enuSettingType,
-  });
+  const SettingsPlayers({super.key, required this.enuSettingType});
 
   @override
   State<SettingsPlayers> createState() => _SettingsPlayersState();
@@ -56,16 +53,34 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     super.dispose();
   }
 
+  List<TblPlayer> _activePlayers(Box<TblPlayer> playersBox) {
+    return playersBox.values.where((player) => !player.fldIsDeleted).toList();
+  }
+
+  List<TblPlayer> _filteredPlayers(Box<TblPlayer> playersBox) {
+    final activePlayers = _activePlayers(playersBox);
+
+    if (_searchQuery.isEmpty) {
+      return activePlayers;
+    }
+
+    return activePlayers
+        .where((player) => _matchesPlayerQuery(player, _searchQuery))
+        .toList();
+  }
+
   bool _matchesPlayerQuery(TblPlayer player, String query) {
     if (query.isEmpty) return true;
     final terms = query.split(' ').where((term) => term.isNotEmpty).toList();
     if (terms.isEmpty) return true;
 
     // Use .any() so a player matches if they contain ANY of the space-separated terms
-    return terms.any((term) =>
-        player.fldFirstName.toLowerCase().contains(term) ||
-        player.fldLastName.toLowerCase().contains(term) ||
-        player.fldNickName.toLowerCase().contains(term));
+    return terms.any(
+      (term) =>
+          player.fldFirstName.toLowerCase().contains(term) ||
+          player.fldLastName.toLowerCase().contains(term) ||
+          player.fldNickName.toLowerCase().contains(term),
+    );
   }
 
   // Fonctions de navigation when a button is pressed
@@ -87,8 +102,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final activePlayers = Hive.box<TblPlayer>('playersBox').values.where((player) => !player.fldIsDeleted).toList();
-        
+        final activePlayers = _activePlayers(Hive.box<TblPlayer>('playersBox'));
+
         if (activePlayers.isNotEmpty && _carouselController.hasClients) {
           _carouselController.animateTo(
             activePlayers.length * cardWidth,
@@ -100,7 +115,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     }
   }
 
-  void _onPlayerTapped(BuildContext context, TblPlayer player) {    
+  void _onPlayerTapped(BuildContext context, TblPlayer player) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -115,7 +130,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   }
 
   void _checkAndPromptPlayerSeeding() {
-    final playersBox = Hive.box<TblPlayer>('playersBox').values.where((player) => !player.fldIsDeleted);
+    final playersBox = _activePlayers(Hive.box<TblPlayer>('playersBox'));
 
     if (playersBox.isEmpty) {
       if (kDebugMode) {
@@ -129,13 +144,14 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   // 1. LEAGUE SEED DIALOG (kDebugMode only)
   void _showLeaguePlayersSeedDialog() {
     gShowDatabaseSeedDialog(
-      context, 
+      context,
       tileColor: widget.enuSettingType.tileColor,
       tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
       assetFullPath: 'assets/png/logos/LGGDS.png',
       headerText: 'SAMPLE LGGDS LEAGUE DATA ?',
       titleText: 'No players found.',
-      questionText: 'Would you like to seed default LEAGUE players and teams for testing?',
+      questionText:
+          'Would you like to seed default LEAGUE players and teams for testing?',
       noButtonText1: 'NO',
       noButtonText2: '(LATER)',
       yesButtonText1: 'YES',
@@ -152,31 +168,36 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
         await gSeedHiveLeaguePlayers(playersBox);
         await gSeedHiveTeams(playersBox, teamsBox);
-        
+
         setState(() {});
       },
-    );     
+    );
   }
 
   // 2. GENERIC AUTO-GENERATED SEED DIALOG (Release Mode OR Declined League Data)
   void _showPlayersSeedDialog() {
     gShowDatabaseSeedDialog(
-      context, 
+      context,
       tileColor: widget.enuSettingType.tileColor,
       tileBackgroundColor: widget.enuSettingType.tileBackgroundColor,
       assetFullPath: 'assets/png/tiles/settings_players.png',
       headerText: 'SAMPLE DEFAULT PLAYERS ?',
       titleText: 'No players found.',
-      questionText: 'Would you like us to auto-generate sample default players for you?',
+      questionText:
+          'Would you like us to auto-generate sample default players for you?',
       noButtonText1: 'NO',
       noButtonText2: '(LATER)',
       yesButtonText1: 'YES',
       yesButtonText2: '(NOW)',
       onNoPressed: (dialogContext) {
-        Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
+        Navigator.pop(
+          dialogContext,
+        ); // Uses the dialogContext passed from the helper
       },
       onYesPressed: (dialogContext) async {
-        Navigator.pop(dialogContext); // Uses the dialogContext passed from the helper
+        Navigator.pop(
+          dialogContext,
+        ); // Uses the dialogContext passed from the helper
         final playersBox = Hive.box<TblPlayer>('playersBox');
         await gSeedHiveGenericPlayers(playersBox);
         setState(() {});
@@ -190,20 +211,21 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
 
     // 1. Access the Hive box opened during initialization
     final playersBox = Hive.box<TblPlayer>('playersBox');
-    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
-    final cardHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (3/4);
+    final safeHeight = GlobalAppDisplay.safeHeight;
+    final safeWidth = GlobalAppDisplay.safeWidth;
+    final toolbarHeight = (safeHeight * 0.10).clamp(56.0, 142.0);
+    final cardHeight = (safeHeight - toolbarHeight) * (3 / 4);
     final cardWidth = cardHeight * 0.6836;
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
-      appBar: 
-        gBuildAppBar(
-          gToolbarHeight: toolbarHeight,
-          gAppBarTitle: widget.enuSettingType.tileDisplayName, 
-          gAppBarColorBg: widget.enuSettingType.tileColor,
-          gCallFromMainScreen: false,
-          gOnPressed: null,
-          gRightPopupMenu: null,
+      appBar: gBuildAppBar(
+        gToolbarHeight: toolbarHeight,
+        gAppBarTitle: widget.enuSettingType.tileDisplayName,
+        gAppBarColorBg: widget.enuSettingType.tileColor,
+        gCallFromMainScreen: false,
+        gOnPressed: null,
+        gRightPopupMenu: null,
       ),
 
       body: SafeArea(
@@ -212,10 +234,10 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
             // 1. TOP SEGMENTED TOGGLE BAR (Takes (1/4 * 0.9) - toolbarHeight of screen free space)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: GlobalAppDisplay.safeWidth * 0.008,
-                vertical: GlobalAppDisplay.safeHeight * 0.008,
+                horizontal: safeWidth * 0.008,
+                vertical: safeHeight * 0.008,
               ),
-              height: (GlobalAppDisplay.safeHeight-toolbarHeight) * (1/4) * 0.9,
+              height: (safeHeight - toolbarHeight) * (1 / 4) * 0.9,
               color: Colors.grey.shade900,
               child: Column(
                 children: [
@@ -241,17 +263,21 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                             node: FocusScopeNode(),
                             child: TextField(
                               controller: _searchController,
-                              style: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.0195),
+                              style: gBuildArcadeTextStyle(safeHeight * 0.0195),
                               decoration: InputDecoration(
                                 hintText: 'Search player name or nickname...',
-                                hintStyle: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.0195, gTextColor: Colors.grey.shade400),
+                                hintStyle: gBuildArcadeTextStyle(
+                                  safeHeight * 0.0195,
+                                  gTextColor: Colors.grey.shade400,
+                                ),
                                 prefixIcon: Icon(
                                   Icons.search,
                                   color: Colors.amber,
-                                  size: GlobalAppDisplay.safeHeight * 0.060,
+                                  size: safeHeight * 0.060,
                                 ),
                                 suffixIcon: Row(
-                                  mainAxisSize: MainAxisSize.min, // Essential so it doesn't expand to fill the bar
+                                  mainAxisSize: MainAxisSize
+                                      .min, // Essential so it doesn't expand to fill the bar
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     // 1. Clear Button (Only shows when search is active)
@@ -262,49 +288,58 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                         icon: Icon(
                                           Icons.clear,
                                           color: Colors.white54,
-                                          size: GlobalAppDisplay.safeHeight * 0.045,
+                                          size: safeHeight * 0.045,
                                         ),
-                                        onPressed: () => _searchController.clear(),
+                                        onPressed: () =>
+                                            _searchController.clear(),
                                       ),
 
                                     // Gap between clear button and counter pill
-                                    SizedBox(width: GlobalAppDisplay.safeWidth * 0.0065),
+                                    SizedBox(width: safeWidth * 0.0065),
 
                                     // 2. Embedded Arcade Counter Pill
                                     ValueListenableBuilder<Box<TblPlayer>>(
                                       valueListenable: playersBox.listenable(),
                                       builder: (context, box, _) {
-                                        final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
-                                        final filteredCount = _searchQuery.isEmpty
-                                          ? activePlayers.length
-                                          : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).length;
+                                        final activePlayers = _activePlayers(
+                                          box,
+                                        );
+                                        final filteredPlayers =
+                                            _filteredPlayers(box);
+                                        final filteredCount =
+                                            filteredPlayers.length;
 
                                         return Container(
                                           margin: EdgeInsets.only(
-                                            right: GlobalAppDisplay.safeHeight * 0.01,
-                                            top: GlobalAppDisplay.safeHeight * 0.01,
-                                            bottom: GlobalAppDisplay.safeHeight * 0.01,
+                                            right: safeHeight * 0.01,
+                                            top: safeHeight * 0.01,
+                                            bottom: safeHeight * 0.01,
                                           ),
                                           padding: EdgeInsets.symmetric(
-                                            horizontal: GlobalAppDisplay.safeHeight * 0.015,
+                                            horizontal: safeHeight * 0.015,
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.grey.shade900,
-                                            borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.01),
+                                            borderRadius: BorderRadius.circular(
+                                              safeHeight * 0.01,
+                                            ),
                                             border: Border.all(
                                               color: Colors.amber,
-                                              width: (GlobalAppDisplay.safeHeight * 0.003).clamp(1.0, 2.0),
+                                              width: (safeHeight * 0.003).clamp(
+                                                1.0,
+                                                2.0,
+                                              ),
                                             ),
                                           ),
                                           child: Center(
                                             child: FittedBox(
                                               fit: BoxFit.scaleDown,
                                               child: Text(
-                                                _searchQuery.isEmpty 
-                                                    ? '$filteredCount' 
+                                                _searchQuery.isEmpty
+                                                    ? '$filteredCount'
                                                     : '$filteredCount/${activePlayers.length}',
                                                 style: gBuildArcadeTextStyle(
-                                                  GlobalAppDisplay.safeHeight * 0.020,
+                                                  safeHeight * 0.020,
                                                   gTextColor: Colors.amber,
                                                   gFontWeight: FontWeight.bold,
                                                 ),
@@ -319,14 +354,18 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                                 filled: true,
                                 fillColor: Colors.grey.shade800,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
+                                  borderRadius: BorderRadius.circular(
+                                    safeHeight * 0.02,
+                                  ),
                                   borderSide: BorderSide.none,
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(GlobalAppDisplay.safeHeight * 0.02),
+                                  borderRadius: BorderRadius.circular(
+                                    safeHeight * 0.02,
+                                  ),
                                   borderSide: BorderSide(
                                     color: Colors.amber,
-                                    width: (GlobalAppDisplay.safeHeight * 0.005).clamp(1.5, 4.0),
+                                    width: (safeHeight * 0.005).clamp(1.5, 4.0),
                                   ),
                                 ),
                               ),
@@ -349,18 +388,13 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                   child: ValueListenableBuilder<Box<TblPlayer>>(
                     valueListenable: playersBox.listenable(),
                     builder: (context, box, _) {
-                      final activePlayers = box.values.where((player) => !player.fldIsDeleted).toList();
-
-                      // Filter by First Name, Last Name, or Nickname
-                      final players = _searchQuery.isEmpty
-                        ? activePlayers
-                        : activePlayers.where((player) => _matchesPlayerQuery(player, _searchQuery)).toList();
+                      final players = _filteredPlayers(box);
 
                       if (players.isEmpty) {
                         return Center(
                           child: Text(
                             'No players found.',
-                            style: gBuildArcadeTextStyle(GlobalAppDisplay.safeHeight * 0.023),
+                            style: gBuildArcadeTextStyle(safeHeight * 0.023),
                           ),
                         );
                       }
@@ -370,7 +404,9 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                         itemExtent: cardWidth,
                         shrinkExtent: cardWidth * 0.5,
                         backgroundColor: Colors.transparent,
-                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        overlayColor: WidgetStateProperty.all(
+                          Colors.transparent,
+                        ),
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.zero,
                         ),
@@ -379,7 +415,14 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           _onPlayerTapped(context, player);
                         },
                         children: players
-                            .map((player) => _buildPlayerCard(context, player, cardHeight, cardWidth))
+                            .map(
+                              (player) => _buildPlayerCard(
+                                context,
+                                player,
+                                cardHeight,
+                                cardWidth,
+                              ),
+                            )
                             .toList(),
                       );
                     },
@@ -423,7 +466,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                   child: Image.asset(
                     'assets/png/avatars/avatar_${player.fldAvatar.fldAvatarCode}_player_card.png',
                     fit: BoxFit.fill,
-                    filterQuality: FilterQuality.high,                    
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
 
@@ -435,7 +478,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                     filterQuality: FilterQuality.high,
                   ),
                 ),
-                  
+
                 // 4. Player Data Text Overlay Layer (On top of white card area)
                 Positioned(
                   top: cardHeight * 0.52,
@@ -447,7 +490,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                     children: [
                       // Gap 1: Picture bottom -> First Name
                       SizedBox(height: cardHeight * 0.015),
-                      
+
                       // First Name
                       FittedBox(
                         fit: BoxFit.scaleDown,
@@ -490,7 +533,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                         width: cardHeight * 0.50,
                         color: widget.enuSettingType.tileColor,
                       ),
-                      
+
                       // Gap 4: Divider -> Nickname
                       SizedBox(height: cardHeight * 0.022),
 
@@ -515,7 +558,10 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                           child: Text(
                             player.fldNickName.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: gBuildArcadeTextStyle(cardHeight * 0.032, gFontWeight: FontWeight.w800),
+                            style: gBuildArcadeTextStyle(
+                              cardHeight * 0.032,
+                              gFontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
@@ -524,7 +570,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                 ),
 
                 // 5. PNG if Player Is League Member Patch
-                if (player.fldIsLeagueMember) 
+                if (player.fldIsLeagueMember)
                   Positioned.fill(
                     child: Image.asset(
                       'assets/png/mechanics/player_league_member.png',

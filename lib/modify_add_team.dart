@@ -11,7 +11,7 @@ import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 
-class ModifyAddTeamForm extends StatefulWidget {  
+class ModifyAddTeamForm extends StatefulWidget {
   final FormMode enuFormMode;
   final TblTeam? modifyTeam;
   final GlobalSettingType enuSettingType;
@@ -32,7 +32,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   bool _isDummyTeam = false;
   TblPlayer? _selectedPlayer1;
   TblPlayer? _selectedPlayer2;
-  
+
   late String _selectedAvatarCodePlayer1;
   late String _selectedAvatarCodePlayer2;
 
@@ -49,7 +49,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   void initState() {
     super.initState();
     // If we are modifying, fill the controllers with existing data
-    if (widget.enuFormMode == FormMode.formModify && widget.modifyTeam != null) {
+    if (widget.enuFormMode == FormMode.formModify &&
+        widget.modifyTeam != null) {
       _selectedPlayer1 = widget.modifyTeam!.fldPlayers[0];
       _selectedAvatarCodePlayer1 = _selectedPlayer1!.fldAvatar.fldAvatarCode;
 
@@ -60,15 +61,17 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
       if (_selectedPlayer1 == _selectedPlayer2) {
         _isDummyTeam = true;
       }
-    }
-    else {
+    } else {
       _selectedAvatarCodePlayer1 = 'question';
       _selectedAvatarCodePlayer2 = 'question';
-    }    
+    }
   }
 
   void _pickPlayer1(double avatarHeight) async {
-    final player = await _showPlayerPicker(avatarHeight, excludePlayer: _selectedPlayer2);
+    final player = await _showPlayerPicker(
+      avatarHeight,
+      excludePlayer: _selectedPlayer2,
+    );
     if (player != null) {
       setState(() {
         _selectedPlayer1 = player;
@@ -84,7 +87,10 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   }
 
   void _pickPlayer2(double avatarHeight) async {
-    final player = await _showPlayerPicker(avatarHeight, excludePlayer: _selectedPlayer1);
+    final player = await _showPlayerPicker(
+      avatarHeight,
+      excludePlayer: _selectedPlayer1,
+    );
     if (player != null) {
       setState(() {
         _selectedPlayer2 = player;
@@ -99,7 +105,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
         gContext: context,
         gFontSize: _responsiveFontSize,
         gMessage: 'PLEASE SELECT PLAYER 1!',
-        gDuration: 2
+        gDuration: 2,
       );
       return;
     }
@@ -110,33 +116,41 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
           gContext: context,
           gFontSize: _responsiveFontSize,
           gMessage: 'PLEASE SELECT PLAYER 2!',
-          gDuration: 2
+          gDuration: 2,
         );
         return;
       }
-    }
-    else{
+    } else {
       // Ensure player 2 mirrors player 1 if dummy mode is active
       _selectedPlayer2 = _selectedPlayer1;
       _selectedAvatarCodePlayer2 = _selectedAvatarCodePlayer1;
     }
 
     // 1. Prepare target player composition
-    final List<TblPlayer> targetPlayers = [_selectedPlayer1!, _selectedPlayer2!];
+    final List<TblPlayer> targetPlayers = [
+      _selectedPlayer1!,
+      _selectedPlayer2!,
+    ];
 
     // 2. Check for existing active team duplicates in Hive
     final teamsBox = Hive.box<TblTeam>('teamsBox');
 
-    final TblTeam? existingTeam = teamsBox.values.where((team) =>
-      !team.fldIsDeleted &&
-      ((team.fldPlayers[0] == targetPlayers[0] && team.fldPlayers[1] == targetPlayers[1]) ||
-       (team.fldPlayers[0] == targetPlayers[1] && team.fldPlayers[1] == targetPlayers[0]))
-    ).firstOrNull;
+    final TblTeam? existingTeam = teamsBox.values
+        .where(
+          (team) =>
+              !team.fldIsDeleted &&
+              ((team.fldPlayers[0] == targetPlayers[0] &&
+                      team.fldPlayers[1] == targetPlayers[1]) ||
+                  (team.fldPlayers[0] == targetPlayers[1] &&
+                      team.fldPlayers[1] == targetPlayers[0])),
+        )
+        .firstOrNull;
 
     //Verify self Match
     if (existingTeam != null) {
       bool isSelfMatch = false;
-      if (widget.enuFormMode == FormMode.formModify && existingTeam == widget.modifyTeam) {
+      if (widget.enuFormMode == FormMode.formModify &&
+          existingTeam == widget.modifyTeam) {
         isSelfMatch = true;
       }
 
@@ -145,18 +159,15 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
           gContext: context,
           gFontSize: _responsiveFontSize,
           gMessage: 'THIS TEAM ALREADY EXISTS!',
-          gDuration: 2
+          gDuration: 2,
         );
         return;
       }
-    }    
+    }
 
     // 3. Save to Hive database if everything is ok
     if (widget.enuFormMode == FormMode.formAdd) {
-      final team = TblTeam(
-        fldPlayers: targetPlayers,
-        fldIsDeleted: false,
-      );
+      final team = TblTeam(fldPlayers: targetPlayers, fldIsDeleted: false);
 
       teamsBox.add(team);
 
@@ -172,8 +183,10 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   }
 
   void _deleteTeam() {
-    String teamPlayer1Nickname = widget.modifyTeam!.fldPlayers[0].fldNickName.toUpperCase();
-    String teamPlayer2Nickname = widget.modifyTeam!.fldPlayers[1].fldNickName.toUpperCase();
+    String teamPlayer1Nickname = widget.modifyTeam!.fldPlayers[0].fldNickName
+        .toUpperCase();
+    String teamPlayer2Nickname = widget.modifyTeam!.fldPlayers[1].fldNickName
+        .toUpperCase();
 
     showDialog(
       context: context,
@@ -182,16 +195,22 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
           backgroundColor: Colors.grey.shade900,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
-            side: BorderSide(color: Colors.redAccent, width: (_responsiveTile * 0.002).clamp(1.5, 4.0)),
+            side: BorderSide(
+              color: Colors.redAccent,
+              width: (_responsiveTile * 0.002).clamp(1.5, 4.0),
+            ),
           ),
           title: Text(
             'DELETE THIS TEAM?',
-            style: gBuildArcadeTextStyle(_responsiveFontSize * 1.4, gTextColor: Colors.redAccent),
+            style: gBuildArcadeTextStyle(
+              _responsiveFontSize * 1.4,
+              gTextColor: Colors.redAccent,
+            ),
           ),
           content: Text(
             'Are you sure you want to remove the team "$teamPlayer1Nickname & $teamPlayer2Nickname" ?',
             style: TextStyle(
-              color: Colors.white, 
+              color: Colors.white,
               fontSize: (_responsiveFontSize * 0.90).clamp(10.0, 60.0),
             ),
           ),
@@ -200,7 +219,10 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(
                 'CANCEL',
-                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.grey.shade400),
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.90,
+                  gTextColor: Colors.grey.shade400,
+                ),
               ),
             ),
             ElevatedButton(
@@ -212,12 +234,15 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                 widget.modifyTeam?.fldIsDeleted = true;
                 widget.modifyTeam?.save();
 
-                Navigator.of(ctx).pop();    // Close dialog
+                Navigator.of(ctx).pop(); // Close dialog
                 Navigator.of(context).pop(); // Return to previous screen
               },
               child: Text(
                 'DELETE',
-                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.white),
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.90,
+                  gTextColor: Colors.white,
+                ),
               ),
             ),
           ],
@@ -226,12 +251,15 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     );
   }
 
-  Future<TblPlayer?> _showPlayerPicker(double avatarHeight, {TblPlayer? excludePlayer}) async {
+  Future<TblPlayer?> _showPlayerPicker(
+    double avatarHeight, {
+    TblPlayer? excludePlayer,
+  }) async {
     final playersBox = Hive.box<TblPlayer>('playersBox');
     final List<TblPlayer> playerList = playersBox.values
-      .where((player) => !player.fldIsDeleted && player != excludePlayer)
-      .toList();
-    
+        .where((player) => !player.fldIsDeleted && player != excludePlayer)
+        .toList();
+
     return showModalBottomSheet<TblPlayer>(
       context: context,
       useSafeArea: true,
@@ -239,7 +267,9 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(_responsiveTile * 0.037)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(_responsiveTile * 0.037),
+        ),
       ),
       builder: (BuildContext context) {
         return SafeArea(
@@ -251,61 +281,74 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
               children: [
                 Container(
                   width: double.infinity,
-                  margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.005),
-                  padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.020),
+                  margin: EdgeInsets.symmetric(
+                    horizontal: _responsiveTile * 0.005,
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    vertical: _responsiveTile * 0.020,
+                  ),
                   decoration: BoxDecoration(
                     color: GlobalSettingType.teams.tilePickerColor,
                     border: Border.all(
-                      color: Colors.white, // Or widget.tileColor / whatever border color you want
+                      color: Colors
+                          .white, // Or widget.tileColor / whatever border color you want
                       width: GlobalAppDisplay.safeHeight * 0.002,
                     ),
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(_responsiveTile * 0.034), // Matches outer 20px sheet curve perfectly
-                      bottom: Radius.zero,       // Sharp, edgy straight cut at the bottom
+                      top: Radius.circular(
+                        _responsiveTile * 0.034,
+                      ), // Matches outer 20px sheet curve perfectly
+                      bottom:
+                          Radius.zero, // Sharp, edgy straight cut at the bottom
                     ),
                   ),
                   child: Text(
                     'SELECT A PLAYER',
                     textAlign: TextAlign.center,
-                    style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0)),
+                    style: gBuildArcadeTextStyle(
+                      (_responsiveFontSize * 0.70).clamp(10.0, 60.0),
+                    ),
                   ),
                 ),
-                
+
                 SizedBox(height: _responsiveTile * 0.022),
-                
+
                 SizedBox(
                   height: avatarHeight,
                   child: playerList.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No players found.',
-                          style: gBuildArcadeTextStyle(
-                            (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
+                      ? Center(
+                          child: Text(
+                            'No players found.',
+                            style: gBuildArcadeTextStyle(
+                              (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
+                            ),
                           ),
-                        ),
-                      )
-                    : CarouselView(
-                        elevation: 0,
-                        backgroundColor: Colors.transparent,
-                        overlayColor: WidgetStateProperty.all(Colors.transparent),
-                        itemExtent: avatarHeight + 4.0,
-                        shrinkExtent: avatarHeight * 0.8,
-                        // Native CarouselView callback receives the tapped item index directly
-                        onTap: (int index) {
-                          final selectedPlayer = playerList[index];
-                          Navigator.pop(context, selectedPlayer);
-                        },
-                        children: playerList.map((player) {
-                          return gBuildPlayerAvatarCard(
-                            player: player,
-                            avatarHeight: avatarHeight,
-                            bgColor: widget.enuSettingType.tileBackgroundColor,
-                            isSlicedAvatar: false,
-                            isSlicedVertical: false,
-                            isTagNickNameLeft: false,
+                        )
+                      : CarouselView(
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          overlayColor: WidgetStateProperty.all(
+                            Colors.transparent,
+                          ),
+                          itemExtent: avatarHeight + 4.0,
+                          shrinkExtent: avatarHeight * 0.8,
+                          // Native CarouselView callback receives the tapped item index directly
+                          onTap: (int index) {
+                            final selectedPlayer = playerList[index];
+                            Navigator.pop(context, selectedPlayer);
+                          },
+                          children: playerList.map((player) {
+                            return gBuildPlayerAvatarCard(
+                              player: player,
+                              avatarHeight: avatarHeight,
+                              bgColor:
+                                  widget.enuSettingType.tileBackgroundColor,
+                              isSlicedAvatar: false,
+                              isSlicedVertical: false,
+                              isTagNickNameLeft: false,
                             );
-                        }).toList(),
-                      ),
+                          }).toList(),
+                        ),
                 ),
               ],
             ),
@@ -319,32 +362,24 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
 
-    //final ImageCardFrameConfig imageCardFrameConfig = getCarouselCardFrameImageConfig();
-    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
-    final avatarHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * 0.369;
-    
-    //temp cardWidth assignation
-    double cardWidth = GlobalAppDisplay.safeWidth;
-    if (_isDummyTeam){
-      cardWidth = (GlobalAppDisplay.safeWidth - (avatarHeight * 2));
-    }
-    else{
-      cardWidth = (GlobalAppDisplay.safeWidth - (avatarHeight * 2));
-    }
+    final safeHeight = GlobalAppDisplay.safeHeight;
+    final safeWidth = GlobalAppDisplay.safeWidth;
+    final toolbarHeight = (safeHeight * 0.10).clamp(56.0, 142.0);
+    final avatarHeight = (safeHeight - toolbarHeight) * 0.369;
+    final cardWidth = safeWidth - (avatarHeight * 2);
     final cardHeight = cardWidth * 0.6836;
-    
+
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
-      appBar: 
-        gBuildAppBar(
-          gToolbarHeight: toolbarHeight,
-          gAppBarTitle: widget.enuSettingType.tileDisplayName, 
-          gAppBarColorBg: widget.enuSettingType.tileColor,
-          gCallFromMainScreen: false,
-          gOnPressed: null,
-          gRightPopupMenu: null,
+      appBar: gBuildAppBar(
+        gToolbarHeight: toolbarHeight,
+        gAppBarTitle: widget.enuSettingType.tileDisplayName,
+        gAppBarColorBg: widget.enuSettingType.tileColor,
+        gCallFromMainScreen: false,
+        gOnPressed: null,
+        gRightPopupMenu: null,
       ),
-      
+
       body: SafeArea(
         child: Column(
           children: [
@@ -354,7 +389,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                 horizontal: _responsiveTile * 0.06,
                 vertical: _responsiveTile * 0.02,
               ),
-              height: (GlobalAppDisplay.safeHeight-toolbarHeight) * (2/13),
+              height: (safeHeight - toolbarHeight) * (2 / 13),
               color: Colors.grey.shade900,
               child: Column(
                 children: [
@@ -370,7 +405,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                             gOnTap: () => _saveTeam(),
                           ),
                         ),
-                        
+
                         Align(
                           alignment: Alignment.centerRight,
                           child: MouseRegion(
@@ -384,17 +419,26 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                 if (_isDummyTeam) {
                                   if (_selectedPlayer1 != null) {
                                     _selectedPlayer2 = _selectedPlayer1;
-                                    _selectedAvatarCodePlayer2 = _selectedAvatarCodePlayer1;
+                                    _selectedAvatarCodePlayer2 =
+                                        _selectedAvatarCodePlayer1;
                                   } else {
                                     _selectedPlayer2 = null;
                                     _selectedAvatarCodePlayer2 = 'question';
                                   }
                                   gShowArcadeErrorSnackBar(
                                     gContext: context,
-                                    gFontSize: (GlobalAppDisplay.safeHeight * 0.015).clamp(10.0, 60.0),
+                                    gFontSize: (safeHeight * 0.015).clamp(
+                                      10.0,
+                                      60.0,
+                                    ),
                                     gMessage: 'DUMMY PLAYER MODE ACTIVATED',
                                     gDuration: 3,
-                                    gBbackgroundColor: Color.fromRGBO(247, 120, 9, 1.0)
+                                    gBbackgroundColor: Color.fromRGBO(
+                                      247,
+                                      120,
+                                      9,
+                                      1.0,
+                                    ),
                                   );
                                 } else {
                                   // Clear out Player 2 when exiting dummy mode
@@ -403,8 +447,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                 }
                               },
                               child: SizedBox(
-                                width: GlobalAppDisplay.safeHeight * 0.105,
-                                height: GlobalAppDisplay.safeHeight * 0.105,
+                                width: safeHeight * 0.105,
+                                height: safeHeight * 0.105,
                                 child: Stack(
                                   children: [
                                     // 1. Bottom Layer: Dynamic Solid Fill Background
@@ -423,8 +467,8 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                     Positioned.fill(
                                       child: Image.asset(
                                         'assets/png/mechanics/player_dummy_icon.png',
-                                        width: GlobalAppDisplay.safeHeight * 0.105,
-                                        height: GlobalAppDisplay.safeHeight * 0.105,
+                                        width: safeHeight * 0.105,
+                                        height: safeHeight * 0.105,
                                         fit: BoxFit.contain,
                                       ),
                                     ),
@@ -436,9 +480,15 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: _isDummyTeam
-                                                ? Color.fromRGBO(247, 120, 9, 1.0)
+                                                ? Color.fromRGBO(
+                                                    247,
+                                                    120,
+                                                    9,
+                                                    1.0,
+                                                  )
                                                 : Colors.amber,
-                                            width: ((GlobalAppDisplay.safeHeight * 0.105) * 0.03),
+                                            width:
+                                                ((safeHeight * 0.105) * 0.03),
                                           ),
                                         ),
                                       ),
@@ -460,183 +510,222 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(_responsiveTile * 0.047),
-                child: 
-                  // SIDE-BY-SIDE MAIN CONTAINER
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // LEFT COLUMN: 2 PLAYERS AVATAR PREVIEW & PICKER BUTTONS
-                      Expanded(
-                        flex: 0,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              //mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // PLAYER 1 SLOT
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    _buildPlayerAvatarMainUI(
-                                      avatarHeight: avatarHeight,
-                                      selectedAvatarCodePlayer: _selectedAvatarCodePlayer1,
-                                      selectedPlayer: _selectedPlayer1,
-                                      onTap: () => _pickPlayer1(avatarHeight),
-                                    ),
-                                
-                                    SizedBox(height: _responsiveTile * 0.022),
-                              
-                                    MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: GestureDetector(
+                child:
+                    // SIDE-BY-SIDE MAIN CONTAINER
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // LEFT COLUMN: 2 PLAYERS AVATAR PREVIEW & PICKER BUTTONS
+                        Expanded(
+                          flex: 0,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                //mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // PLAYER 1 SLOT
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      _buildPlayerAvatarMainUI(
+                                        avatarHeight: avatarHeight,
+                                        selectedAvatarCodePlayer:
+                                            _selectedAvatarCodePlayer1,
+                                        selectedPlayer: _selectedPlayer1,
                                         onTap: () => _pickPlayer1(avatarHeight),
-                                        child: Container(
-                                          padding: EdgeInsets.only(
-                                            left: _responsiveTile * 0.034,
-                                            right: _responsiveTile * 0.034,
-                                            top: _responsiveTile * 0.012,
-                                            bottom: _responsiveTile * 0.012,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: widget.enuSettingType.tileColor,
-                                            borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'SELECT\nPLAYER 1',
-                                            textAlign: TextAlign.center,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.70).clamp(7.0, 60.0),
-                                            ),
-                                          ),
-                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
 
-                                SizedBox(width: _responsiveTile * 0.022),
+                                      SizedBox(height: _responsiveTile * 0.022),
 
-                                // PLAYER 2 SLOT
-                                AbsorbPointer(
-                                  absorbing: _isDummyTeam,
-                                  child: Opacity(
-                                    opacity: _isDummyTeam ? 0.45 : 1.0,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        _buildPlayerAvatarMainUI(
-                                          avatarHeight: avatarHeight,
-                                          selectedAvatarCodePlayer: _selectedAvatarCodePlayer2,
-                                          selectedPlayer: _selectedPlayer2,
-                                          onTap: () => _pickPlayer2(avatarHeight),
-                                        ),
-                                    
-                                        SizedBox(height: _responsiveTile * 0.022),
-                                  
-                                        MouseRegion(
-                                          cursor: _isDummyTeam ? SystemMouseCursors.basic : SystemMouseCursors.click,
-                                          child: GestureDetector(
-                                            onTap: _isDummyTeam ? null : () => _pickPlayer2(avatarHeight),
-                                            child: Container(
-                                              padding: EdgeInsets.only(
+                                      MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: GestureDetector(
+                                          onTap: () =>
+                                              _pickPlayer1(avatarHeight),
+                                          child: Container(
+                                            padding: EdgeInsets.only(
                                               left: _responsiveTile * 0.034,
                                               right: _responsiveTile * 0.034,
                                               top: _responsiveTile * 0.012,
                                               bottom: _responsiveTile * 0.012,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: widget.enuSettingType.tileColor,
-                                              borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
+                                              color: widget
+                                                  .enuSettingType
+                                                  .tileColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    _responsiveTile * 0.08,
+                                                  ),
                                               border: Border.all(
                                                 color: Colors.white,
-                                                width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
+                                                width: (_responsiveTile * 0.006)
+                                                    .clamp(1.5, 4.0),
                                               ),
                                             ),
                                             child: Text(
-                                              'SELECT\nPLAYER 2',
+                                              'SELECT\nPLAYER 1',
                                               textAlign: TextAlign.center,
                                               style: gBuildArcadeTextStyle(
-                                                (_responsiveFontSize * 0.70).clamp(7.0, 60.0),
+                                                (_responsiveFontSize * 0.70)
+                                                    .clamp(7.0, 60.0),
                                               ),
-                                            ),
                                             ),
                                           ),
                                         ),
-                                      ],
+                                      ),
+                                    ],
+                                  ),
+
+                                  SizedBox(width: _responsiveTile * 0.022),
+
+                                  // PLAYER 2 SLOT
+                                  AbsorbPointer(
+                                    absorbing: _isDummyTeam,
+                                    child: Opacity(
+                                      opacity: _isDummyTeam ? 0.45 : 1.0,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          _buildPlayerAvatarMainUI(
+                                            avatarHeight: avatarHeight,
+                                            selectedAvatarCodePlayer:
+                                                _selectedAvatarCodePlayer2,
+                                            selectedPlayer: _selectedPlayer2,
+                                            onTap: () =>
+                                                _pickPlayer2(avatarHeight),
+                                          ),
+
+                                          SizedBox(
+                                            height: _responsiveTile * 0.022,
+                                          ),
+
+                                          MouseRegion(
+                                            cursor: _isDummyTeam
+                                                ? SystemMouseCursors.basic
+                                                : SystemMouseCursors.click,
+                                            child: GestureDetector(
+                                              onTap: _isDummyTeam
+                                                  ? null
+                                                  : () => _pickPlayer2(
+                                                      avatarHeight,
+                                                    ),
+                                              child: Container(
+                                                padding: EdgeInsets.only(
+                                                  left: _responsiveTile * 0.034,
+                                                  right:
+                                                      _responsiveTile * 0.034,
+                                                  top: _responsiveTile * 0.012,
+                                                  bottom:
+                                                      _responsiveTile * 0.012,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: widget
+                                                      .enuSettingType
+                                                      .tileColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        _responsiveTile * 0.08,
+                                                      ),
+                                                  border: Border.all(
+                                                    color: Colors.white,
+                                                    width:
+                                                        (_responsiveTile *
+                                                                0.006)
+                                                            .clamp(1.5, 4.0),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  'SELECT\nPLAYER 2',
+                                                  textAlign: TextAlign.center,
+                                                  style: gBuildArcadeTextStyle(
+                                                    (_responsiveFontSize * 0.70)
+                                                        .clamp(7.0, 60.0),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(width: _responsiveTile * 0.08),
-                      
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006, horizontal: _responsiveTile * 0.004),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade900,
-                          borderRadius: BorderRadius.circular(_responsiveTile * 0.096), // Pill shape
-                          border: Border.all(
-                            color: Colors.white,
-                            width: _responsiveTile * 0.004,
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(_responsiveTile * 0.096),
-                          child: SizedBox(
-                            width: _responsiveTile * 0.01,
-                            height: _responsiveTile * 0.75,
-                            child: RotatedBox(
-                              quarterTurns: 1,
-                              child: LinearProgressIndicator(
-                                value: 1,
-                                backgroundColor: Colors.transparent,
-                                color: widget.enuSettingType.tileColor,
-                                minHeight: _responsiveTile * 0.0077,
+
+                        SizedBox(width: _responsiveTile * 0.08),
+
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: _responsiveTile * 0.006,
+                            horizontal: _responsiveTile * 0.004,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(
+                              _responsiveTile * 0.096,
+                            ), // Pill shape
+                            border: Border.all(
+                              color: Colors.white,
+                              width: _responsiveTile * 0.004,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              _responsiveTile * 0.096,
+                            ),
+                            child: SizedBox(
+                              width: _responsiveTile * 0.01,
+                              height: _responsiveTile * 0.75,
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: LinearProgressIndicator(
+                                  value: 1,
+                                  backgroundColor: Colors.transparent,
+                                  color: widget.enuSettingType.tileColor,
+                                  minHeight: _responsiveTile * 0.0077,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      
-                      SizedBox(width: _responsiveTile * 0.08),
 
-                      // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
-                      Expanded(
-                        child: Center(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child:Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: cardWidth,
-                                  child: gBuildTeamCardH(
-                                    cardWidth: cardWidth,
-                                    cardHeight: cardHeight,
-                                    selectedPlayer1: _selectedPlayer1,
-                                    selectedPlayer2: _selectedPlayer2,
-                                    isDummyTeam: _isDummyTeam,
-                                    colorBgAvatar: widget.enuSettingType.tileColor,
-                                    isSlicedCard: false,
+                        SizedBox(width: _responsiveTile * 0.08),
+
+                        // RIGHT COLUMN: AVATAR PREVIEW & PICKER BUTTON
+                        Expanded(
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: cardWidth,
+                                    child: gBuildTeamCardH(
+                                      cardWidth: cardWidth,
+                                      cardHeight: cardHeight,
+                                      selectedPlayer1: _selectedPlayer1,
+                                      selectedPlayer2: _selectedPlayer2,
+                                      isDummyTeam: _isDummyTeam,
+                                      colorBgAvatar:
+                                          widget.enuSettingType.tileColor,
+                                      isSlicedCard: false,
+                                    ),
                                   ),
-                                ),
-                                
-                                // Delete Team button
-                                if (widget.enuFormMode == FormMode.formModify &&
-                                  widget.modifyTeam != null) ...[
-                                    
+
+                                  // Delete Team button
+                                  if (widget.enuFormMode ==
+                                          FormMode.formModify &&
+                                      widget.modifyTeam != null) ...[
                                     SizedBox(height: _responsiveTile * 0.02),
-                                
+
                                     MouseRegion(
                                       cursor: SystemMouseCursors.click,
                                       child: GestureDetector(
@@ -650,10 +739,13 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.red.shade800,
-                                            borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
+                                            borderRadius: BorderRadius.circular(
+                                              _responsiveTile * 0.08,
+                                            ),
                                             border: Border.all(
                                               color: Colors.white,
-                                              width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
+                                              width: (_responsiveTile * 0.006)
+                                                  .clamp(1.5, 4.0),
                                             ),
                                           ),
                                           child: Row(
@@ -661,16 +753,20 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                             children: [
                                               SvgPicture.asset(
                                                 'assets/svg/ui_buttons/player_team_delete.svg',
-                                                width: (_responsiveTile * 0.13).clamp(32.0, 160.0),
-                                                height: (_responsiveTile * 0.13).clamp(32.0, 160.0),
+                                                width: (_responsiveTile * 0.13)
+                                                    .clamp(32.0, 160.0),
+                                                height: (_responsiveTile * 0.13)
+                                                    .clamp(32.0, 160.0),
                                                 fit: BoxFit.contain,
                                               ),
                                               //const SizedBox(width: 2),
                                               Text(
                                                 'DELETE THIS TEAM',
                                                 style: gBuildArcadeTextStyle(
-                                                  (_responsiveFontSize * 0.80).clamp(7.0, 60.0),
-                                                  gTextColor: Colors.lightBlueAccent,
+                                                  (_responsiveFontSize * 0.80)
+                                                      .clamp(7.0, 60.0),
+                                                  gTextColor:
+                                                      Colors.lightBlueAccent,
                                                 ),
                                               ),
                                             ],
@@ -678,17 +774,17 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                                         ),
                                       ),
                                     ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
               ),
             ),
-          ]
+          ],
         ),
       ),
     );
@@ -751,7 +847,9 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                        borderRadius: BorderRadius.circular(
+                          avatarHeight * 0.04,
+                        ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: avatarHeight * 0.006,
@@ -770,7 +868,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                       ),
                     ),
                   ),
-                )
+                ),
             ],
           ),
         ),

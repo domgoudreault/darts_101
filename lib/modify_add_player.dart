@@ -12,7 +12,7 @@ import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 
-class ModifyAddPlayerForm extends StatefulWidget {  
+class ModifyAddPlayerForm extends StatefulWidget {
   final FormMode enuFormMode;
   final TblPlayer? modifyPlayer;
   final GlobalSettingType enuSettingType;
@@ -55,25 +55,25 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   void initState() {
     super.initState();
     // If we are modifying, fill the controllers with existing data
-    if (widget.enuFormMode == FormMode.formModify && widget.modifyPlayer != null) {
+    if (widget.enuFormMode == FormMode.formModify &&
+        widget.modifyPlayer != null) {
       _firstNameController.text = widget.modifyPlayer!.fldFirstName;
       _lastNameController.text = widget.modifyPlayer!.fldLastName;
       _nickNameController.text = widget.modifyPlayer!.fldNickName;
       _selectedAvatarCode = widget.modifyPlayer!.fldAvatar.fldAvatarCode;
-    }
-    else {
+    } else {
       _selectedAvatarCode = 'question';
-    }    
+    }
   }
 
   void _savePlayer() {
     // 1. Check if an avatar was selected (block if still placeholder 'question')
     if (_selectedAvatarCode == 'question') {
       gShowArcadeErrorSnackBar(
-        gContext: context, 
-        gFontSize: (_responsiveFontSize * 0.70).clamp(10.0, 60.0), 
+        gContext: context,
+        gFontSize: (_responsiveFontSize * 0.70).clamp(10.0, 60.0),
         gMessage: 'PLEASE SELECT AN AVATAR!',
-        gDuration: 2
+        gDuration: 2,
       );
       return;
     }
@@ -81,10 +81,10 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     // 2. Validate form fields
     if (_nickNameController.text.trim().isEmpty) {
       gShowArcadeErrorSnackBar(
-        gContext: context, 
-        gMessage: 'NICKNAME IS REQUIRED!', 
+        gContext: context,
+        gMessage: 'NICKNAME IS REQUIRED!',
         gFontSize: _responsiveFontSize,
-        gDuration: 2
+        gDuration: 2,
       );
       return;
     }
@@ -93,23 +93,28 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     final Iterable<TblPlayer> activePlayers;
 
     if (widget.enuFormMode == FormMode.formAdd) {
-      activePlayers = Hive.box<TblPlayer>('playersBox').values
-        .where((player) => !player.fldIsDeleted);
+      activePlayers = Hive.box<TblPlayer>(
+        'playersBox',
+      ).values.where((player) => !player.fldIsDeleted);
     } else {
-      activePlayers = Hive.box<TblPlayer>('playersBox').values
-        .where((player) => !player.fldIsDeleted && player.key != widget.modifyPlayer?.key);
+      activePlayers = Hive.box<TblPlayer>('playersBox').values.where(
+        (player) =>
+            !player.fldIsDeleted && player.key != widget.modifyPlayer?.key,
+      );
     }
-    
+
     final bool isDuplicateNickName = activePlayers.any(
-      (player) => player.fldNickName.trim().toLowerCase() == _nickNameController.text.trim().toLowerCase(),
+      (player) =>
+          player.fldNickName.trim().toLowerCase() ==
+          _nickNameController.text.trim().toLowerCase(),
     );
 
     if (isDuplicateNickName) {
       gShowArcadeErrorSnackBar(
-        gContext: context, 
-        gMessage: 'NICKNAME ALREADY EXISTS!', 
+        gContext: context,
+        gMessage: 'NICKNAME ALREADY EXISTS!',
         gFontSize: _responsiveFontSize,
-        gDuration: 2
+        gDuration: 2,
       );
       return;
     }
@@ -120,7 +125,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     // Get the playersBox from Hive
     final playersBox = Hive.box<TblPlayer>('playersBox');
 
-    if (widget.enuFormMode == FormMode.formAdd){
+    if (widget.enuFormMode == FormMode.formAdd) {
       // Create the player object
       final player = TblPlayer(
         fldFirstName: _firstNameController.text.trim(),
@@ -128,26 +133,29 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         fldNickName: _nickNameController.text.trim(),
         fldIsDeleted: false,
         fldIsLeagueMember: false,
-        fldAvatar: avatarsBox.values.firstWhere((a) => a.fldAvatarCode == _selectedAvatarCode),
+        fldAvatar: avatarsBox.values.firstWhere(
+          (a) => a.fldAvatarCode == _selectedAvatarCode,
+        ),
       );
 
-      // Add to Hive        
+      // Add to Hive
       playersBox.add(player);
-      
+
       // Return to previous screen
-      Navigator.pop(context, true);    
-
+      Navigator.pop(context, true);
     } else {
-        widget.modifyPlayer?.fldFirstName = _firstNameController.text.trim();
-        widget.modifyPlayer?.fldLastName = _lastNameController.text.trim();
-        widget.modifyPlayer?.fldNickName = _nickNameController.text.trim();
-        widget.modifyPlayer?.fldAvatar = avatarsBox.values.firstWhere((a) => a.fldAvatarCode == _selectedAvatarCode);
+      widget.modifyPlayer?.fldFirstName = _firstNameController.text.trim();
+      widget.modifyPlayer?.fldLastName = _lastNameController.text.trim();
+      widget.modifyPlayer?.fldNickName = _nickNameController.text.trim();
+      widget.modifyPlayer?.fldAvatar = avatarsBox.values.firstWhere(
+        (a) => a.fldAvatarCode == _selectedAvatarCode,
+      );
 
-        // Save to Hive        
-        widget.modifyPlayer?.save();
+      // Save to Hive
+      widget.modifyPlayer?.save();
 
-        // Return to previous screen
-        Navigator.pop(context, false);
+      // Return to previous screen
+      Navigator.pop(context, false);
     }
   }
 
@@ -161,16 +169,22 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           backgroundColor: Colors.grey.shade900,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
-            side: BorderSide(color: Colors.redAccent, width: (_responsiveTile * 0.002).clamp(1.5, 4.0)),
+            side: BorderSide(
+              color: Colors.redAccent,
+              width: (_responsiveTile * 0.002).clamp(1.5, 4.0),
+            ),
           ),
           title: Text(
             'DELETE THIS PLAYER?',
-            style: gBuildArcadeTextStyle(_responsiveFontSize * 1.4, gTextColor: Colors.redAccent),
+            style: gBuildArcadeTextStyle(
+              _responsiveFontSize * 1.4,
+              gTextColor: Colors.redAccent,
+            ),
           ),
           content: Text(
             'Are you sure you want to remove "$playerNickname" ?',
             style: TextStyle(
-              color: Colors.white, 
+              color: Colors.white,
               fontSize: (_responsiveFontSize * 0.90).clamp(10.0, 60.0),
             ),
           ),
@@ -179,7 +193,10 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text(
                 'CANCEL',
-                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.grey.shade400),
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.90,
+                  gTextColor: Colors.grey.shade400,
+                ),
               ),
             ),
             ElevatedButton(
@@ -196,19 +213,23 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                   // 2. Cascade delete: Soft-delete all teams containing this player
                   final teamsBox = Hive.box<TblTeam>('teamsBox');
                   for (final team in teamsBox.values) {
-                    if (!team.fldIsDeleted && team.fldPlayers.contains(player)) {
+                    if (!team.fldIsDeleted &&
+                        team.fldPlayers.contains(player)) {
                       team.fldIsDeleted = true;
                       team.save();
                     }
                   }
                 }
 
-                Navigator.of(ctx).pop();    // Close dialog
+                Navigator.of(ctx).pop(); // Close dialog
                 Navigator.of(context).pop(); // Return to previous screen
               },
               child: Text(
                 'DELETE',
-                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.90, gTextColor: Colors.white),
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.90,
+                  gTextColor: Colors.white,
+                ),
               ),
             ),
           ],
@@ -220,9 +241,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   void _showAvatarPicker(double avatarHeight) {
     final avatarsBox = Hive.box<TblAvatar>('avatarsBox');
     final List<TblAvatar> avatarList = avatarsBox.values
-      .where((avatar) => avatar.fldAvatarCode != 'question')
-      .toList();
-    
+        .where((avatar) => avatar.fldAvatarCode != 'question')
+        .toList();
+
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -230,7 +251,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(_responsiveTile * 0.037)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(_responsiveTile * 0.037),
+        ),
       ),
       builder: (BuildContext context) {
         return SafeArea(
@@ -242,8 +265,12 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
               children: [
                 Container(
                   width: double.infinity,
-                  margin: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.005),
-                  padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.020),
+                  margin: EdgeInsets.symmetric(
+                    horizontal: _responsiveTile * 0.005,
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    vertical: _responsiveTile * 0.020,
+                  ),
                   decoration: BoxDecoration(
                     color: GlobalSettingType.players.tilePickerColor,
                     border: Border.all(
@@ -251,21 +278,24 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                       width: GlobalAppDisplay.safeHeight * 0.002,
                     ),
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(_responsiveTile * 0.034), // Matches outer 20px sheet curve perfectly
-                      bottom: Radius.zero,       // Sharp, edgy straight cut at the bottom
+                      top: Radius.circular(
+                        _responsiveTile * 0.034,
+                      ), // Matches outer 20px sheet curve perfectly
+                      bottom:
+                          Radius.zero, // Sharp, edgy straight cut at the bottom
                     ),
                   ),
                   child: Text(
                     'SELECT AN AVATAR',
                     textAlign: TextAlign.center,
                     style: gBuildArcadeTextStyle(
-                      (_responsiveFontSize * 0.70).clamp(10.0, 60.0)
+                      (_responsiveFontSize * 0.70).clamp(10.0, 60.0),
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: _responsiveTile * 0.022),
-                
+
                 SizedBox(
                   height: avatarHeight,
                   child: CarouselView(
@@ -303,22 +333,22 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   @override
   Widget build(BuildContext context) {
     MediaQuery.sizeOf(context); // Triggers re-render on resize
-    
-    final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
-    final avatarHeight = (GlobalAppDisplay.safeHeight - toolbarHeight) * (0.369);
+
+    final safeHeight = GlobalAppDisplay.safeHeight;
+    final toolbarHeight = (safeHeight * 0.10).clamp(56.0, 142.0);
+    final avatarHeight = (safeHeight - toolbarHeight) * (0.369);
 
     return Scaffold(
       backgroundColor: widget.enuSettingType.tileBackgroundColor,
-      appBar: 
-        gBuildAppBar(
-          gToolbarHeight: toolbarHeight,
-          gAppBarTitle: widget.enuSettingType.tileDisplayName, 
-          gAppBarColorBg: widget.enuSettingType.tileColor,
-          gCallFromMainScreen: false,
-          gOnPressed: null,
-          gRightPopupMenu: null,
+      appBar: gBuildAppBar(
+        gToolbarHeight: toolbarHeight,
+        gAppBarTitle: widget.enuSettingType.tileDisplayName,
+        gAppBarColorBg: widget.enuSettingType.tileColor,
+        gCallFromMainScreen: false,
+        gOnPressed: null,
+        gRightPopupMenu: null,
       ),
-      
+
       body: SafeArea(
         child: Column(
           children: [
@@ -328,21 +358,21 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 horizontal: _responsiveTile * 0.06,
                 vertical: _responsiveTile * 0.02,
               ),
-              height: (GlobalAppDisplay.safeHeight-toolbarHeight) * (1/7),
+              height: (safeHeight - toolbarHeight) * (1 / 7),
               color: Colors.grey.shade900,
               child: Column(
                 children: [
                   Flexible(
                     child:
-                      // 1.1 Save Player Banner
-                      gBuildArcadeActionBanner(
-                        gLeadingText: 'SAVE',
-                        gTrailingText: 'PLAYER',
-                        gFormMode: FormMode.formModify,
-                        gOnTap: () => _savePlayer(),
-                      ),
-                    ),
-                ]
+                        // 1.1 Save Player Banner
+                        gBuildArcadeActionBanner(
+                          gLeadingText: 'SAVE',
+                          gTrailingText: 'PLAYER',
+                          gFormMode: FormMode.formModify,
+                          gOnTap: () => _savePlayer(),
+                        ),
+                  ),
+                ],
               ),
             ),
 
@@ -352,160 +382,194 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 key: _formKey,
                 child: SingleChildScrollView(
                   padding: EdgeInsets.all(_responsiveTile * 0.047),
-                  child: 
-                    // SIDE-BY-SIDE MAIN CONTAINER
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // LEFT COLUMN: AVATAR PREVIEW & PICKER BUTTON
-                        Expanded(
-                          flex: 0,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildAvatarMainUI(avatarHeight),
-                                  
-                                  SizedBox(height: _responsiveTile * 0.022),
-                                  
-                                  // Trigger button for the upcoming avatar picker dialog/pop-up
+                  child:
+                      // SIDE-BY-SIDE MAIN CONTAINER
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // LEFT COLUMN: AVATAR PREVIEW & PICKER BUTTON
+                          Expanded(
+                            flex: 0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _buildAvatarMainUI(avatarHeight),
+
+                                    SizedBox(height: _responsiveTile * 0.022),
+
+                                    // Trigger button for the upcoming avatar picker dialog/pop-up
+                                    MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: GestureDetector(
+                                        onTap: () =>
+                                            _showAvatarPicker(avatarHeight),
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: (_responsiveTile * 0.02)
+                                                .clamp(8.0, 24.0),
+                                            vertical: (_responsiveTile * 0.015)
+                                                .clamp(6.0, 20.0),
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                widget.enuSettingType.tileColor,
+                                            borderRadius: BorderRadius.circular(
+                                              _responsiveTile * 0.04,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: (_responsiveTile * 0.006)
+                                                  .clamp(1.5, 4.0),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'SELECT AVATAR',
+                                            style: gBuildArcadeTextStyle(
+                                              (_responsiveFontSize * 0.70)
+                                                  .clamp(10.0, 60.0),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(width: _responsiveTile * 0.08),
+
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: _responsiveTile * 0.006,
+                              horizontal: _responsiveTile * 0.004,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade900,
+                              borderRadius: BorderRadius.circular(
+                                _responsiveTile * 0.096,
+                              ), // Pill shape
+                              border: Border.all(
+                                color: Colors.white,
+                                width: _responsiveTile * 0.004,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                _responsiveTile * 0.096,
+                              ),
+                              child: SizedBox(
+                                width: _responsiveTile * 0.01,
+                                height: _responsiveTile * 0.75,
+                                child: RotatedBox(
+                                  quarterTurns: 1,
+                                  child: LinearProgressIndicator(
+                                    value: 1,
+                                    backgroundColor: Colors.transparent,
+                                    color: widget.enuSettingType.tileColor,
+                                    minHeight: _responsiveTile * 0.0077,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(width: _responsiveTile * 0.08),
+
+                          // RIGHT COLUMN: TEXT FIELDS
+                          Expanded(
+                            child: Column(
+                              children: [
+                                _buildTextField(
+                                  _firstNameController,
+                                  'First Name',
+                                ),
+
+                                SizedBox(height: _responsiveTile * 0.022),
+
+                                _buildTextField(
+                                  _lastNameController,
+                                  'Last Name',
+                                ),
+
+                                SizedBox(height: _responsiveTile * 0.022),
+
+                                _buildTextField(
+                                  _nickNameController,
+                                  'Nickname',
+                                ),
+
+                                // DELETE PLAYER BUTTON
+                                if (widget.enuFormMode == FormMode.formModify &&
+                                    widget.modifyPlayer != null &&
+                                    !widget
+                                        .modifyPlayer!
+                                        .fldIsLeagueMember) ...[
+                                  SizedBox(height: _responsiveTile * 0.10),
+
                                   MouseRegion(
                                     cursor: SystemMouseCursors.click,
                                     child: GestureDetector(
-                                      onTap: () => _showAvatarPicker(avatarHeight),
-                                      child: Container(                                        
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: (_responsiveTile * 0.02).clamp(8.0, 24.0),
-                                          vertical: (_responsiveTile * 0.015).clamp(6.0, 20.0),
+                                      onTap: _deletePlayer,
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          left: _responsiveTile * 0.014,
+                                          right: _responsiveTile * 0.034,
+                                          top: _responsiveTile * 0.008,
+                                          bottom: _responsiveTile * 0.008,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: widget.enuSettingType.tileColor,
-                                          borderRadius: BorderRadius.circular(_responsiveTile * 0.04),
+                                          color: Colors.red.shade800,
+                                          borderRadius: BorderRadius.circular(
+                                            _responsiveTile * 0.08,
+                                          ),
                                           border: Border.all(
                                             color: Colors.white,
-                                            width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
+                                            width: (_responsiveTile * 0.006)
+                                                .clamp(1.5, 4.0),
                                           ),
                                         ),
-                                        child: Text(
-                                          'SELECT AVATAR', 
-                                          style: gBuildArcadeTextStyle((_responsiveFontSize * 0.70).clamp(10.0, 60.0))
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/svg/ui_buttons/player_team_delete.svg',
+                                              width: (_responsiveTile * 0.13)
+                                                  .clamp(48.0, 160.0),
+                                              height: (_responsiveTile * 0.13)
+                                                  .clamp(48.0, 160.0),
+                                              fit: BoxFit.contain,
+                                            ),
+                                            //const SizedBox(width: 2),
+                                            Text(
+                                              'DELETE THIS PLAYER',
+                                              style: gBuildArcadeTextStyle(
+                                                (_responsiveFontSize * 0.80)
+                                                    .clamp(10.0, 60.0),
+                                                gTextColor:
+                                                    Colors.lightBlueAccent,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(width: _responsiveTile * 0.08),
-
-                        Container(
-                          padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006, horizontal: _responsiveTile * 0.004),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade900,
-                            borderRadius: BorderRadius.circular(_responsiveTile * 0.096), // Pill shape
-                            border: Border.all(
-                              color: Colors.white,
-                              width: _responsiveTile * 0.004,
+                              ],
                             ),
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(_responsiveTile * 0.096),
-                            child: SizedBox(
-                              width: _responsiveTile * 0.01,
-                              height: _responsiveTile * 0.75,
-                              child: RotatedBox(
-                                quarterTurns: 1,
-                                child: LinearProgressIndicator(
-                                  value: 1,
-                                  backgroundColor: Colors.transparent,
-                                  color: widget.enuSettingType.tileColor,
-                                  minHeight: _responsiveTile * 0.0077,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(width: _responsiveTile * 0.08),
-
-                        // RIGHT COLUMN: TEXT FIELDS
-                        Expanded(
-                          child: Column(
-                            children: [
-                              _buildTextField(_firstNameController, 'First Name'),
-                              
-                              SizedBox(height: _responsiveTile * 0.022),
-                              
-                              _buildTextField(_lastNameController, 'Last Name'),
-                              
-                              SizedBox(height: _responsiveTile * 0.022),
-                              
-                              _buildTextField(_nickNameController, 'Nickname'),
-
-                              // DELETE PLAYER BUTTON
-                              if (widget.enuFormMode == FormMode.formModify &&
-                                    widget.modifyPlayer != null &&
-                                    !widget.modifyPlayer!.fldIsLeagueMember) ...[
-                                
-                                SizedBox(height: _responsiveTile * 0.10),
-
-                                MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: GestureDetector(
-                                    onTap: _deletePlayer,
-                                    child: Container(
-                                      padding: EdgeInsets.only(
-                                        left: _responsiveTile * 0.014,
-                                        right: _responsiveTile * 0.034,
-                                        top: _responsiveTile * 0.008,
-                                        bottom: _responsiveTile * 0.008,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red.shade800,
-                                        borderRadius: BorderRadius.circular(_responsiveTile * 0.08),
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: (_responsiveTile * 0.006).clamp(1.5, 4.0),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/svg/ui_buttons/player_team_delete.svg',
-                                            width: (_responsiveTile * 0.13).clamp(48.0, 160.0),
-                                            height: (_responsiveTile * 0.13).clamp(48.0, 160.0),
-                                            fit: BoxFit.contain,
-                                          ),
-                                          //const SizedBox(width: 2),
-                                          Text(
-                                            'DELETE THIS PLAYER',
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.80).clamp(10.0, 60.0),
-                                              gTextColor: Colors.lightBlueAccent,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ]
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                 ),
               ),
             ),
-          ]
+          ],
         ),
       ),
     );
@@ -532,15 +596,21 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                 color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(_responsiveTile * 0.04),
                 border: Border.all(
-                  color: isFocused ? Colors.purpleAccent.shade700 : Colors.grey.shade700,
-                  width: isFocused ? (_responsiveTile * 0.008).clamp(2.0, 4.0) : 1.5,
+                  color: isFocused
+                      ? Colors.purpleAccent.shade700
+                      : Colors.grey.shade700,
+                  width: isFocused
+                      ? (_responsiveTile * 0.008).clamp(2.0, 4.0)
+                      : 1.5,
                 ),
               ),
               child: TextFormField(
                 controller: controller,
                 style: gBuildArcadeTextStyle(_responsiveFontSize),
                 textCapitalization: TextCapitalization.words,
-                textInputAction: label == 'Nickname' ? TextInputAction.done : TextInputAction.next,
+                textInputAction: label == 'Nickname'
+                    ? TextInputAction.done
+                    : TextInputAction.next,
                 decoration: InputDecoration(
                   isDense: true,
                   labelText: label,
@@ -622,7 +692,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                color: avatar.fldIsMale ? Colors.blue.shade200 : Colors.pink.shade200,
+                color: avatar.fldIsMale
+                    ? Colors.blue.shade200
+                    : Colors.pink.shade200,
                 shape: BoxShape.circle,
               ),
             ),

@@ -21,33 +21,37 @@ import 'package:darts_101/helpers_dartboard.dart';
 class GameHalfItScreen extends StatefulWidget {
   final TblGame game;
   final bool resumeMode;
-  
+
   const GameHalfItScreen({
-    super.key, 
+    super.key,
     required this.game,
-    required this.resumeMode
+    required this.resumeMode,
   });
 
   @override
   State<GameHalfItScreen> createState() => _GameHalfItScreenState();
 }
 
-class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProviderStateMixin {
+class _GameHalfItScreenState extends State<GameHalfItScreen>
+    with TickerProviderStateMixin {
   // Define all responsive height and width of the rosters selection UI
-  final toolbarHeight = (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
-  double get headerHeight => (GlobalAppDisplay.safeHeight - toolbarHeight) * (1/6);
-  double get heightBoostPlayerPanel => (GlobalAppDisplay.safeHeight - toolbarHeight - (headerHeight * 0.006 * 2)) * 0.595;
-  double get heightBoostTeamPanel => (GlobalAppDisplay.safeHeight - toolbarHeight - (headerHeight * 0.006 * 2)) * 0.45;
-  double get avatarHeight => headerHeight * 2;
-  double get avatarHeightOuterSize => avatarHeight * 1.12;
-  double get avatarSlicedWidth => avatarHeight * 0.42;
-  double get avatarSlicedWidthOuterSize => avatarSlicedWidth * 1.12;
-  double get cardHeight => headerHeight * 1.9;
-  double get cardWidth => cardHeight * 1.4628;
-  double get cardWidthOuterSize => cardWidth * 1.12;
-  double get cardSlicedHeight => cardWidth * 0.305;
-  double get cardSlicedHeightOuterSize => cardSlicedHeight * 1.12;
-  
+  double get _safeHeight => GlobalAppDisplay.safeHeight;
+  double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
+  double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 6);
+  double get _heightBoostPlayerPanel =>
+      (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.595;
+  double get _heightBoostTeamPanel =>
+      (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.45;
+  double get _avatarHeight => _headerHeight * 2;
+  double get _avatarHeightOuterSize => _avatarHeight * 1.12;
+  double get _avatarSlicedWidth => _avatarHeight * 0.42;
+  double get _avatarSlicedWidthOuterSize => _avatarSlicedWidth * 1.12;
+  double get _cardHeight => _headerHeight * 1.9;
+  double get _cardWidth => _cardHeight * 1.4628;
+  double get _cardWidthOuterSize => _cardWidth * 1.12;
+  double get _cardSlicedHeight => _cardWidth * 0.305;
+  double get _cardSlicedHeightOuterSize => _cardSlicedHeight * 1.12;
+
   late AnimationController _slashController;
   bool _showSlash = false;
   // flags for animation HitsBadge
@@ -60,7 +64,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   GameProgressState _progress = GameProgressState();
 
-  double get _responsiveTile => GlobalAppDisplay.safeHeight * 0.67;
+  double get _responsiveTile => _safeHeight * 0.67;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(8.0, 60.0);
 
   // Every declaration reusable needed for this game
@@ -72,7 +76,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       ..sort((a, b) => a.position.compareTo(b.position));
     return sorted.map((config) => config.bgColor).toList();
   }
-  
+
   // Sort slot colors to match team positions
   List<Color> get teamsSlotColors {
     final sorted = GlobalTeamsGridConfig.values.toList()
@@ -81,7 +85,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }
 
   // Pair each player with their original index and player color for the game
-  List<({TblPlayer player, int originalIndex, Color playerColor})> get _gamePlayers => List.generate(_gameConfig.fldPlayers.length, (index) {
+  List<({TblPlayer player, int originalIndex, Color playerColor})>
+  get _gamePlayers => List.generate(_gameConfig.fldPlayers.length, (index) {
     return (
       player: _gameConfig.fldPlayers[index],
       originalIndex: index,
@@ -108,63 +113,96 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   bool get _isPlayerMode => _gameConfig.fldPlayersGM;
 
   TblPlayer get _activePlayer => _gamePlayers[_progress.activeSeatIdx].player;
-  int get _activePlayerIndex => _gamePlayers[_progress.activeSeatIdx].originalIndex;
-  Color get _activePlayerColor => _gamePlayers[_progress.activeSeatIdx].playerColor;
+  int get _activePlayerIndex =>
+      _gamePlayers[_progress.activeSeatIdx].originalIndex;
+  Color get _activePlayerColor =>
+      _gamePlayers[_progress.activeSeatIdx].playerColor;
   int get _activePlayerLastScore {
-    return gamesScoresBox.values.lastWhere(
-      (gamesScores) => gamesScores.fldGame == _gameConfig && gamesScores.fldPlayer == _activePlayer,
-    ).fldScorePlayerSnapshot;
+    return gamesScoresBox.values
+        .lastWhere(
+          (gamesScores) =>
+              gamesScores.fldGame == _gameConfig &&
+              gamesScores.fldPlayer == _activePlayer,
+        )
+        .fldScorePlayerSnapshot;
   }
 
-  TblPlayer get _previousPlayer => _gamePlayers[_progress.previousSeatIdx].player;
-  int get _previousPlayerIndex => _gamePlayers[_progress.previousSeatIdx].originalIndex;
-  Color get _previousPlayerColor => _gamePlayers[_progress.previousSeatIdx].playerColor;
+  TblPlayer get _previousPlayer =>
+      _gamePlayers[_progress.previousSeatIdx].player;
+  int get _previousPlayerIndex =>
+      _gamePlayers[_progress.previousSeatIdx].originalIndex;
+  Color get _previousPlayerColor =>
+      _gamePlayers[_progress.previousSeatIdx].playerColor;
   int get _previousPlayerLastScore {
-    return gamesScoresBox.values.lastWhere(
-      (gamesScores) => gamesScores.fldGame == _gameConfig && gamesScores.fldPlayer == _previousPlayer,
-    ).fldScorePlayerSnapshot;
+    return gamesScoresBox.values
+        .lastWhere(
+          (gamesScores) =>
+              gamesScores.fldGame == _gameConfig &&
+              gamesScores.fldPlayer == _previousPlayer,
+        )
+        .fldScorePlayerSnapshot;
   }
 
   TblPlayer get _nextPlayer => _gamePlayers[_progress.nextSeatIdx].player;
   int get _nextPlayerIndex => _gamePlayers[_progress.nextSeatIdx].originalIndex;
   Color get _nextPlayerColor => _gamePlayers[_progress.nextSeatIdx].playerColor;
 
-  TblTeam get _activeTeam => _gameTeams[_progress.activeSeatIdx % _gameTeams.length].team;
-  int get _activeTeamIndex => _gameTeams[_progress.activeSeatIdx % _gameTeams.length].originalIndex;
-  Color get _activeTeamColor => _gameTeams[_progress.activeSeatIdx % _gameTeams.length].teamColor;
+  TblTeam get _activeTeam =>
+      _gameTeams[_progress.activeSeatIdx % _gameTeams.length].team;
+  int get _activeTeamIndex =>
+      _gameTeams[_progress.activeSeatIdx % _gameTeams.length].originalIndex;
+  Color get _activeTeamColor =>
+      _gameTeams[_progress.activeSeatIdx % _gameTeams.length].teamColor;
   int get _activeTeamLastScore {
-    final teamScores = gamesScoresBox.values.where((gamesScores) =>
-      gamesScores.fldGame == _gameConfig &&
-      _gameTeams.any((gameTeams) => gameTeams.team == _activeTeam && gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer))
-    );
-    return teamScores.last.fldScoreTeamSnapshot!;
-  }
-  
-  TblTeam get _previousTeam => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].team;
-  int get _previousTeamIndex => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].originalIndex;
-  Color get _previousTeamColor => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].teamColor;
-  int get _previousTeamLastScore {
-    final teamScores = gamesScoresBox.values.where((gamesScores) =>
-      gamesScores.fldGame == _gameConfig &&
-      _gameTeams.any((gameTeams) => gameTeams.team == _previousTeam && gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer))
+    final teamScores = gamesScoresBox.values.where(
+      (gamesScores) =>
+          gamesScores.fldGame == _gameConfig &&
+          _gameTeams.any(
+            (gameTeams) =>
+                gameTeams.team == _activeTeam &&
+                gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer),
+          ),
     );
     return teamScores.last.fldScoreTeamSnapshot!;
   }
 
-  TblTeam get _nextTeam => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].team;
-  int get _nextTeamIndex => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].originalIndex;
-  Color get _nextTeamColor => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
+  TblTeam get _previousTeam =>
+      _gameTeams[_progress.previousSeatIdx % _gameTeams.length].team;
+  int get _previousTeamIndex =>
+      _gameTeams[_progress.previousSeatIdx % _gameTeams.length].originalIndex;
+  Color get _previousTeamColor =>
+      _gameTeams[_progress.previousSeatIdx % _gameTeams.length].teamColor;
+  int get _previousTeamLastScore {
+    final teamScores = gamesScoresBox.values.where(
+      (gamesScores) =>
+          gamesScores.fldGame == _gameConfig &&
+          _gameTeams.any(
+            (gameTeams) =>
+                gameTeams.team == _previousTeam &&
+                gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer),
+          ),
+    );
+    return teamScores.last.fldScoreTeamSnapshot!;
+  }
+
+  TblTeam get _nextTeam =>
+      _gameTeams[_progress.nextSeatIdx % _gameTeams.length].team;
+  int get _nextTeamIndex =>
+      _gameTeams[_progress.nextSeatIdx % _gameTeams.length].originalIndex;
+  Color get _nextTeamColor =>
+      _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
   int get _activeTargetValue => gTargetsHalf[_progress.activeTargetIdx].value;
   int get _nextTargetValue => gTargetsHalf[_progress.nextTargetIdx].value;
-  
+
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
     final activeDartsThisRound = gamesScoresBox.values.where(
-      (s) => s.fldGame == _gameConfig && 
-            s.fldPlayer == _activePlayer && 
-            s.fldSeatIndex == _progress.activeSeatIdx &&
-            s.fldRound == _progress.activeRoundIdx
+      (s) =>
+          s.fldGame == _gameConfig &&
+          s.fldPlayer == _activePlayer &&
+          s.fldSeatIndex == _progress.activeSeatIdx &&
+          s.fldRound == _progress.activeRoundIdx,
     );
     return activeDartsThisRound.fold(0, (sum, record) => sum + record.fldHits);
   }
@@ -172,10 +210,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   // Get total hits for the previous player in their last completed round and specific seat index
   int get _previousPlayerLastRoundHits {
     final allDartsThisRound = gamesScoresBox.values.where(
-      (s) => s.fldGame == _gameConfig && 
-            s.fldPlayer == _previousPlayer && 
-            s.fldSeatIndex == _progress.previousSeatIdx &&
-            s.fldRound == _progress.previousRoundIdx
+      (s) =>
+          s.fldGame == _gameConfig &&
+          s.fldPlayer == _previousPlayer &&
+          s.fldSeatIndex == _progress.previousSeatIdx &&
+          s.fldRound == _progress.previousRoundIdx,
     );
     return allDartsThisRound.fold(0, (sum, record) => sum + record.fldHits);
   }
@@ -205,7 +244,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
     _slashController = AnimationController(
       vsync: this,
-      duration: kIsWeb ? Duration(seconds: 30) : Duration(seconds: 2), // Fast like a sword
+      duration: kIsWeb
+          ? Duration(seconds: 30)
+          : Duration(seconds: 2), // Fast like a sword
     );
 
     // Hide the animation overlay when it finishes playing
@@ -230,13 +271,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
     // 1. We'll store the results in a list of Map for easy sorting
     List<GameResultRecord> finalResults = [];
-    
+
     if (_isPlayerMode) {
       for (var gamePlayer in _gamePlayers) {
         final playerScores = gamesScoresBox.values.where(
           (s) => s.fldGame == _gameConfig && s.fldPlayer == gamePlayer.player,
         );
-        
+
         final lastScore = playerScores.last.fldScorePlayerSnapshot;
 
         int triples = 0;
@@ -249,17 +290,19 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
           if (score.fldTargetValue == 25) hitsBull += score.fldHits;
         }
 
-        finalResults.add(GameResultRecord(
-          objReference: gamePlayer.player,
-          originalIndex: gamePlayer.originalIndex,
-          playerPosition1: gamePlayer.originalIndex,
-          displayName: gamePlayer.player.fldNickName,
-          lastScore: lastScore,
-          color: gamePlayer.playerColor,
-          triplesCount: triples,
-          doublesCount: doubles,
-          hitsBull: hitsBull,
-        ));
+        finalResults.add(
+          GameResultRecord(
+            objReference: gamePlayer.player,
+            originalIndex: gamePlayer.originalIndex,
+            playerPosition1: gamePlayer.originalIndex,
+            displayName: gamePlayer.player.fldNickName,
+            lastScore: lastScore,
+            color: gamePlayer.playerColor,
+            triplesCount: triples,
+            doublesCount: doubles,
+            hitsBull: hitsBull,
+          ),
+        );
       }
     } else {
       for (var gameTeam in _gameTeams) {
@@ -268,9 +311,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         final teamScores = gamesScoresBox.values.where(
           (s) => s.fldGame == _gameConfig && teamPlayers.contains(s.fldPlayer),
         );
-        
+
         final lastScore = teamScores.last.fldScoreTeamSnapshot!;
-        
+
         int triples = 0;
         int doubles = 0;
         int hitsBull = 0;
@@ -286,25 +329,34 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
         // verify if dummy
         if (teamPlayers[0] == teamPlayers[1]) {
-          playerPosition1 = _gamePlayers.indexWhere((gp) => gp.player == teamPlayers[0]);
+          playerPosition1 = _gamePlayers.indexWhere(
+            (gp) => gp.player == teamPlayers[0],
+          );
           playerPosition2 = playerPosition1 + (_gamePlayers.length ~/ 2);
         } else {
-          playerPosition1 = _gamePlayers.indexWhere((gp) => gp.player == teamPlayers[0]);
-          playerPosition2 = _gamePlayers.indexWhere((gp) => gp.player == teamPlayers[1]);
+          playerPosition1 = _gamePlayers.indexWhere(
+            (gp) => gp.player == teamPlayers[0],
+          );
+          playerPosition2 = _gamePlayers.indexWhere(
+            (gp) => gp.player == teamPlayers[1],
+          );
         }
 
-        finalResults.add(GameResultRecord(
-          objReference: gameTeam.team,
-          originalIndex: gameTeam.originalIndex,
-          playerPosition1: playerPosition1,
-          playerPosition2: playerPosition2,
-          displayName: '${teamPlayers[0].fldNickName} & ${teamPlayers[1].fldNickName}',
-          lastScore: lastScore,
-          color: gameTeam.teamColor,
-          triplesCount: triples,
-          doublesCount: doubles,
-          hitsBull: hitsBull,
-        ));
+        finalResults.add(
+          GameResultRecord(
+            objReference: gameTeam.team,
+            originalIndex: gameTeam.originalIndex,
+            playerPosition1: playerPosition1,
+            playerPosition2: playerPosition2,
+            displayName:
+                '${teamPlayers[0].fldNickName} & ${teamPlayers[1].fldNickName}',
+            lastScore: lastScore,
+            color: gameTeam.teamColor,
+            triplesCount: triples,
+            doublesCount: doubles,
+            hitsBull: hitsBull,
+          ),
+        );
       }
     }
 
@@ -328,7 +380,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       if (i > 0) {
         final prev = finalResults[i - 1];
         final curr = finalResults[i];
-        bool isIdentical = (curr.lastScore == prev.lastScore &&
+        bool isIdentical =
+            (curr.lastScore == prev.lastScore &&
             curr.triplesCount == prev.triplesCount &&
             curr.doublesCount == prev.doublesCount &&
             curr.hitsBull == prev.hitsBull);
@@ -338,16 +391,19 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       }
       finalResults[i].ranking = currentRank; // Direct write!
     }
-    
+
     // 3. Extract top record & collect all winners (handles ties)
     final topScore = finalResults.first;
 
-    final List<GameResultRecord> winners = finalResults.where((result) => 
-      result.lastScore == topScore.lastScore &&
-      result.triplesCount == topScore.triplesCount &&
-      result.doublesCount == topScore.doublesCount &&
-      result.hitsBull == topScore.hitsBull
-    ).toList();
+    final List<GameResultRecord> winners = finalResults
+        .where(
+          (result) =>
+              result.lastScore == topScore.lastScore &&
+              result.triplesCount == topScore.triplesCount &&
+              result.doublesCount == topScore.doublesCount &&
+              result.hitsBull == topScore.hitsBull,
+        )
+        .toList();
 
     final bool isTie = winners.length > 1;
 
@@ -356,17 +412,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     List<TblTeam> winningTeams = [];
 
     if (_isPlayerMode) {
-      winningPlayers = winners
-          .map((r) => r.objReference as TblPlayer)
-          .toList();
+      winningPlayers = winners.map((r) => r.objReference as TblPlayer).toList();
     } else {
-      winningTeams = winners
-          .map((r) => r.objReference as TblTeam)
-          .toList();
+      winningTeams = winners.map((r) => r.objReference as TblTeam).toList();
 
       for (var record in winners) {
         final team = record.objReference as TblTeam;
-        
+
         // If it's a dummy team dummy
         if (team.fldPlayers[0] == team.fldPlayers[1]) {
           winningPlayers.add(team.fldPlayers[0]);
@@ -381,18 +433,24 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_responsiveTile * 0.03)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+        ),
         // We leave 'title' and 'actions' null to give all space to 'content'
         content: SizedBox(
           width: GlobalAppDisplay.safeWidth * 0.9,
-          height: GlobalAppDisplay.safeHeight * 0.9,
+          height: _safeHeight * 0.9,
           child: Padding(
             padding: EdgeInsets.all(_responsiveTile * 0.03),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildWinnerTopBanner(winners: winners, winningPlayers: winningPlayers, winningTeams: winningTeams),
-                
+                _buildWinnerTopBanner(
+                  winners: winners,
+                  winningPlayers: winningPlayers,
+                  winningTeams: winningTeams,
+                ),
+
                 SizedBox(height: _responsiveTile * 0.03),
 
                 Expanded(
@@ -405,10 +463,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                             if (!isTie) ...[
                               gBuildSlicedPlayerAvatarH(
                                 player: winners[0].objReference.fldPlayers[0],
-                                avatarHeight: avatarHeight,
-                                avatarHeightOuterSize: avatarHeightOuterSize,
-                                avatarSlicedWidth: avatarSlicedWidth,
-                                avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                avatarHeight: _avatarHeight,
+                                avatarHeightOuterSize: _avatarHeightOuterSize,
+                                avatarSlicedWidth: _avatarSlicedWidth,
+                                avatarSlicedWidthOuterSize:
+                                    _avatarSlicedWidthOuterSize,
                                 slotBgColor: winners[0].color,
                                 playerPosition: winners[0].playerPosition1,
                                 responsiveTile: _responsiveTile,
@@ -421,10 +480,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           ],
 
                           Center(
-                            child: SizedBox( 
+                            child: SizedBox(
                               height: _responsiveTile * 0.3,
                               width: _responsiveTile * 0.3,
-                              child:Image.asset(
+                              child: Image.asset(
                                 'assets/png/mechanics/trophy.png',
                                 fit: BoxFit.contain,
                                 filterQuality: FilterQuality.high,
@@ -441,104 +500,188 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                         child: Container(
                           decoration: BoxDecoration(
                             color: (winners[0].color).withAlpha(100),
-                            borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+                            borderRadius: BorderRadius.circular(
+                              _responsiveTile * 0.03,
+                            ),
                           ),
                           child: Column(
                             children: [
                               SingleChildScrollView(
-                                padding: EdgeInsets.all(_responsiveTile * 0.005),
+                                padding: EdgeInsets.all(
+                                  _responsiveTile * 0.005,
+                                ),
                                 child: Column(
                                   children: [
                                     // 3. STANDINGS LIST
                                     Container(
                                       width: double.infinity,
                                       alignment: Alignment.center,
-                                      padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.01),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: _responsiveTile * 0.01,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: (winners[0].color).withAlpha(220),
+                                        color: (winners[0].color).withAlpha(
+                                          220,
+                                        ),
                                         borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(_responsiveTile * 0.025),
+                                          top: Radius.circular(
+                                            _responsiveTile * 0.025,
+                                          ),
                                           bottom: Radius.zero,
                                         ),
                                       ),
                                       child: Text(
-                                        "FINAL STANDINGS", 
+                                        "FINAL STANDINGS",
                                         style: gBuildArcadeTextStyle(
                                           _responsiveFontSize,
                                           gFontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
-                                    
+
                                     SizedBox(height: _responsiveTile * 0.015),
-                                    
-                                    Row( 
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Expanded(flex: 2, child: Text(
-                                            "RANK", 
-                                            textAlign: TextAlign.center, 
+                                        Expanded(
+                                          flex:  
+                                            _isPlayerMode
+                                              ? 2 
+                                              : isTie
+                                                ? 2
+                                                : 1,
+                                          child: Text(
+                                            "RANK",
+                                            textAlign: TextAlign.center,
                                             style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
-                                              gFontWeight: FontWeight.bold
+                                              (_responsiveFontSize * 0.6).clamp(
+                                                _responsiveFontSize * 0.5,
+                                                60,
+                                              ),
+                                              gFontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                        Expanded(flex: 5, child: Text(
-                                            !_isPlayerMode ? "TEAMS" : "PLAYERS",
+                                        Expanded(
+                                          flex: 5,
+                                          child: Text(
+                                            !_isPlayerMode
+                                                ? "TEAMS"
+                                                : "PLAYERS",
                                             textAlign: TextAlign.left,
                                             style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
-                                              gFontWeight: FontWeight.bold
+                                              (_responsiveFontSize * 0.6).clamp(
+                                                _responsiveFontSize * 0.5,
+                                                60,
+                                              ),
+                                              gFontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                        Expanded(flex: 2, child: Text(
-                                            "TRIPLES",
+                                        Expanded(
+                                          flex:  
+                                            _isPlayerMode
+                                              ? 2 
+                                              : isTie
+                                                ? 2
+                                                : 1,
+                                          child: Text(
+                                            _isPlayerMode
+                                              ? "TRIPLES" 
+                                              : isTie
+                                                ? "TRIPLES"
+                                                : "TRP",
                                             textAlign: TextAlign.center,
                                             style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
-                                              gFontWeight: FontWeight.bold
+                                              (_responsiveFontSize * 0.6).clamp(
+                                                _responsiveFontSize * 0.5,
+                                                60,
+                                              ),
+                                              gFontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                        Expanded(flex: 2, child: Text(
-                                            "DOUBLES",
+                                        Expanded(
+                                          flex:  
+                                            _isPlayerMode
+                                              ? 2 
+                                              : isTie
+                                                ? 2
+                                                : 1,
+                                          child: Text(
+                                            _isPlayerMode
+                                              ? "DOUBLES" 
+                                              : isTie
+                                                ? "DOUBLES"
+                                                : "DBL",
                                             textAlign: TextAlign.center,
                                             style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
-                                              gFontWeight: FontWeight.bold
+                                              (_responsiveFontSize * 0.6).clamp(
+                                                _responsiveFontSize * 0.5,
+                                                60,
+                                              ),
+                                              gFontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                        Expanded(flex: 2, child: Text(
+                                        Expanded(
+                                          flex: 
+                                            _isPlayerMode
+                                              ? 2 
+                                              : isTie
+                                                ? 2
+                                                : 1,
+                                          child: Text(
                                             "BULLS",
                                             textAlign: TextAlign.center,
                                             style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
-                                              gFontWeight: FontWeight.bold
+                                              (_responsiveFontSize * 0.6).clamp(
+                                                _responsiveFontSize * 0.5,
+                                                60,
+                                              ),
+                                              gFontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                        Expanded(flex: 2, child: Text(
-                                            "POINTS",
+                                        Expanded(
+                                          flex: 
+                                            _isPlayerMode
+                                              ? 2 
+                                              : isTie
+                                                ? 2
+                                                : 1,
+                                          child: Text(
+                                            _isPlayerMode
+                                              ? "POINTS" 
+                                              : isTie
+                                                ? "POINTS"
+                                                : "PTS",
                                             textAlign: TextAlign.end,
                                             style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(_responsiveFontSize * 0.5, 60),
-                                              gFontWeight: FontWeight.bold
+                                              (_responsiveFontSize * 0.6).clamp(
+                                                _responsiveFontSize * 0.5,
+                                                60,
+                                              ),
+                                              gFontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    
+
                                     const Divider(color: Colors.white),
-                                    
+
                                     // Map the results directly into the column
                                     ...finalResults.map((res) {
                                       final bool isWinner = res.ranking == 1;
 
-                                      return _buildCreateListResults(res, isWinner);
+                                      return _buildCreateListResults(
+                                        res,
+                                        isWinner,
+                                        isTie,
+                                      );
                                     }),
                                   ],
                                 ),
@@ -557,10 +700,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                             if (!isTie) ...[
                               gBuildSlicedPlayerAvatarH(
                                 player: winners[0].objReference.fldPlayers[1],
-                                avatarHeight: avatarHeight,
-                                avatarHeightOuterSize: avatarHeightOuterSize,
-                                avatarSlicedWidth: avatarSlicedWidth,
-                                avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                avatarHeight: _avatarHeight,
+                                avatarHeightOuterSize: _avatarHeightOuterSize,
+                                avatarSlicedWidth: _avatarSlicedWidth,
+                                avatarSlicedWidthOuterSize:
+                                    _avatarSlicedWidthOuterSize,
                                 slotBgColor: winners[0].color,
                                 playerPosition: winners[0].playerPosition2,
                                 responsiveTile: _responsiveTile,
@@ -573,10 +717,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           ],
 
                           Center(
-                            child: SizedBox( 
+                            child: SizedBox(
                               height: _responsiveTile * 0.3,
                               width: _responsiveTile * 0.3,
-                              child:Image.asset(
+                              child: Image.asset(
                                 'assets/png/mechanics/trophy.png',
                                 fit: BoxFit.contain,
                                 filterQuality: FilterQuality.high,
@@ -593,12 +737,15 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
           ),
         ),
       ),
-    );    
+    );
   }
 
-  Widget _buildCreateListResults(GameResultRecord<dynamic> res, bool isWinner){
+  Widget _buildCreateListResults(GameResultRecord<dynamic> res, bool isWinner, bool isTie) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.01, horizontal: _responsiveTile * 0.015),
+      padding: EdgeInsets.symmetric(
+        vertical: _responsiveTile * 0.01,
+        horizontal: _responsiveTile * 0.015,
+      ),
       margin: EdgeInsets.symmetric(vertical: _responsiveTile * 0.001),
       decoration: BoxDecoration(
         color: isWinner ? res.color : Colors.transparent,
@@ -608,52 +755,101 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            flex: 2, 
+            flex:  
+              _isPlayerMode
+                ? 2 
+                : isTie
+                  ? 2
+                  : 1,
             child: Text(
-              "${res.ranking}.", 
+              "${res.ranking}.",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+              style: TextStyle(
+                fontSize: _responsiveFontSize * 0.8,
+                fontWeight: FontWeight.bold,
+                color: isWinner ? Colors.white : Colors.black,
+              ),
             ),
           ),
           Expanded(
-            flex: 5, 
+            flex: 5,
             child: Text(
-              res.displayName, 
+              res.displayName,
               textAlign: TextAlign.left,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.8, color: isWinner ? Colors.white : Colors.black,),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: _responsiveFontSize * 0.8,
+                color: isWinner ? Colors.white : Colors.black,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Expanded(
-            flex: 2, 
+            flex:  
+              _isPlayerMode
+                ? 2 
+                : isTie
+                  ? 2
+                  : 1,
             child: Text(
-              "${res.triplesCount}", 
+              "${res.triplesCount}",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+              style: TextStyle(
+                fontSize: _responsiveFontSize * 0.8,
+                fontWeight: FontWeight.bold,
+                color: isWinner ? Colors.white : Colors.black,
+              ),
             ),
           ),
           Expanded(
-            flex: 2, 
+            flex:   
+              _isPlayerMode
+                ? 2 
+                : isTie
+                  ? 2
+                  : 1,
             child: Text(
-              "${res.doublesCount}", 
+              "${res.doublesCount}",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+              style: TextStyle(
+                fontSize: _responsiveFontSize * 0.8,
+                fontWeight: FontWeight.bold,
+                color: isWinner ? Colors.white : Colors.black,
+              ),
             ),
           ),
           Expanded(
-            flex: 2, 
+            flex:   
+              _isPlayerMode
+                ? 2 
+                : isTie
+                  ? 2
+                  : 1,
             child: Text(
-              "${res.hitsBull}", 
+              "${res.hitsBull}",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: _responsiveFontSize * 0.8, fontWeight: FontWeight.bold, color: isWinner ? Colors.white : Colors.black,),
+              style: TextStyle(
+                fontSize: _responsiveFontSize * 0.8,
+                fontWeight: FontWeight.bold,
+                color: isWinner ? Colors.white : Colors.black,
+              ),
             ),
           ),
           Expanded(
-            flex: 2, 
+            flex:   
+              _isPlayerMode
+                ? 2 
+                : isTie
+                  ? 2
+                  : 1,
             child: Text(
-              "${res.lastScore}", 
+              "${res.lastScore}",
               textAlign: TextAlign.end,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.8, color: isWinner ? Colors.white : Colors.black,),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: _responsiveFontSize * 0.8,
+                color: isWinner ? Colors.white : Colors.black,
+              ),
             ),
           ),
         ],
@@ -664,7 +860,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   void _gameClosed({
     required List<TblPlayer> winningPlayers,
     required List<TblTeam> winningTeams,
-  }) {    
+  }) {
     // Save the winning teams if in team mode
     if (!_isPlayerMode) {
       widget.game.fldTeamsWinner = winningTeams;
@@ -674,10 +870,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     widget.game.fldPlayersWinner = winningPlayers;
     widget.game.fldIsEnded = true;
     widget.game.save();
-    
+
     // 2. Clear the Navigation stack back to the very first screen
     // This will dismiss the Dialog AND the GameScoreScreen in one go.
-    Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).popUntil((route) => route.isFirst);
   }
 
   void _initGameStartingScores() {
@@ -709,33 +908,37 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   bool get _hasGameStarted {
     return gamesScoresBox.values.any(
-      (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 0
+      (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 0,
     );
   }
 
   bool get _hasGamePreviousPlayer {
     return gamesScoresBox.values.any(
-      (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 2
+      (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 2,
     );
   }
 
   bool get _hasGameNextPlayer {
     final isLastRound = _progress.activeRoundIdx >= gTargetsHalf.length - 1;
     final isLastPlayer = _progress.activeSeatIdx >= _gamePlayers.length - 1;
-    
+
     // There is no next player if we are on the final player of the final round
     return !(isLastRound && isLastPlayer);
   }
 
   bool _checkIfHalfIt() {
-    final previousDartsThisRound = gamesScoresBox.values.where((s) =>
-        s.fldGame == _gameConfig &&
-        s.fldPlayer == _activePlayer &&
-        s.fldRound == _progress.activeRoundIdx &&
-        s.fldDartIndex < 2
-    ).toList();
+    final previousDartsThisRound = gamesScoresBox.values
+        .where(
+          (s) =>
+              s.fldGame == _gameConfig &&
+              s.fldPlayer == _activePlayer &&
+              s.fldRound == _progress.activeRoundIdx &&
+              s.fldDartIndex < 2,
+        )
+        .toList();
 
-    return previousDartsThisRound.length == 2 && previousDartsThisRound.every((d) => d.fldIsMiss);
+    return previousDartsThisRound.length == 2 &&
+        previousDartsThisRound.every((d) => d.fldIsMiss);
   }
 
   void _processThrow(int hits) {
@@ -751,13 +954,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         _activeHitsBadgeAnime = false;
       } else {
         _previousHitsBadgeAnime = false;
-        if (!isMiss){
+        if (!isMiss) {
           _activeHitsBadgeAnime = true;
         } else {
           _activeHitsBadgeAnime = false;
         }
       }
-    
+
       // 3. Advance the state machine pointers for the next turn
       // Step state forward using the global helper function
       _progress = gStepGameState(
@@ -782,7 +985,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     bool isSingle = (hits == 1);
     bool isDouble = (hits == 2);
     bool isTriple = (hits == 3);
-    
+
     bool isHalfIt = false;
     if (_progress.activeDartIdx == 2 && isMiss) {
       isHalfIt = _checkIfHalfIt();
@@ -796,7 +999,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       _slashController.reset();
       _slashController.forward();
     }
-    
+
     int newPlayerScore;
     int? newTeamScore;
 
@@ -852,7 +1055,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
       // 2. Delete the absolute latest record from Hive
       gamesScoresBox.delete(gameRecords.last.key);
-      
+
       // 3. Step the state machine backward
       _progress = gStepGameState(
         currentState: _progress,
@@ -866,19 +1069,18 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }
 
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {
     MediaQuery.sizeOf(context);
-    
+
     return Scaffold(
       backgroundColor: _gameConfig.fldGameType.tileBackgroundColor,
-      appBar: 
-        gBuildAppBar(
-          gToolbarHeight: toolbarHeight,
-          gAppBarTitle: _gameConfig.fldGameType.tileDisplayName, 
-          gAppBarColorBg: _gameConfig.fldGameType.tileColor,
-          gCallFromMainScreen: false,
-          gOnPressed: null,
-          gRightPopupMenu: null,
+      appBar: gBuildAppBar(
+        gToolbarHeight: _toolbarHeight,
+        gAppBarTitle: _gameConfig.fldGameType.tileDisplayName,
+        gAppBarColorBg: _gameConfig.fldGameType.tileColor,
+        gCallFromMainScreen: false,
+        gOnPressed: null,
+        gRightPopupMenu: null,
       ),
 
       body: SafeArea(
@@ -907,11 +1109,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                     left: GlobalAppDisplay.safeWidth * 0.004,
                     right: GlobalAppDisplay.safeWidth * 0.006,
                     top: GlobalAppDisplay.safeWidth * 0.006,
-                    bottom: GlobalAppDisplay.safeHeight * 0.006,
+                    bottom: _safeHeight * 0.006,
                   ),
-                  height: (GlobalAppDisplay.safeHeight - toolbarHeight),
+                  height: (_safeHeight - _toolbarHeight),
                   //color: Colors.grey.shade900,
-                  
+
                   // Main Row containing 3 main Columns (Left SideBar, Center Screen (2 Rows, 3 Columns each), Right Sidebar)
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -925,36 +1127,43 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           Stack(
                             children: [
                               _isPlayerMode
-                                ? gBuildSlicedPlayerAvatarVPanel(
-                                    player: _previousPlayer,
-                                    avatarHeight: avatarHeight,
-                                    avatarHeightOuterSize: avatarHeightOuterSize,
-                                    avatarSlicedWidth: avatarSlicedWidth,
-                                    avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                    slotBgColor: _previousPlayerColor,
-                                    playerPosition: _previousPlayerIndex,
-                                    responsiveTile: _responsiveTile,
-                                    heightBoost: heightBoostPlayerPanel,
-                                    isEmptyPanel: !_hasGamePreviousPlayer,
-                                    isPreviousPlayer: true,
-                                  )
-                                : gBuildSlicedTeamCardVPanel(
-                                    team: _previousTeam,
-                                    cardHeight: cardHeight,
-                                    cardWidth: cardWidth,
-                                    cardWidthOuterSize: cardWidthOuterSize,
-                                    cardSlicedHeight: cardSlicedHeight,
-                                    cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                    slotBgColor: _previousTeamColor,
-                                    teamPosition: _previousTeamIndex,
-                                    responsiveTile: _responsiveTile,
-                                    heightBoost: heightBoostTeamPanel,
-                                    focusPlayer: _hasGamePreviousPlayer? _previousPlayer : null,
-                                    focusPlayerFirst: _progress.previousSeatIdx < (_gamePlayers.length / 2),
-                                    isEmptyPanel: !_hasGamePreviousPlayer,
-                                    isPreviousPlayer: true,
-                                  ),
-                              
+                                  ? gBuildSlicedPlayerAvatarVPanel(
+                                      player: _previousPlayer,
+                                      avatarHeight: _avatarHeight,
+                                      avatarHeightOuterSize:
+                                          _avatarHeightOuterSize,
+                                      avatarSlicedWidth: _avatarSlicedWidth,
+                                      avatarSlicedWidthOuterSize:
+                                          _avatarSlicedWidthOuterSize,
+                                      slotBgColor: _previousPlayerColor,
+                                      playerPosition: _previousPlayerIndex,
+                                      responsiveTile: _responsiveTile,
+                                      heightBoost: _heightBoostPlayerPanel,
+                                      isEmptyPanel: !_hasGamePreviousPlayer,
+                                      isPreviousPlayer: true,
+                                    )
+                                  : gBuildSlicedTeamCardVPanel(
+                                      team: _previousTeam,
+                                      cardHeight: _cardHeight,
+                                      cardWidth: _cardWidth,
+                                      cardWidthOuterSize: _cardWidthOuterSize,
+                                      cardSlicedHeight: _cardSlicedHeight,
+                                      cardSlicedHeightOuterSize:
+                                          _cardSlicedHeightOuterSize,
+                                      slotBgColor: _previousTeamColor,
+                                      teamPosition: _previousTeamIndex,
+                                      responsiveTile: _responsiveTile,
+                                      heightBoost: _heightBoostTeamPanel,
+                                      focusPlayer: _hasGamePreviousPlayer
+                                          ? _previousPlayer
+                                          : null,
+                                      focusPlayerFirst:
+                                          _progress.previousSeatIdx <
+                                          (_gamePlayers.length / 2),
+                                      isEmptyPanel: !_hasGamePreviousPlayer,
+                                      isPreviousPlayer: true,
+                                    ),
+
                               // Floating Score Table for all players button
                               Positioned(
                                 bottom: _responsiveTile * 0.01,
@@ -970,7 +1179,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                         padding: EdgeInsets.zero,
                                         elevation: 4,
                                       ),
-                                      onPressed: () => _showFullDebugSpreadsheet(context),
+                                      onPressed: () =>
+                                          _showFullDebugSpreadsheet(context),
                                       child: Center(
                                         child: Stack(
                                           children: [
@@ -980,14 +1190,19 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                             ),
-                                            
+
                                             Image.asset(
                                               'assets/png/mechanics/database.png',
                                               fit: BoxFit.contain,
@@ -1009,31 +1224,42 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
                       // COLUMN 2: Center-Top / Header Area
                       Expanded(
-                        child:Column(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Row TOP BANNER
                             Container(
                               decoration: BoxDecoration(
-                                color: (_isPlayerMode ? _activePlayerColor : _activeTeamColor).withAlpha(150), // Choose your background color here!
-                                borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15), // Optional: rounds the corners nicely
+                                color:
+                                    (_isPlayerMode
+                                            ? _activePlayerColor
+                                            : _activeTeamColor)
+                                        .withAlpha(
+                                          150,
+                                        ), // Choose your background color here!
+                                borderRadius: BorderRadius.circular(
+                                  _avatarSlicedWidthOuterSize * 0.15,
+                                ), // Optional: rounds the corners nicely
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Previous player
                                       if (_isPlayerMode) ...[
                                         gBuildSlicedPlayerAvatarH(
                                           player: _previousPlayer,
-                                          avatarHeight: avatarHeight,
-                                          avatarHeightOuterSize: avatarHeightOuterSize,
-                                          avatarSlicedWidth: avatarSlicedWidth,
-                                          avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                          avatarHeight: _avatarHeight,
+                                          avatarHeightOuterSize:
+                                              _avatarHeightOuterSize,
+                                          avatarSlicedWidth: _avatarSlicedWidth,
+                                          avatarSlicedWidthOuterSize:
+                                              _avatarSlicedWidthOuterSize,
                                           slotBgColor: _previousPlayerColor,
                                           playerPosition: _previousPlayerIndex,
                                           responsiveTile: _responsiveTile,
@@ -1043,17 +1269,19 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       ] else ...[
                                         gBuildSlicedPlayerAvatarH(
                                           player: _previousPlayer,
-                                          avatarHeight: avatarHeight,
-                                          avatarHeightOuterSize: avatarHeightOuterSize,
-                                          avatarSlicedWidth: avatarSlicedWidth,
-                                          avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                          avatarHeight: _avatarHeight,
+                                          avatarHeightOuterSize:
+                                              _avatarHeightOuterSize,
+                                          avatarSlicedWidth: _avatarSlicedWidth,
+                                          avatarSlicedWidthOuterSize:
+                                              _avatarSlicedWidthOuterSize,
                                           slotBgColor: _previousTeamColor,
                                           playerPosition: _previousPlayerIndex,
                                           responsiveTile: _responsiveTile,
                                           isTagNickNameLeft: true,
                                           isEmptyPanel: !_hasGamePreviousPlayer,
                                         ),
-                                      ]
+                                      ],
                                     ],
                                   ),
 
@@ -1069,9 +1297,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                         padding: EdgeInsets.zero,
                                         elevation: 4,
                                       ),
-                                      onPressed: () => _showFullScoreboardDialog(context),
+                                      onPressed: () =>
+                                          _showFullScoreboardDialog(context),
                                       child: Center(
-                                        child: Stack( 
+                                        child: Stack(
                                           children: [
                                             Positioned.fill(
                                               child: Container(
@@ -1079,8 +1308,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
@@ -1100,8 +1334,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
                                   Expanded(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Stack(
                                           alignment: Alignment.center,
@@ -1109,33 +1345,42 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                             Container(
                                               color: Colors.transparent,
                                               width: double.infinity,
-                                              height: avatarSlicedWidthOuterSize,         
+                                              height:
+                                                  _avatarSlicedWidthOuterSize,
                                             ),
-                                            
+
                                             // Centered Undo button
                                             SizedBox(
                                               width: _responsiveTile * 0.2,
                                               height: _responsiveTile * 0.2,
                                               child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.transparent,
+                                                  backgroundColor:
+                                                      Colors.transparent,
                                                   padding: EdgeInsets.zero,
                                                   elevation: 4,
                                                 ),
-                                                onPressed: _hasGameStarted ? () => _undoLastThrow() : null,
+                                                onPressed: _hasGameStarted
+                                                    ? () => _undoLastThrow()
+                                                    : null,
                                                 child: AnimatedOpacity(
-                                                  opacity: _hasGameStarted ? 1.0 : 0.3,
-                                                  duration: const Duration(milliseconds: 200),
+                                                  opacity: _hasGameStarted
+                                                      ? 1.0
+                                                      : 0.3,
+                                                  duration: const Duration(
+                                                    milliseconds: 200,
+                                                  ),
                                                   child: Image.asset(
                                                     'assets/png/mechanics/undo.png',
                                                     fit: BoxFit.contain,
-                                                    filterQuality: FilterQuality.high,
-                                                    ),
+                                                    filterQuality:
+                                                        FilterQuality.high,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ],
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -1161,10 +1406,12 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       if (_isPlayerMode) ...[
                                         gBuildSlicedPlayerAvatarH(
                                           player: _activePlayer,
-                                          avatarHeight: avatarHeight,
-                                          avatarHeightOuterSize: avatarHeightOuterSize,
-                                          avatarSlicedWidth: avatarSlicedWidth,
-                                          avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                          avatarHeight: _avatarHeight,
+                                          avatarHeightOuterSize:
+                                              _avatarHeightOuterSize,
+                                          avatarSlicedWidth: _avatarSlicedWidth,
+                                          avatarSlicedWidthOuterSize:
+                                              _avatarSlicedWidthOuterSize,
                                           slotBgColor: _activePlayerColor,
                                           playerPosition: _activePlayerIndex,
                                           responsiveTile: _responsiveTile,
@@ -1173,16 +1420,18 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       ] else ...[
                                         gBuildSlicedPlayerAvatarH(
                                           player: _activePlayer,
-                                          avatarHeight: avatarHeight,
-                                          avatarHeightOuterSize: avatarHeightOuterSize,
-                                          avatarSlicedWidth: avatarSlicedWidth,
-                                          avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                                          avatarHeight: _avatarHeight,
+                                          avatarHeightOuterSize:
+                                              _avatarHeightOuterSize,
+                                          avatarSlicedWidth: _avatarSlicedWidth,
+                                          avatarSlicedWidthOuterSize:
+                                              _avatarSlicedWidthOuterSize,
                                           slotBgColor: _activeTeamColor,
                                           playerPosition: _activePlayerIndex,
                                           responsiveTile: _responsiveTile,
                                           isTagNickNameLeft: false,
                                         ),
-                                      ]
+                                      ],
                                     ],
                                   ),
                                 ],
@@ -1196,8 +1445,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                 horizontal: _responsiveTile * 0.004,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.transparent, // Choose your background color here!
-                                borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15), // Optional: rounds the corners nicely
+                                color: Colors
+                                    .transparent, // Choose your background color here!
+                                borderRadius: BorderRadius.circular(
+                                  _avatarSlicedWidthOuterSize * 0.15,
+                                ), // Optional: rounds the corners nicely
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -1205,23 +1457,38 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                   // Previous player Score
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
                                           gBuildArcadeOverlayHitsBadge(
-                                            gHitsText: _hasGamePreviousPlayer ? '$_previousPlayerLastRoundHits' : '-',
-                                            gTextColor: Color.fromARGB(255, 207, 20, 17),
-                                            gResponsiveTile: _responsiveTile, 
-                                            gResponsiveFontSize: _responsiveFontSize,
-                                            gForceAnimate : _previousHitsBadgeAnime,
+                                            gHitsText: _hasGamePreviousPlayer
+                                                ? '$_previousPlayerLastRoundHits'
+                                                : '-',
+                                            gTextColor: Color.fromARGB(
+                                              255,
+                                              207,
+                                              20,
+                                              17,
+                                            ),
+                                            gResponsiveTile: _responsiveTile,
+                                            gResponsiveFontSize:
+                                                _responsiveFontSize,
+                                            gForceAnimate:
+                                                _previousHitsBadgeAnime,
                                           ),
 
-                                          SizedBox(width: _responsiveTile * 0.008),
+                                          SizedBox(
+                                            width: _responsiveTile * 0.008,
+                                          ),
 
                                           _buildScoreContainer(
-                                            avatarHeightOuterSize: avatarHeightOuterSize,
-                                            containerColor: _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
+                                            avatarHeightOuterSize:
+                                                _avatarHeightOuterSize,
+                                            containerColor: _isPlayerMode
+                                                ? _previousPlayerColor
+                                                : _previousTeamColor,
                                             isPreviousPlayer: true,
                                           ),
                                         ],
@@ -1241,28 +1508,41 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                         padding: EdgeInsets.zero,
                                         elevation: 4,
                                       ),
-                                      onPressed: _hasGamePreviousPlayer 
-                                        ? () => _showPlayerStatsDialog(
-                                          context, 
-                                          _previousPlayer,
-                                          _isPlayerMode ? _previousPlayerColor : _previousTeamColor,
-                                          _progress.previousSeatIdx
-                                          )
-                                        : null,
+                                      onPressed: _hasGamePreviousPlayer
+                                          ? () => _showPlayerStatsDialog(
+                                              context,
+                                              _previousPlayer,
+                                              _isPlayerMode
+                                                  ? _previousPlayerColor
+                                                  : _previousTeamColor,
+                                              _progress.previousSeatIdx,
+                                            )
+                                          : null,
                                       child: Center(
                                         child: Stack(
                                           children: [
                                             AnimatedOpacity(
-                                              opacity: _hasGamePreviousPlayer ? 1.0 : 0.3,
-                                              duration: const Duration(milliseconds: 200),
+                                              opacity: _hasGamePreviousPlayer
+                                                  ? 1.0
+                                                  : 0.3,
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
                                               child: Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
                                                     boxShadow: [
                                                       BoxShadow(
-                                                        blurRadius: _responsiveTile * 0.015,
-                                                        offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                        blurRadius:
+                                                            _responsiveTile *
+                                                            0.015,
+                                                        offset: Offset(
+                                                          _responsiveTile *
+                                                              0.003,
+                                                          _responsiveTile *
+                                                              0.003,
+                                                        ), // Casts shadow upward onto the screen content
                                                       ),
                                                     ],
                                                   ),
@@ -1271,12 +1551,17 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                             ),
 
                                             AnimatedOpacity(
-                                              opacity: _hasGamePreviousPlayer ? 1.0 : 0.3,
-                                              duration: const Duration(milliseconds: 200),
+                                              opacity: _hasGamePreviousPlayer
+                                                  ? 1.0
+                                                  : 0.3,
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
                                               child: Image.asset(
                                                 'assets/png/mechanics/stats.png',
                                                 fit: BoxFit.contain,
-                                                filterQuality: FilterQuality.high,
+                                                filterQuality:
+                                                    FilterQuality.high,
                                               ),
                                             ),
                                           ],
@@ -1287,13 +1572,17 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
                                   Expanded(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         gBuildArcadeActiveTarget(
-                                          currentTarget: _activeTargetValue, // or your active target variable
+                                          currentTarget:
+                                              _activeTargetValue, // or your active target variable
                                           responsiveTile: _responsiveTile,
-                                          targetBgColor: _gameConfig.fldGameType.tileColor
+                                          targetBgColor:
+                                              _gameConfig.fldGameType.tileColor,
                                         ),
                                       ],
                                     ),
@@ -1312,9 +1601,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       onPressed: () => _showPlayerStatsDialog(
                                         context,
                                         _activePlayer,
-                                        _isPlayerMode ? _activePlayerColor : _activeTeamColor,
+                                        _isPlayerMode
+                                            ? _activePlayerColor
+                                            : _activeTeamColor,
                                         _progress.activeSeatIdx,
-                                        ),
+                                      ),
                                       child: Center(
                                         child: Stack(
                                           children: [
@@ -1324,8 +1615,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
@@ -1353,19 +1649,33 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       Row(
                                         children: [
                                           _buildScoreContainer(
-                                            avatarHeightOuterSize: avatarHeightOuterSize,
-                                            containerColor: _isPlayerMode ? _activePlayerColor : _activeTeamColor,
+                                            avatarHeightOuterSize:
+                                                _avatarHeightOuterSize,
+                                            containerColor: _isPlayerMode
+                                                ? _activePlayerColor
+                                                : _activeTeamColor,
                                             isPreviousPlayer: false,
                                           ),
-                                          
-                                          SizedBox(width: _responsiveTile * 0.008),
-                                          
+
+                                          SizedBox(
+                                            width: _responsiveTile * 0.008,
+                                          ),
+
                                           gBuildArcadeOverlayHitsBadge(
-                                            gHitsText: _activePlayerCurrentRoundHits.toString(),
-                                            gTextColor: Color.fromARGB(255, 207, 20, 17),
-                                            gResponsiveTile: _responsiveTile, 
-                                            gResponsiveFontSize: _responsiveFontSize,
-                                            gForceAnimate : _activeHitsBadgeAnime,
+                                            gHitsText:
+                                                _activePlayerCurrentRoundHits
+                                                    .toString(),
+                                            gTextColor: Color.fromARGB(
+                                              255,
+                                              207,
+                                              20,
+                                              17,
+                                            ),
+                                            gResponsiveTile: _responsiveTile,
+                                            gResponsiveFontSize:
+                                                _responsiveFontSize,
+                                            gForceAnimate:
+                                                _activeHitsBadgeAnime,
                                           ),
                                         ],
                                       ),
@@ -1388,8 +1698,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                     Expanded(
                                       flex: 4,
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           // Header label right above the players ranking table
                                           Container(
@@ -1400,37 +1712,50 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                               left: _responsiveTile * 0.008,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey.shade800.withAlpha(200),
+                                              color: Colors.grey.shade800
+                                                  .withAlpha(200),
                                               borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(_responsiveTile * 0.03),
-                                                topRight: Radius.circular(_responsiveTile * 0.03),
-                                              )
+                                                topLeft: Radius.circular(
+                                                  _responsiveTile * 0.03,
+                                                ),
+                                                topRight: Radius.circular(
+                                                  _responsiveTile * 0.03,
+                                                ),
+                                              ),
                                             ),
                                             child: Text(
-                                              _isPlayerMode ? "PLAYERS RANKING" : "TEAMS RANKING",
-                                              style: gBuildArcadeTextStyle(_responsiveFontSize * 1.1, 
-                                                gFontWeight: FontWeight.bold, 
+                                              _isPlayerMode
+                                                  ? "PLAYERS RANKING"
+                                                  : "TEAMS RANKING",
+                                              style: gBuildArcadeTextStyle(
+                                                _responsiveFontSize * 1.1,
+                                                gFontWeight: FontWeight.bold,
                                                 gTextColor: Colors.amber,
                                               ),
                                             ),
                                           ),
-                                          
+
                                           Expanded(
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
                                               children: [
                                                 Expanded(
                                                   child: SizedBox(
                                                     width: double.infinity,
-                                                    child: _buildRankingWidget(),
+                                                    child:
+                                                        _buildRankingWidget(),
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
 
-                                          SizedBox(height: _responsiveTile * 0.017),
+                                          SizedBox(
+                                            height: _responsiveTile * 0.017,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -1439,60 +1764,99 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                       flex: 6,
                                       child: Padding(
                                         padding: EdgeInsets.only(
-                                          left: _responsiveTile * 0.010
+                                          left: _responsiveTile * 0.010,
                                         ),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
                                           children: [
                                             Expanded(
                                               child: gBuildDartboardInputZone(
-                                                  gActiveTargetIdx: _progress.activeRoundIdx, 
-                                                  gGametype: _gameConfig.fldGameType, 
-                                                  gOnTap: (leap) {
-                                                    _processThrow(leap);
-                                                  },
-                                                ),
+                                                gActiveTargetIdx:
+                                                    _progress.activeRoundIdx,
+                                                gGametype:
+                                                    _gameConfig.fldGameType,
+                                                gOnTap: (leap) {
+                                                  _processThrow(leap);
+                                                },
+                                              ),
                                             ),
 
                                             Container(
                                               alignment: Alignment.center,
                                               padding: EdgeInsets.symmetric(
-                                                vertical: _responsiveTile * 0.004, 
-                                                horizontal: _responsiveTile * 0.008
+                                                vertical:
+                                                    _responsiveTile * 0.004,
+                                                horizontal:
+                                                    _responsiveTile * 0.008,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: Colors.grey.shade800.withAlpha(200),
+                                                color: Colors.grey.shade800
+                                                    .withAlpha(200),
                                                 border: BoxBorder.all(
                                                   color: Colors.yellowAccent,
-                                                  width: _responsiveTile * 0.006,
+                                                  width:
+                                                      _responsiveTile * 0.006,
                                                 ),
-                                                borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      _responsiveTile * 0.03,
+                                                    ),
                                               ),
-                                              child:FittedBox(
-                                                child:Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                              child: FittedBox(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
                                                   children: [
-                                                    ... "DARTS".split('').map((letter) => Text(
-                                                      letter,
-                                                      style: gBuildArcadeTextStyle(
-                                                        _responsiveFontSize * 1.2,
-                                                        gFontWeight: FontWeight.bold,
-                                                        gTextColor: Colors.white,
-                                                      ),
-                                                    )),
+                                                    ..."DARTS"
+                                                        .split('')
+                                                        .map(
+                                                          (letter) => Text(
+                                                            letter,
+                                                            style: gBuildArcadeTextStyle(
+                                                              _responsiveFontSize *
+                                                                  1.2,
+                                                              gFontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              gTextColor:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
+                                                        ),
 
-                                                    SizedBox(height: _responsiveTile * 0.03),
+                                                    SizedBox(
+                                                      height:
+                                                          _responsiveTile *
+                                                          0.03,
+                                                    ),
 
                                                     // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
                                                     ...List.generate(3, (dIdx) {
-                                                      bool isThrown = dIdx < _progress.activeDartIdx;
+                                                      bool isThrown =
+                                                          dIdx <
+                                                          _progress
+                                                              .activeDartIdx;
                                                       return Padding(
-                                                        padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.004),
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal:
+                                                                  _responsiveTile *
+                                                                  0.004,
+                                                            ),
                                                         child: Icon(
                                                           Icons.circle,
-                                                          size: _responsiveFontSize * 2.5,
-                                                          color: isThrown ? Colors.yellowAccent : Colors.grey.shade900,
+                                                          size:
+                                                              _responsiveFontSize *
+                                                              2.5,
+                                                          color: isThrown
+                                                              ? Colors
+                                                                    .yellowAccent
+                                                              : Colors
+                                                                    .grey
+                                                                    .shade900,
                                                         ),
                                                       );
                                                     }),
@@ -1508,11 +1872,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                 ),
                               ),
                             ),
-                            
+
                             SizedBox(height: _responsiveTile * 0.017),
-                          ]
+                          ],
                         ),
-                        
                       ),
 
                       SizedBox(width: _responsiveTile * 0.008),
@@ -1525,32 +1888,37 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           Stack(
                             children: [
                               _isPlayerMode
-                                ? gBuildSlicedPlayerAvatarVPanel(
-                                    player: _activePlayer,
-                                    avatarHeight: avatarHeight,
-                                    avatarHeightOuterSize: avatarHeightOuterSize,
-                                    avatarSlicedWidth: avatarSlicedWidth,
-                                    avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                    slotBgColor: _activePlayerColor,
-                                    playerPosition: _activePlayerIndex,
-                                    responsiveTile: _responsiveTile,
-                                    heightBoost: heightBoostPlayerPanel,
-                                  )
-                                : gBuildSlicedTeamCardVPanel(
-                                    team: _activeTeam,
-                                    cardHeight: cardHeight,
-                                    cardWidth: cardWidth,
-                                    cardWidthOuterSize: cardWidthOuterSize,
-                                    cardSlicedHeight: cardSlicedHeight,
-                                    cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                    slotBgColor: _activeTeamColor,
-                                    teamPosition: _activeTeamIndex,
-                                    responsiveTile: _responsiveTile,
-                                    heightBoost: heightBoostTeamPanel,
-                                    focusPlayer: _activePlayer,
-                                    focusPlayerFirst: _progress.activeSeatIdx < (_gamePlayers.length / 2),
-                                  ),
-                              
+                                  ? gBuildSlicedPlayerAvatarVPanel(
+                                      player: _activePlayer,
+                                      avatarHeight: _avatarHeight,
+                                      avatarHeightOuterSize:
+                                          _avatarHeightOuterSize,
+                                      avatarSlicedWidth: _avatarSlicedWidth,
+                                      avatarSlicedWidthOuterSize:
+                                          _avatarSlicedWidthOuterSize,
+                                      slotBgColor: _activePlayerColor,
+                                      playerPosition: _activePlayerIndex,
+                                      responsiveTile: _responsiveTile,
+                                      heightBoost: _heightBoostPlayerPanel,
+                                    )
+                                  : gBuildSlicedTeamCardVPanel(
+                                      team: _activeTeam,
+                                      cardHeight: _cardHeight,
+                                      cardWidth: _cardWidth,
+                                      cardWidthOuterSize: _cardWidthOuterSize,
+                                      cardSlicedHeight: _cardSlicedHeight,
+                                      cardSlicedHeightOuterSize:
+                                          _cardSlicedHeightOuterSize,
+                                      slotBgColor: _activeTeamColor,
+                                      teamPosition: _activeTeamIndex,
+                                      responsiveTile: _responsiveTile,
+                                      heightBoost: _heightBoostTeamPanel,
+                                      focusPlayer: _activePlayer,
+                                      focusPlayerFirst:
+                                          _progress.activeSeatIdx <
+                                          (_gamePlayers.length / 2),
+                                    ),
+
                               // Floating MISS button
                               Positioned(
                                 bottom: _responsiveTile * 0.505,
@@ -1576,8 +1944,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
@@ -1622,8 +1995,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
@@ -1668,8 +2046,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
@@ -1714,8 +2097,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                                   shape: BoxShape.circle,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      blurRadius: _responsiveTile * 0.015,
-                                                      offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                      blurRadius:
+                                                          _responsiveTile *
+                                                          0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
+                                                      ), // Casts shadow upward onto the screen content
                                                     ),
                                                   ],
                                                 ),
@@ -1749,36 +2137,43 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           Stack(
                             children: [
                               _isPlayerMode
-                                ? gBuildSlicedPlayerAvatarVPanel(
-                                    player: _nextPlayer,
-                                    avatarHeight: avatarHeight,
-                                    avatarHeightOuterSize: avatarHeightOuterSize,
-                                    avatarSlicedWidth: avatarSlicedWidth,
-                                    avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
-                                    slotBgColor: _nextPlayerColor,
-                                    playerPosition: _nextPlayerIndex,
-                                    responsiveTile: _responsiveTile,
-                                    heightBoost: heightBoostPlayerPanel,
-                                    isEmptyPanel: !_hasGameNextPlayer,
-                                    isNextPlayer: true,
-                                  )
-                                : gBuildSlicedTeamCardVPanel(
-                                    team: _nextTeam,
-                                    cardHeight: cardHeight,
-                                    cardWidth: cardWidth,
-                                    cardWidthOuterSize: cardWidthOuterSize,
-                                    cardSlicedHeight: cardSlicedHeight,
-                                    cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
-                                    slotBgColor: _nextTeamColor,
-                                    teamPosition: _nextTeamIndex,
-                                    responsiveTile: _responsiveTile,
-                                    heightBoost: heightBoostTeamPanel,
-                                    focusPlayer: _hasGameNextPlayer ? _nextPlayer : null,
-                                    focusPlayerFirst: _progress.nextSeatIdx < (_gamePlayers.length / 2),
-                                    isEmptyPanel: !_hasGameNextPlayer,
-                                    isNextPlayer: true,
-                                  ),
-                              
+                                  ? gBuildSlicedPlayerAvatarVPanel(
+                                      player: _nextPlayer,
+                                      avatarHeight: _avatarHeight,
+                                      avatarHeightOuterSize:
+                                          _avatarHeightOuterSize,
+                                      avatarSlicedWidth: _avatarSlicedWidth,
+                                      avatarSlicedWidthOuterSize:
+                                          _avatarSlicedWidthOuterSize,
+                                      slotBgColor: _nextPlayerColor,
+                                      playerPosition: _nextPlayerIndex,
+                                      responsiveTile: _responsiveTile,
+                                      heightBoost: _heightBoostPlayerPanel,
+                                      isEmptyPanel: !_hasGameNextPlayer,
+                                      isNextPlayer: true,
+                                    )
+                                  : gBuildSlicedTeamCardVPanel(
+                                      team: _nextTeam,
+                                      cardHeight: _cardHeight,
+                                      cardWidth: _cardWidth,
+                                      cardWidthOuterSize: _cardWidthOuterSize,
+                                      cardSlicedHeight: _cardSlicedHeight,
+                                      cardSlicedHeightOuterSize:
+                                          _cardSlicedHeightOuterSize,
+                                      slotBgColor: _nextTeamColor,
+                                      teamPosition: _nextTeamIndex,
+                                      responsiveTile: _responsiveTile,
+                                      heightBoost: _heightBoostTeamPanel,
+                                      focusPlayer: _hasGameNextPlayer
+                                          ? _nextPlayer
+                                          : null,
+                                      focusPlayerFirst:
+                                          _progress.nextSeatIdx <
+                                          (_gamePlayers.length / 2),
+                                      isEmptyPanel: !_hasGameNextPlayer,
+                                      isNextPlayer: true,
+                                    ),
+
                               // Floating Stats button
                               Positioned(
                                 bottom: _responsiveTile * 0.005,
@@ -1795,27 +2190,40 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                         elevation: 4,
                                       ),
                                       onPressed: _hasGameNextPlayer
-                                        ? () => _showPlayerStatsDialog(
-                                          context,
-                                          _nextPlayer,
-                                          _isPlayerMode ? _nextPlayerColor : _nextTeamColor,
-                                          _progress.nextSeatIdx
-                                          )
-                                        : null,
+                                          ? () => _showPlayerStatsDialog(
+                                              context,
+                                              _nextPlayer,
+                                              _isPlayerMode
+                                                  ? _nextPlayerColor
+                                                  : _nextTeamColor,
+                                              _progress.nextSeatIdx,
+                                            )
+                                          : null,
                                       child: Center(
                                         child: Stack(
                                           children: [
                                             AnimatedOpacity(
-                                              opacity: _hasGameNextPlayer ? 1.0 : 0.3,
-                                              duration: const Duration(milliseconds: 200),
+                                              opacity: _hasGameNextPlayer
+                                                  ? 1.0
+                                                  : 0.3,
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
                                               child: Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
                                                     boxShadow: [
                                                       BoxShadow(
-                                                        blurRadius: _responsiveTile * 0.015,
-                                                        offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                                                        blurRadius:
+                                                            _responsiveTile *
+                                                            0.015,
+                                                        offset: Offset(
+                                                          _responsiveTile *
+                                                              0.003,
+                                                          _responsiveTile *
+                                                              0.003,
+                                                        ), // Casts shadow upward onto the screen content
                                                       ),
                                                     ],
                                                   ),
@@ -1824,12 +2232,17 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                             ),
 
                                             AnimatedOpacity(
-                                              opacity: _hasGameNextPlayer ? 1.0 : 0.3,
-                                              duration: const Duration(milliseconds: 200),
+                                              opacity: _hasGameNextPlayer
+                                                  ? 1.0
+                                                  : 0.3,
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
                                               child: Image.asset(
                                                 'assets/png/mechanics/stats.png',
                                                 fit: BoxFit.contain,
-                                                filterQuality: FilterQuality.high,
+                                                filterQuality:
+                                                    FilterQuality.high,
                                               ),
                                             ),
                                           ],
@@ -1857,10 +2270,15 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                     'assets/lottie/magic-sword.json',
                     controller: _slashController,
                     width: GlobalAppDisplay.safeWidth,
-                    height: GlobalAppDisplay.safeHeight,
+                    height: _safeHeight,
                     onLoaded: kIsWeb
-                      ? (composition) { _slashController.duration = composition.duration * 20; }
-                      : (composition) { _slashController.duration = composition.duration; },
+                        ? (composition) {
+                            _slashController.duration =
+                                composition.duration * 20;
+                          }
+                        : (composition) {
+                            _slashController.duration = composition.duration;
+                          },
                   ),
                 ),
               ),
@@ -1870,7 +2288,12 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     );
   }
 
-  void _showPlayerStatsDialog(BuildContext context, TblPlayer player, Color playerColor, int seatIndex) {
+  void _showPlayerStatsDialog(
+    BuildContext context,
+    TblPlayer player,
+    Color playerColor,
+    int seatIndex,
+  ) {
     gClearAllArcadeOverlays();
 
     showDialog(
@@ -1880,9 +2303,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
           backgroundColor: Colors.grey.shade500,
           title: Text(
             "${player.fldNickName}'s Stats",
-            style: gBuildArcadeTextStyle(_responsiveFontSize, 
-              gFontWeight: FontWeight.bold, 
-              gTextColor: playerColor),
+            style: gBuildArcadeTextStyle(
+              _responsiveFontSize,
+              gFontWeight: FontWeight.bold,
+              gTextColor: playerColor,
+            ),
             textAlign: TextAlign.center,
           ),
           content: SizedBox(
@@ -1901,8 +2326,13 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 backgroundColor: Colors.grey.shade800, // Works directly here
               ),
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("Close", 
-                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.8, gFontWeight: FontWeight.bold, gTextColor: Colors.amber),
+              child: Text(
+                "Close",
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.8,
+                  gFontWeight: FontWeight.bold,
+                  gTextColor: Colors.amber,
+                ),
               ),
             ),
           ],
@@ -1934,7 +2364,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(Colors.blueGrey.shade100),
+                        headingRowColor: WidgetStateProperty.all(
+                          Colors.blueGrey.shade100,
+                        ),
                         columns: const [
                           DataColumn(label: Text('Index')),
                           DataColumn(label: Text('Seat')),
@@ -1950,18 +2382,35 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                         rows: allRecords.asMap().entries.map((entry) {
                           final i = entry.key;
                           final s = entry.value;
-                          return DataRow(cells: [
-                            DataCell(Text('$i')),
-                            DataCell(Text('${s.fldSeatIndex}')),
-                            DataCell(Text(s.fldPlayer.fldNickName)),
-                            DataCell(Text('${s.fldRound}')),
-                            DataCell(Text('${s.fldDartIndex}')),
-                            DataCell(Text('${s.fldTargetValue}')),
-                            DataCell(Text('${s.fldHits}')),
-                            DataCell(Text(s.fldIsHalfIt ? 'YES' : '')),
-                            DataCell(Text('${s.fldScorePlayerSnapshot}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text('${s.fldScoreTeamSnapshot ?? "-"}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent))),
-                          ]);
+                          return DataRow(
+                            cells: [
+                              DataCell(Text('$i')),
+                              DataCell(Text('${s.fldSeatIndex}')),
+                              DataCell(Text(s.fldPlayer.fldNickName)),
+                              DataCell(Text('${s.fldRound}')),
+                              DataCell(Text('${s.fldDartIndex}')),
+                              DataCell(Text('${s.fldTargetValue}')),
+                              DataCell(Text('${s.fldHits}')),
+                              DataCell(Text(s.fldIsHalfIt ? 'YES' : '')),
+                              DataCell(
+                                Text(
+                                  '${s.fldScorePlayerSnapshot}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '${s.fldScoreTeamSnapshot ?? "-"}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
                         }).toList(),
                       ),
                     ),
@@ -1985,13 +2434,16 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
   }) {
     return Container(
       constraints: BoxConstraints(
-        minWidth: avatarHeightOuterSize - (_responsiveTile * 0.172), // Minimum floor so it never crushes down to zero/overflows
+        minWidth:
+            avatarHeightOuterSize -
+            (_responsiveTile *
+                0.172), // Minimum floor so it never crushes down to zero/overflows
         maxWidth: double.infinity,
       ),
       alignment: Alignment.center,
       padding: EdgeInsets.symmetric(
-        vertical: _responsiveTile * 0.004, 
-        horizontal: _responsiveTile * 0.008
+        vertical: _responsiveTile * 0.004,
+        horizontal: _responsiveTile * 0.008,
       ),
       decoration: BoxDecoration(
         color: containerColor,
@@ -2011,7 +2463,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         children: [
           Text(
             "SCORE",
-            style: gBuildArcadeTextStyle(_responsiveFontSize, 
+            style: gBuildArcadeTextStyle(
+              _responsiveFontSize,
               gFontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -2019,18 +2472,21 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
           if (_isPlayerMode) ...[
             Text(
-              isPreviousPlayer 
-                ? _hasGamePreviousPlayer 
-                  ? _previousPlayerLastScore.toString()
-                  : '-' 
-                : _activePlayerLastScore.toString(),
+              isPreviousPlayer
+                  ? _hasGamePreviousPlayer
+                        ? _previousPlayerLastScore.toString()
+                        : '-'
+                  : _activePlayerLastScore.toString(),
               style: TextStyle(
                 fontSize: _responsiveFontSize * 2.6,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 shadows: [
                   Shadow(
-                    offset: Offset(-(_responsiveFontSize * 0.12), _responsiveFontSize * 0.12),
+                    offset: Offset(
+                      -(_responsiveFontSize * 0.12),
+                      _responsiveFontSize * 0.12,
+                    ),
                     color: Colors.black,
                     blurRadius: 0.5,
                   ),
@@ -2043,18 +2499,21 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  isPreviousPlayer 
-                    ? _hasGamePreviousPlayer 
-                      ? _previousPlayerLastScore.toString()
-                      : '-' 
-                    : _activePlayerLastScore.toString(),
+                  isPreviousPlayer
+                      ? _hasGamePreviousPlayer
+                            ? _previousPlayerLastScore.toString()
+                            : '-'
+                      : _activePlayerLastScore.toString(),
                   style: TextStyle(
                     fontSize: _responsiveFontSize * 2.2,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     shadows: [
                       Shadow(
-                        offset: Offset(-(_responsiveFontSize * 0.12), _responsiveFontSize * 0.12),
+                        offset: Offset(
+                          -(_responsiveFontSize * 0.12),
+                          _responsiveFontSize * 0.12,
+                        ),
                         color: Colors.black,
                         blurRadius: 0.5,
                       ),
@@ -2071,7 +2530,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                     color: Colors.yellowAccent,
                     shadows: [
                       Shadow(
-                        offset: Offset(-(_responsiveFontSize * 0.12), _responsiveFontSize * 0.12),
+                        offset: Offset(
+                          -(_responsiveFontSize * 0.12),
+                          _responsiveFontSize * 0.12,
+                        ),
                         color: Colors.black,
                         blurRadius: 0.5,
                       ),
@@ -2081,18 +2543,21 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 ),
 
                 Text(
-                  isPreviousPlayer 
-                    ? _hasGamePreviousPlayer 
-                      ? _previousTeamLastScore.toString()
-                      : '-' 
-                    : _activeTeamLastScore.toString(),
+                  isPreviousPlayer
+                      ? _hasGamePreviousPlayer
+                            ? _previousTeamLastScore.toString()
+                            : '-'
+                      : _activeTeamLastScore.toString(),
                   style: TextStyle(
                     fontSize: _responsiveFontSize * 2.2,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     shadows: [
                       Shadow(
-                        offset: Offset(-(_responsiveFontSize * 0.12), _responsiveFontSize * 0.12),
+                        offset: Offset(
+                          -(_responsiveFontSize * 0.12),
+                          _responsiveFontSize * 0.12,
+                        ),
                         color: Colors.black,
                         blurRadius: 0.5,
                       ),
@@ -2102,7 +2567,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 ),
               ],
             ),
-          ]
+          ],
         ],
       ),
     );
@@ -2127,7 +2592,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
           decoration: BoxDecoration(
             color: playerColor,
             border: Border(
-              bottom: BorderSide(color: playerColor, width: _responsiveTile * 0.003),
+              bottom: BorderSide(
+                color: playerColor,
+                width: _responsiveTile * 0.003,
+              ),
             ),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(_responsiveTile * 0.02),
@@ -2142,7 +2610,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 child: Text(
                   'Target',
                   textAlign: TextAlign.center,
-                  style: gBuildArcadeTextStyle(_responsiveFontSize * 0.53, gFontWeight: FontWeight.bold),
+                  style: gBuildArcadeTextStyle(
+                    _responsiveFontSize * 0.53,
+                    gFontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Expanded(
@@ -2150,7 +2621,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 child: Text(
                   'Round',
                   textAlign: TextAlign.center,
-                  style: gBuildArcadeTextStyle(_responsiveFontSize * 0.53, gFontWeight: FontWeight.bold),
+                  style: gBuildArcadeTextStyle(
+                    _responsiveFontSize * 0.53,
+                    gFontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Expanded(
@@ -2158,7 +2632,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 child: Text(
                   _isPlayerMode ? 'Total' : 'Player/Team',
                   textAlign: TextAlign.end,
-                  style: gBuildArcadeTextStyle(_responsiveFontSize * 0.53, gFontWeight: FontWeight.bold),
+                  style: gBuildArcadeTextStyle(
+                    _responsiveFontSize * 0.53,
+                    gFontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -2173,7 +2650,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
               if (index == 0) {
                 final startPlayerScore = _startingScore;
                 final startTeamScore = _startingScore * 2;
-                
+
                 return Container(
                   padding: EdgeInsets.symmetric(
                     vertical: _responsiveTile * 0.005,
@@ -2181,14 +2658,52 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                   ),
                   decoration: BoxDecoration(
                     color: Colors.green.shade800.withAlpha(120),
-                    border: Border.all(color: playerColor.withAlpha(200), width: _responsiveTile * 0.002),
+                    border: Border.all(
+                      color: playerColor.withAlpha(200),
+                      width: _responsiveTile * 0.002,
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(flex: 2, child: Text("Start", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize, color: Colors.black))),
-                      Expanded(flex: 3, child: Text("-", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize, color: Colors.black))),
-                      Expanded(flex: 4, child: Text(_isPlayerMode ? '$startPlayerScore' : '$startPlayerScore / $startTeamScore', textAlign: TextAlign.end, style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize, color: Colors.black))),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          "Start",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: _responsiveFontSize,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          "-",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: _responsiveFontSize,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Text(
+                          _isPlayerMode
+                              ? '$startPlayerScore'
+                              : '$startPlayerScore / $startTeamScore',
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: _responsiveFontSize,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -2196,42 +2711,56 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
               final rIdx = index - 1;
               final target = gTargetsHalf[rIdx];
-              
-              final roundRecords = gamesScoresBox.values.where(
-                (s) => s.fldGame == _gameConfig && 
-                       s.fldPlayer == player && 
-                       s.fldRound == rIdx &&
-                       (includeCurrentRound ? true : s.fldDartIndex >= 2),
-              ).toList();
+
+              final roundRecords = gamesScoresBox.values
+                  .where(
+                    (s) =>
+                        s.fldGame == _gameConfig &&
+                        s.fldPlayer == player &&
+                        s.fldRound == rIdx &&
+                        (includeCurrentRound ? true : s.fldDartIndex >= 2),
+                  )
+                  .toList();
 
               final record = roundRecords.isNotEmpty ? roundRecords.last : null;
               final playerScore = record?.fldScorePlayerSnapshot;
               final isPenalized = record?.fldIsHalfIt ?? false;
 
-              final allPlayerRecords = gamesScoresBox.values.where(
-                (s) => s.fldGame == _gameConfig && s.fldPlayer == player && s.fldRound >= 0,
-              ).toList();
-              
-              final int? lastThrownRound = allPlayerRecords.isNotEmpty 
-                  ? allPlayerRecords.map((s) => s.fldRound).reduce((a, b) => a > b ? a : b) 
+              final allPlayerRecords = gamesScoresBox.values
+                  .where(
+                    (s) =>
+                        s.fldGame == _gameConfig &&
+                        s.fldPlayer == player &&
+                        s.fldRound >= 0,
+                  )
+                  .toList();
+
+              final int? lastThrownRound = allPlayerRecords.isNotEmpty
+                  ? allPlayerRecords
+                        .map((s) => s.fldRound)
+                        .reduce((a, b) => a > b ? a : b)
                   : null;
-              
-              final bool isLastThrownRound = (lastThrownRound != null && rIdx == lastThrownRound);
+
+              final bool isLastThrownRound =
+                  (lastThrownRound != null && rIdx == lastThrownRound);
 
               int? teamScore;
               if (!_isPlayerMode && _gameConfig.fldTeams != null) {
                 final int totalTeams = _gameConfig.fldTeams!.length;
                 final int teamIdx = seatIdx % totalTeams;
-                
-                final roundAllRecords = gamesScoresBox.values.where(
-                  (s) => s.fldGame == _gameConfig && 
-                         s.fldRound == rIdx &&
-                         (includeCurrentRound ? true : s.fldDartIndex >= 2),
-                ).toList();
 
-                final teamRoundRecords = roundAllRecords.where(
-                  (s) => (s.fldSeatIndex % totalTeams) == teamIdx,
-                ).toList();
+                final roundAllRecords = gamesScoresBox.values
+                    .where(
+                      (s) =>
+                          s.fldGame == _gameConfig &&
+                          s.fldRound == rIdx &&
+                          (includeCurrentRound ? true : s.fldDartIndex >= 2),
+                    )
+                    .toList();
+
+                final teamRoundRecords = roundAllRecords
+                    .where((s) => (s.fldSeatIndex % totalTeams) == teamIdx)
+                    .toList();
 
                 if (teamRoundRecords.isNotEmpty) {
                   teamScore = teamRoundRecords.last.fldScoreTeamSnapshot;
@@ -2245,17 +2774,33 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 } else {
                   int previousRunningScore;
                   if (rIdx == 0) {
-                    final baselineRecords = gamesScoresBox.values.where(
-                      (s) => s.fldGame == _gameConfig && s.fldPlayer == player && s.fldRound == -1,
-                    ).toList();
-                    previousRunningScore = baselineRecords.isNotEmpty ? baselineRecords.last.fldScorePlayerSnapshot : (_isPlayerMode ? _startingScore : (_startingScore / 2).round());
+                    final baselineRecords = gamesScoresBox.values
+                        .where(
+                          (s) =>
+                              s.fldGame == _gameConfig &&
+                              s.fldPlayer == player &&
+                              s.fldRound == -1,
+                        )
+                        .toList();
+                    previousRunningScore = baselineRecords.isNotEmpty
+                        ? baselineRecords.last.fldScorePlayerSnapshot
+                        : (_isPlayerMode
+                              ? _startingScore
+                              : (_startingScore / 2).round());
                   } else {
-                    final prevRoundRecords = gamesScoresBox.values.where(
-                      (s) => s.fldGame == _gameConfig && s.fldPlayer == player && s.fldRound == rIdx - 1,
-                    ).toList();
-                    previousRunningScore = prevRoundRecords.isNotEmpty ? prevRoundRecords.last.fldScorePlayerSnapshot : 0;
+                    final prevRoundRecords = gamesScoresBox.values
+                        .where(
+                          (s) =>
+                              s.fldGame == _gameConfig &&
+                              s.fldPlayer == player &&
+                              s.fldRound == rIdx - 1,
+                        )
+                        .toList();
+                    previousRunningScore = prevRoundRecords.isNotEmpty
+                        ? prevRoundRecords.last.fldScorePlayerSnapshot
+                        : 0;
                   }
-                  
+
                   final int diff = playerScore! - previousRunningScore;
                   roundScoreStr = diff >= 0 ? "+ $diff" : "$diff";
                 }
@@ -2267,15 +2812,69 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                   horizontal: _responsiveTile * 0.014,
                 ),
                 decoration: BoxDecoration(
-                  color: isPenalized ? Colors.red.shade100 : (isLastThrownRound ? Colors.grey.shade800.withAlpha(120) : null),
-                  border: Border.all(color: playerColor.withAlpha(200), width: _responsiveTile * 0.002),
+                  color: isPenalized
+                      ? Colors.red.shade100
+                      : (isLastThrownRound
+                            ? Colors.grey.shade800.withAlpha(120)
+                            : null),
+                  border: Border.all(
+                    color: playerColor.withAlpha(200),
+                    width: _responsiveTile * 0.002,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(flex: 2, child: Text(target.label, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize, color: isPenalized ? Colors.red.shade900 : (isLastThrownRound ? Colors.amber : Colors.black)))),
-                    Expanded(flex: 3, child: Text(roundScoreStr, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize, color: isPenalized ? Colors.red.shade900 : (isLastThrownRound ? Colors.amber : Colors.black)))),
-                    Expanded(flex: 4, child: Text(_isPlayerMode ? '${playerScore ?? '-'}' : '${playerScore ?? '-'} / ${teamScore ?? '-'}', textAlign: TextAlign.end, style: TextStyle(fontWeight: FontWeight.bold, fontSize: _responsiveFontSize, color: isPenalized ? Colors.red.shade900 : (isLastThrownRound ? Colors.amber : Colors.black)))),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        target.label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: _responsiveFontSize,
+                          color: isPenalized
+                              ? Colors.red.shade900
+                              : (isLastThrownRound
+                                    ? Colors.amber
+                                    : Colors.black),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        roundScoreStr,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: _responsiveFontSize,
+                          color: isPenalized
+                              ? Colors.red.shade900
+                              : (isLastThrownRound
+                                    ? Colors.amber
+                                    : Colors.black),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: Text(
+                        _isPlayerMode
+                            ? '${playerScore ?? '-'}'
+                            : '${playerScore ?? '-'} / ${teamScore ?? '-'}',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: _responsiveFontSize,
+                          color: isPenalized
+                              ? Colors.red.shade900
+                              : (isLastThrownRound
+                                    ? Colors.amber
+                                    : Colors.black),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -2303,7 +2902,9 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _isPlayerMode ? _buildPlayersRankingList() : _buildTeamsRankingList(),
+            child: _isPlayerMode
+                ? _buildPlayersRankingList()
+                : _buildTeamsRankingList(),
           ),
         ],
       ),
@@ -2312,15 +2913,23 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   Widget _buildPlayersRankingList() {
     // Gather latest score for each player
-    final List<({TblPlayer player, int score, Color color, int originalIdx})> playerScores = [];
+    final List<({TblPlayer player, int score, Color color, int originalIdx})>
+    playerScores = [];
 
     for (var entry in _gamePlayers) {
-      final pRecords = gamesScoresBox.values.where(
-        (s) => s.fldGame == _gameConfig && s.fldPlayer == entry.player,
-      ).toList();
+      final pRecords = gamesScoresBox.values
+          .where((s) => s.fldGame == _gameConfig && s.fldPlayer == entry.player)
+          .toList();
 
-      final score = pRecords.isNotEmpty ? pRecords.last.fldScorePlayerSnapshot : _startingScore;
-      playerScores.add((player: entry.player, score: score, color: entry.playerColor, originalIdx: entry.originalIndex));
+      final score = pRecords.isNotEmpty
+          ? pRecords.last.fldScorePlayerSnapshot
+          : _startingScore;
+      playerScores.add((
+        player: entry.player,
+        score: score,
+        color: entry.playerColor,
+        originalIdx: entry.originalIndex,
+      ));
     }
 
     // Sort descending by score
@@ -2332,7 +2941,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       itemBuilder: (context, index) {
         final item = playerScores[index];
         return Container(
-          padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.010, horizontal: _responsiveTile * 0.015),
+          padding: EdgeInsets.symmetric(
+            vertical: _responsiveTile * 0.010,
+            horizontal: _responsiveTile * 0.015,
+          ),
           margin: EdgeInsets.only(bottom: _responsiveTile * 0.013),
           decoration: BoxDecoration(
             color: Colors.grey.shade800.withAlpha(170),
@@ -2343,39 +2955,61 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
             children: [
               Row(
                 children: [
-                  index == 0 
-                    ? Text(
-                        "${index + 1}.",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: _responsiveTile * 0.0425),
-                      )
-                    : Text(
-                        "${index + 1}.",
-                        style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.04),
-                      ),
+                  index == 0
+                      ? Text(
+                          "${index + 1}.",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                            fontSize: _responsiveTile * 0.0425,
+                          ),
+                        )
+                      : Text(
+                          "${index + 1}.",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: _responsiveTile * 0.04,
+                          ),
+                        ),
 
                   SizedBox(width: _responsiveTile * 0.005),
-                  
+
                   index == 0
-                    ? Text(
-                        item.player.fldNickName,
-                        style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.0425),
-                      )
-                    : Text(
-                        item.player.fldNickName,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: _responsiveTile * 0.04),
-                      ),
+                      ? Text(
+                          item.player.fldNickName,
+                          style: TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: _responsiveTile * 0.0425,
+                          ),
+                        )
+                      : Text(
+                          item.player.fldNickName,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: _responsiveTile * 0.04,
+                          ),
+                        ),
                 ],
               ),
 
               index == 0
-                ? Text(
-                    "${item.score}",
-                    style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.0425),
-                  )
-                : Text(
-                    "${item.score}",
-                    style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.04),
-                  ),
+                  ? Text(
+                      "${item.score}",
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontWeight: FontWeight.bold,
+                        fontSize: _responsiveTile * 0.0425,
+                      ),
+                    )
+                  : Text(
+                      "${item.score}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: _responsiveTile * 0.04,
+                      ),
+                    ),
             ],
           ),
         );
@@ -2389,12 +3023,20 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     final List<({TblTeam team, int score, Color color})> teamScores = [];
 
     for (var entry in _gameTeams) {
-      final teamPlayerNames = entry.team.fldPlayers.map((p) => p.fldNickName).toSet();
-      final tRecords = gamesScoresBox.values.where(
-        (s) => s.fldGame == _gameConfig && teamPlayerNames.contains(s.fldPlayer.fldNickName),
-      ).toList();
+      final teamPlayerNames = entry.team.fldPlayers
+          .map((p) => p.fldNickName)
+          .toSet();
+      final tRecords = gamesScoresBox.values
+          .where(
+            (s) =>
+                s.fldGame == _gameConfig &&
+                teamPlayerNames.contains(s.fldPlayer.fldNickName),
+          )
+          .toList();
 
-      final score = tRecords.isNotEmpty ? (tRecords.last.fldScoreTeamSnapshot ?? _startingScore) : _startingScore;
+      final score = tRecords.isNotEmpty
+          ? (tRecords.last.fldScoreTeamSnapshot ?? _startingScore)
+          : _startingScore;
       teamScores.add((team: entry.team, score: score, color: entry.teamColor));
     }
 
@@ -2407,10 +3049,15 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       itemBuilder: (context, index) {
         final item = teamScores[index];
         // Combine player nicknames with " & "
-        final teamNamesString = item.team.fldPlayers.map((p) => p.fldNickName).join(' & ');
+        final teamNamesString = item.team.fldPlayers
+            .map((p) => p.fldNickName)
+            .join(' & ');
 
         return Container(
-          padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.010, horizontal: _responsiveTile * 0.015),
+          padding: EdgeInsets.symmetric(
+            vertical: _responsiveTile * 0.010,
+            horizontal: _responsiveTile * 0.015,
+          ),
           margin: EdgeInsets.only(bottom: _responsiveTile * 0.015),
           decoration: BoxDecoration(
             color: Colors.grey.shade800.withAlpha(150),
@@ -2421,39 +3068,61 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
             children: [
               Row(
                 children: [
-                  index == 0 
-                    ? Text(
-                        "${index + 1}.",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: _responsiveTile * 0.04),
-                      )
-                    : Text(
-                        "${index + 1}.",
-                        style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.0325),
-                      ),
-                  
-                  SizedBox(width: _responsiveTile * 0.010),
-                  
                   index == 0
-                    ? Text(
-                        teamNamesString,
-                        style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.04),
-                      )
-                    : Text(
-                        teamNamesString,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: _responsiveTile * 0.0325),
-                      ),
+                      ? Text(
+                          "${index + 1}.",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                            fontSize: _responsiveTile * 0.04,
+                          ),
+                        )
+                      : Text(
+                          "${index + 1}.",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: _responsiveTile * 0.0325,
+                          ),
+                        ),
+
+                  SizedBox(width: _responsiveTile * 0.010),
+
+                  index == 0
+                      ? Text(
+                          teamNamesString,
+                          style: TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: _responsiveTile * 0.04,
+                          ),
+                        )
+                      : Text(
+                          teamNamesString,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: _responsiveTile * 0.0325,
+                          ),
+                        ),
                 ],
               ),
-              
+
               index == 0
-                ? Text(
-                    "${item.score}",
-                    style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveTile * 0.04),
-                  )
-                : Text(
-                    "${item.score}",
-                    style: TextStyle(color: Colors.white, fontSize: _responsiveTile * 0.0325),
-                  ),
+                  ? Text(
+                      "${item.score}",
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontWeight: FontWeight.bold,
+                        fontSize: _responsiveTile * 0.04,
+                      ),
+                    )
+                  : Text(
+                      "${item.score}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: _responsiveTile * 0.0325,
+                      ),
+                    ),
             ],
           ),
         );
@@ -2463,7 +3132,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   void _showFullScoreboardDialog(BuildContext context) {
     gClearAllArcadeOverlays();
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -2473,15 +3142,16 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
           backgroundColor: Colors.grey.shade800,
           title: Text(
             _isPlayerMode ? "Players Full Scoreboard" : "Teams Full Scoreboard",
-            style: gBuildArcadeTextStyle(_responsiveFontSize, 
-              gFontWeight: FontWeight.bold, 
+            style: gBuildArcadeTextStyle(
+              _responsiveFontSize,
+              gFontWeight: FontWeight.bold,
               gTextColor: Colors.amber,
             ),
             textAlign: TextAlign.center,
           ),
           content: SizedBox(
             width: GlobalAppDisplay.safeWidth * 0.9,
-            height: GlobalAppDisplay.safeHeight * 0.8,
+            height: _safeHeight * 0.8,
             child: _buildFullScoreboardTable(),
           ),
           actions: [
@@ -2491,8 +3161,12 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
               ),
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                "Close", 
-                style: gBuildArcadeTextStyle(_responsiveFontSize * 0.8, gFontWeight: FontWeight.bold, gTextColor: Colors.amber),
+                "Close",
+                style: gBuildArcadeTextStyle(
+                  _responsiveFontSize * 0.8,
+                  gFontWeight: FontWeight.bold,
+                  gTextColor: Colors.amber,
+                ),
               ),
             ),
           ],
@@ -2505,7 +3179,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
     required List<GameResultRecord<dynamic>> winners,
     required List<TblPlayer> winningPlayers,
     required List<TblTeam> winningTeams,
-  }){
+  }) {
     final bool isTie = winners.length > 1;
 
     return Container(
@@ -2516,7 +3190,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
       child: Row(
         children: [
           SizedBox(width: _responsiveTile * 0.01),
-          
+
           // Save button
           SizedBox(
             width: _responsiveTile * 0.18,
@@ -2527,11 +3201,14 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 padding: EdgeInsets.zero,
                 elevation: 4,
               ),
-              onPressed: () {                  
-                _gameClosed(winningPlayers: winningPlayers, winningTeams: winningTeams);
+              onPressed: () {
+                _gameClosed(
+                  winningPlayers: winningPlayers,
+                  winningTeams: winningTeams,
+                );
               },
               child: Center(
-                child: Stack( 
+                child: Stack(
                   children: [
                     Positioned.fill(
                       child: Container(
@@ -2540,7 +3217,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           boxShadow: [
                             BoxShadow(
                               blurRadius: _responsiveTile * 0.015,
-                              offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                              offset: Offset(
+                                _responsiveTile * 0.003,
+                                _responsiveTile * 0.003,
+                              ), // Casts shadow upward onto the screen content
                             ),
                           ],
                         ),
@@ -2569,14 +3249,16 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                   ),
                   decoration: BoxDecoration(
                     color: (winners[0].color).withAlpha(220),
-                    borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
+                    borderRadius: BorderRadius.circular(
+                      _responsiveTile * 0.015,
+                    ),
                   ),
                   child: Text(
-                    isTie 
-                      ? "IT'S A TIE!" 
-                      : _isPlayerMode 
-                        ? "WINNER" 
-                        : "WINNERS", 
+                    isTie
+                        ? "IT'S A TIE!"
+                        : _isPlayerMode
+                        ? "WINNER"
+                        : "WINNERS",
                     style: gBuildArcadeTextStyle(
                       _responsiveFontSize * 1.1,
                       gFontWeight: FontWeight.bold,
@@ -2595,10 +3277,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                   if (_isPlayerMode) ...[
                     gBuildSlicedPlayerAvatarH(
                       player: winners[0].objReference,
-                      avatarHeight: avatarHeight,
-                      avatarHeightOuterSize: avatarHeightOuterSize,
-                      avatarSlicedWidth: avatarSlicedWidth,
-                      avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                      avatarHeight: _avatarHeight,
+                      avatarHeightOuterSize: _avatarHeightOuterSize,
+                      avatarSlicedWidth: _avatarSlicedWidth,
+                      avatarSlicedWidthOuterSize: _avatarSlicedWidthOuterSize,
                       slotBgColor: winners[0].color,
                       playerPosition: winners[0].playerPosition1,
                       responsiveTile: _responsiveTile,
@@ -2608,11 +3290,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                   ] else ...[
                     gBuildSlicedTeamCardH(
                       team: winners[0].objReference,
-                      cardHeight: cardHeight,
-                      cardWidth: cardWidth,
-                      cardWidthOuterSize: cardWidthOuterSize,
-                      cardSlicedHeight: cardSlicedHeight,
-                      cardSlicedHeightOuterSize: cardSlicedHeightOuterSize,
+                      cardHeight: _cardHeight,
+                      cardWidth: _cardWidth,
+                      cardWidthOuterSize: _cardWidthOuterSize,
+                      cardSlicedHeight: _cardSlicedHeight,
+                      cardSlicedHeightOuterSize: _cardSlicedHeightOuterSize,
                       slotBgColor: winners[0].color,
                       teamPosition: winners[0].originalIndex,
                       responsiveTile: _responsiveTile,
@@ -2635,15 +3317,15 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                     ),
                     decoration: BoxDecoration(
                       color: (winners[0].color).withAlpha(220),
-                      borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
+                      borderRadius: BorderRadius.circular(
+                        _responsiveTile * 0.015,
+                      ),
                     ),
                     child: Text(
-                      _isPlayerMode 
-                        ? "WINNER" 
-                        : "WINNERS", 
+                      _isPlayerMode ? "WINNER" : "WINNERS",
                       style: gBuildArcadeTextStyle(
                         _responsiveFontSize * 1.1,
-                        gFontWeight: FontWeight.bold
+                        gFontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -2662,12 +3344,12 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                 padding: EdgeInsets.zero,
                 elevation: 4,
               ),
-              onPressed: () {                  
+              onPressed: () {
                 Navigator.of(context).pop();
                 _undoLastThrow();
               },
               child: Center(
-                child: Stack( 
+                child: Stack(
                   children: [
                     Positioned.fill(
                       child: Container(
@@ -2676,7 +3358,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                           boxShadow: [
                             BoxShadow(
                               blurRadius: _responsiveTile * 0.015,
-                              offset: Offset(_responsiveTile * 0.003, _responsiveTile * 0.003), // Casts shadow upward onto the screen content
+                              offset: Offset(
+                                _responsiveTile * 0.003,
+                                _responsiveTile * 0.003,
+                              ), // Casts shadow upward onto the screen content
                             ),
                           ],
                         ),
@@ -2702,18 +3387,25 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
 
   Widget _buildFullScoreboardTable() {
     final totalColumns = _gamePlayers.length + 1;
-    
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double calculatedPlayerColWidth = (_isPlayerMode && _gamePlayers.length > 5) 
-            ? (constraints.maxWidth / (_gamePlayers.length + 1)).clamp(85.0, 115.0) 
+        final double calculatedPlayerColWidth =
+            (_isPlayerMode && _gamePlayers.length > 5)
+            ? (constraints.maxWidth / (_gamePlayers.length + 1)).clamp(
+                85.0,
+                115.0,
+              )
             : 115.0;
 
         return Container(
           decoration: BoxDecoration(
             color: Colors.grey.shade900,
             borderRadius: BorderRadius.circular(_responsiveTile * 0.02),
-            border: Border.all(color: Colors.amber, width: _responsiveTile * 0.003),
+            border: Border.all(
+              color: Colors.amber,
+              width: _responsiveTile * 0.003,
+            ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(_responsiveTile * 0.02),
@@ -2722,20 +3414,28 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: constraints.maxWidth,
-                  ),
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
                   child: Table(
                     border: TableBorder(
-                      horizontalInside: BorderSide(color: Colors.grey.shade700, width: 1),
-                      verticalInside: BorderSide(color: Colors.grey.shade700, width: 1),
+                      horizontalInside: BorderSide(
+                        color: Colors.grey.shade700,
+                        width: 1,
+                      ),
+                      verticalInside: BorderSide(
+                        color: Colors.grey.shade700,
+                        width: 1,
+                      ),
                       bottom: BorderSide(color: Colors.grey.shade700, width: 1),
                     ),
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     columnWidths: {
-                      0: const FixedColumnWidth(90.0), // Compact Targets column width
+                      0: const FixedColumnWidth(
+                        90.0,
+                      ), // Compact Targets column width
                       for (int i = 1; i < totalColumns; i++)
-                        i: FixedColumnWidth(calculatedPlayerColWidth), // Responsive player column width
+                        i: FixedColumnWidth(
+                          calculatedPlayerColWidth,
+                        ), // Responsive player column width
                     },
                     children: [
                       // --- HEADER ROW ---
@@ -2748,48 +3448,80 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                             child: Center(
                               child: Text(
                                 'Targets',
-                                style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.75),
+                                style: TextStyle(
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: _responsiveFontSize * 0.75,
+                                ),
                               ),
                             ),
                           ),
                           // Player Headers
                           if (_isPlayerMode)
-                            ..._gamePlayers.map((gp) => SizedBox(
-                                  height: _responsiveTile * 0.1,
-                                  child: Center(
-                                    child: Container(
-                                      margin: EdgeInsets.symmetric(horizontal: 2),
-                                      padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.008, vertical: _responsiveTile * 0.004),
-                                      decoration: BoxDecoration(
-                                        color: gp.playerColor,
-                                        borderRadius: BorderRadius.circular(_responsiveTile * 0.01),
-                                        border: Border.all(color: Colors.white24, width: 1),
+                            ..._gamePlayers.map(
+                              (gp) => SizedBox(
+                                height: _responsiveTile * 0.1,
+                                child: Center(
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(horizontal: 2),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: _responsiveTile * 0.008,
+                                      vertical: _responsiveTile * 0.004,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: gp.playerColor,
+                                      borderRadius: BorderRadius.circular(
+                                        _responsiveTile * 0.01,
                                       ),
-                                      child: Text(
-                                        gp.player.fldNickName,
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.7),
-                                        overflow: TextOverflow.ellipsis,
+                                      border: Border.all(
+                                        color: Colors.white24,
+                                        width: 1,
                                       ),
                                     ),
+                                    child: Text(
+                                      gp.player.fldNickName,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: _responsiveFontSize * 0.7,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ))
+                                ),
+                              ),
+                            )
                           else
                             ..._gamePlayers.map((gp) {
-                              final teamEntry = _gameTeams.firstWhere((gt) => gt.team.fldPlayers.contains(gp.player));
+                              final teamEntry = _gameTeams.firstWhere(
+                                (gt) => gt.team.fldPlayers.contains(gp.player),
+                              );
                               return SizedBox(
                                 height: _responsiveTile * 0.1,
                                 child: Center(
                                   child: Container(
                                     margin: EdgeInsets.symmetric(horizontal: 2),
-                                    padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.008, vertical: _responsiveTile * 0.004),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: _responsiveTile * 0.008,
+                                      vertical: _responsiveTile * 0.004,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: teamEntry.teamColor,
-                                      borderRadius: BorderRadius.circular(_responsiveTile * 0.01),
-                                      border: Border.all(color: Colors.white24, width: 1),
+                                      borderRadius: BorderRadius.circular(
+                                        _responsiveTile * 0.01,
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.white24,
+                                        width: 1,
+                                      ),
                                     ),
                                     child: Text(
                                       gp.player.fldNickName,
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.7),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: _responsiveFontSize * 0.7,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -2807,20 +3539,29 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                             child: Center(
                               child: Text(
                                 'Start',
-                                style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.7),
+                                style: TextStyle(
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: _responsiveFontSize * 0.7,
+                                ),
                               ),
                             ),
                           ),
                           if (_isPlayerMode)
-                            ..._gamePlayers.map((_) => SizedBox(
-                                  height: _responsiveTile * 0.09,
-                                  child: Center(
-                                    child: Text(
-                                      '$_startingScore',
-                                      style: TextStyle(color: Colors.white, fontSize: _responsiveFontSize * 0.7),
+                            ..._gamePlayers.map(
+                              (_) => SizedBox(
+                                height: _responsiveTile * 0.09,
+                                child: Center(
+                                  child: Text(
+                                    '$_startingScore',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: _responsiveFontSize * 0.7,
                                     ),
                                   ),
-                                ))
+                                ),
+                              ),
+                            )
                           else
                             ..._gamePlayers.map((_) {
                               final startTeamScore = _startingScore * 2;
@@ -2829,7 +3570,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                 child: Center(
                                   child: Text(
                                     '$_startingScore / $startTeamScore',
-                                    style: TextStyle(color: Colors.white, fontSize: _responsiveFontSize * 0.65),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: _responsiveFontSize * 0.65,
+                                    ),
                                   ),
                                 ),
                               );
@@ -2849,128 +3593,287 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                               child: Center(
                                 child: Text(
                                   target.label,
-                                  style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.7),
+                                  style: TextStyle(
+                                    color: Colors.amber,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: _responsiveFontSize * 0.7,
+                                  ),
                                 ),
                               ),
                             ),
                             if (_isPlayerMode)
                               ..._gamePlayers.map((gp) {
-                                final records = gamesScoresBox.values.where(
-                                  (s) => s.fldGame == _gameConfig && s.fldPlayer == gp.player && s.fldRound == rIdx && s.fldDartIndex >= 0,
-                                ).toList();
+                                final records = gamesScoresBox.values
+                                    .where(
+                                      (s) =>
+                                          s.fldGame == _gameConfig &&
+                                          s.fldPlayer == gp.player &&
+                                          s.fldRound == rIdx &&
+                                          s.fldDartIndex >= 0,
+                                    )
+                                    .toList();
 
-                                final hasCompletedRound = records.any((s) => s.fldDartIndex == 2);
-                                final latestRecord = records.isNotEmpty ? records.last : null;
-                                final isHalfIt = latestRecord?.fldIsHalfIt ?? false;
-                                
-                                final totalHits = records.fold(0, (sum, r) => sum + r.fldHits);
-                                final scoreStr = latestRecord != null ? '${latestRecord.fldScorePlayerSnapshot}' : '-';
+                                final hasCompletedRound = records.any(
+                                  (s) => s.fldDartIndex == 2,
+                                );
+                                final latestRecord = records.isNotEmpty
+                                    ? records.last
+                                    : null;
+                                final isHalfIt =
+                                    latestRecord?.fldIsHalfIt ?? false;
+
+                                final totalHits = records.fold(
+                                  0,
+                                  (sum, r) => sum + r.fldHits,
+                                );
+                                final scoreStr = latestRecord != null
+                                    ? '${latestRecord.fldScorePlayerSnapshot}'
+                                    : '-';
 
                                 return SizedBox(
                                   height: _responsiveTile * 0.09,
                                   child: Center(
                                     child: hasCompletedRound
                                         ? (isHalfIt
-                                            ? Container(
-                                                padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.01, vertical: _responsiveTile * 0.003),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red.shade700,
-                                                  borderRadius: BorderRadius.circular(_responsiveTile * 0.02),
-                                                  border: Border.all(color: Colors.white, width: 1),
-                                                ),
-                                                child: Text(
-                                                  scoreStr,
-                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.7),
-                                                ),
-                                              )
-                                            : Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.006, vertical: 1),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.amber,
-                                                      borderRadius: BorderRadius.circular(_responsiveTile * 0.012),
-                                                      border: Border.all(color: Colors.white24, width: 1),
-                                                    ),
-                                                    child: Text(
-                                                      '$totalHits',
-                                                      style: TextStyle(color: const Color.fromARGB(255, 207, 20, 17), fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.65),
+                                              ? Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        _responsiveTile * 0.01,
+                                                    vertical:
+                                                        _responsiveTile * 0.003,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red.shade700,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          _responsiveTile *
+                                                              0.02,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: Colors.white,
+                                                      width: 1,
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding: EdgeInsets.symmetric(horizontal: 2),
-                                                    child: Icon(Icons.arrow_right_alt, color: Colors.white70, size: _responsiveFontSize * 0.8),
-                                                  ),
-                                                  Text(
+                                                  child: Text(
                                                     scoreStr,
-                                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.7),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize:
+                                                          _responsiveFontSize *
+                                                          0.7,
+                                                    ),
                                                   ),
-                                                ],
-                                              ))
+                                                )
+                                              : Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal:
+                                                                _responsiveTile *
+                                                                0.006,
+                                                            vertical: 1,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.amber,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              _responsiveTile *
+                                                                  0.012,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: Colors.white24,
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        '$totalHits',
+                                                        style: TextStyle(
+                                                          color:
+                                                              const Color.fromARGB(
+                                                                255,
+                                                                207,
+                                                                20,
+                                                                17,
+                                                              ),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize:
+                                                              _responsiveFontSize *
+                                                              0.65,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 2,
+                                                          ),
+                                                      child: Icon(
+                                                        Icons.arrow_right_alt,
+                                                        color: Colors.white70,
+                                                        size:
+                                                            _responsiveFontSize *
+                                                            0.8,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      scoreStr,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize:
+                                                            _responsiveFontSize *
+                                                            0.7,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ))
                                         : Text(
                                             '-',
-                                            style: TextStyle(color: Colors.grey.shade500, fontSize: _responsiveFontSize * 0.7),
+                                            style: TextStyle(
+                                              color: Colors.grey.shade500,
+                                              fontSize:
+                                                  _responsiveFontSize * 0.7,
+                                            ),
                                           ),
                                   ),
                                 );
                               })
                             else
                               ..._gamePlayers.map((gp) {
-                                final records = gamesScoresBox.values.where(
-                                  (s) => s.fldGame == _gameConfig && s.fldPlayer == gp.player && s.fldRound == rIdx && s.fldDartIndex >= 0,
-                                ).toList();
+                                final records = gamesScoresBox.values
+                                    .where(
+                                      (s) =>
+                                          s.fldGame == _gameConfig &&
+                                          s.fldPlayer == gp.player &&
+                                          s.fldRound == rIdx &&
+                                          s.fldDartIndex >= 0,
+                                    )
+                                    .toList();
 
-                                final hasCompletedRound = records.any((s) => s.fldDartIndex == 2);
-                                final latestRecord = records.isNotEmpty ? records.last : null;
+                                final hasCompletedRound = records.any(
+                                  (s) => s.fldDartIndex == 2,
+                                );
+                                final latestRecord = records.isNotEmpty
+                                    ? records.last
+                                    : null;
 
                                 if (latestRecord != null && hasCompletedRound) {
-                                  final pScore = latestRecord.fldScorePlayerSnapshot;
-                                  final tScore = latestRecord.fldScoreTeamSnapshot ?? '-';
+                                  final pScore =
+                                      latestRecord.fldScorePlayerSnapshot;
+                                  final tScore =
+                                      latestRecord.fldScoreTeamSnapshot ?? '-';
                                   final isHalfIt = latestRecord.fldIsHalfIt;
-                                  final totalHits = records.fold(0, (sum, r) => sum + r.fldHits);
-                                  final scoreDisplay = '$pScore / $tScore'; // Added proper spacing around the slash
+                                  final totalHits = records.fold(
+                                    0,
+                                    (sum, r) => sum + r.fldHits,
+                                  );
+                                  final scoreDisplay =
+                                      '$pScore / $tScore'; // Added proper spacing around the slash
 
                                   return SizedBox(
                                     height: _responsiveTile * 0.09,
                                     child: Center(
                                       child: isHalfIt
                                           ? Container(
-                                              padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.01, vertical: _responsiveTile * 0.003),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                    _responsiveTile * 0.01,
+                                                vertical:
+                                                    _responsiveTile * 0.003,
+                                              ),
                                               decoration: BoxDecoration(
                                                 color: Colors.red.shade700,
-                                                borderRadius: BorderRadius.circular(_responsiveTile * 0.02),
-                                                border: Border.all(color: Colors.white, width: 1),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      _responsiveTile * 0.02,
+                                                    ),
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 1,
+                                                ),
                                               ),
                                               child: Text(
                                                 scoreDisplay,
-                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.65),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize:
+                                                      _responsiveFontSize *
+                                                      0.65,
+                                                ),
                                               ),
                                             )
                                           : Row(
                                               mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
                                                 Container(
-                                                  padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.006, vertical: 1),
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        _responsiveTile * 0.006,
+                                                    vertical: 1,
+                                                  ),
                                                   decoration: BoxDecoration(
                                                     color: Colors.amber,
-                                                    borderRadius: BorderRadius.circular(_responsiveTile * 0.012),
-                                                    border: Border.all(color: Colors.white24, width: 1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          _responsiveTile *
+                                                              0.012,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: Colors.white24,
+                                                      width: 1,
+                                                    ),
                                                   ),
                                                   child: Text(
                                                     '$totalHits',
-                                                    style: TextStyle(color: const Color.fromARGB(255, 207, 20, 17), fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.6),
+                                                    style: TextStyle(
+                                                      color:
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            207,
+                                                            20,
+                                                            17,
+                                                          ),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize:
+                                                          _responsiveFontSize *
+                                                          0.6,
+                                                    ),
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets.symmetric(horizontal: 1),
-                                                  child: Icon(Icons.arrow_right_alt, color: Colors.white70, size: _responsiveFontSize * 0.75),
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 1,
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.arrow_right_alt,
+                                                    color: Colors.white70,
+                                                    size:
+                                                        _responsiveFontSize *
+                                                        0.75,
+                                                  ),
                                                 ),
                                                 Text(
                                                   scoreDisplay,
-                                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: _responsiveFontSize * 0.65),
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize:
+                                                        _responsiveFontSize *
+                                                        0.65,
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -2983,7 +3886,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen> with TickerProvider
                                   child: Center(
                                     child: Text(
                                       '-',
-                                      style: TextStyle(color: Colors.grey.shade500, fontSize: _responsiveFontSize * 0.7),
+                                      style: TextStyle(
+                                        color: Colors.grey.shade500,
+                                        fontSize: _responsiveFontSize * 0.7,
+                                      ),
                                     ),
                                   ),
                                 );

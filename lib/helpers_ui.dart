@@ -12,19 +12,16 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 
-enum FormMode{
-  formAdd,
-  formModify
-}
+enum FormMode { formAdd, formModify }
 
 String gGetPrivacyPolicySection(int section) {
   switch (section) {
-    case 1:      
+    case 1:
       return "Darts 101 is a paid, standalone scorekeeping application designed for darts players.\n"
-             "Your privacy is paramount: Darts 101 operates entirely locally on your device and does not collect, transmit, share, or sell any personal or sensitive user data.\n";
+          "Your privacy is paramount: Darts 101 operates entirely locally on your device and does not collect, transmit, share, or sell any personal or sensitive user data.\n";
     case 2:
       return "Players Data: Any information you enter into the application (such as : player first names, last names, nicknames, and game scores) is stored strictly on your device’s local internal storage.\n"
-             "Zero Remote Data Collection: We do not collect, transmit, or back up your information to any remote server, cloud platform, or developer-owned system. We have zero remote access to your device or your saved application data.\n";
+          "Zero Remote Data Collection: We do not collect, transmit, or back up your information to any remote server, cloud platform, or developer-owned system. We have zero remote access to your device or your saved application data.\n";
     case 3:
       return "Darts 101 does not contain tracking code, third-party advertising SDKs, analytics frameworks (such as Firebase Analytics or Crashlytics), or remote database integrations.\n";
     case 4:
@@ -44,11 +41,11 @@ String gGetInformationSection(int section) {
   switch (section) {
     case 1:
       return "This app was created for :\nThe LGGDS Darts League\nStoneham-et-Tewkesbury, Québec\nCanada";
-    case 2:      
+    case 2:
       return "1. First deployment\n";
     case 3:
       return "Some artworks in this app are used with a license I bought from openart.ai !\n"
-             "The rest of artworks were created by me.";
+          "The rest of artworks were created by me.";
     default:
       return "";
   }
@@ -103,7 +100,7 @@ Widget gBuildArcadeActionBanner({
             filterQuality: FilterQuality.high,
           ),
           SizedBox(width: responsiveTile * 0.015),
-          
+
           // INKWELL WRAPS ONLY THE PILL NOW
           InkWell(
             onTap: gOnTap,
@@ -154,7 +151,7 @@ Widget gBuildArcadeActionBanner({
               ),
             ),
           ),
-          
+
           SizedBox(width: responsiveTile * 0.015),
           // Left Arrow on right side
           GifView.asset(
@@ -175,7 +172,7 @@ void gShowArcadeErrorSnackBar({
   required String gMessage,
   required int gDuration,
   Color? gBbackgroundColor,
-}){
+}) {
   ScaffoldMessenger.of(gContext).hideCurrentSnackBar();
   ScaffoldMessenger.of(gContext).showSnackBar(
     SnackBar(
@@ -186,9 +183,7 @@ void gShowArcadeErrorSnackBar({
         right: GlobalAppDisplay.safeHeight * 0.056,
         bottom: GlobalAppDisplay.safeHeight * 0.056,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       content: Center(
         child: Text(
           gMessage,
@@ -224,8 +219,13 @@ void gShowDatabaseSeedDialog(
       return AlertDialog(
         backgroundColor: Colors.grey.shade800,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.015),
-          side: BorderSide(color: Colors.white24, width: GlobalAppDisplay.safeHeight * 0.003),
+          borderRadius: BorderRadius.circular(
+            GlobalAppDisplay.safeWidth * 0.015,
+          ),
+          side: BorderSide(
+            color: Colors.white24,
+            width: GlobalAppDisplay.safeHeight * 0.003,
+          ),
         ),
         title: null,
         content: Row(
@@ -248,7 +248,8 @@ void gShowDatabaseSeedDialog(
                             Align(
                               alignment: Alignment.center,
                               child: FractionallySizedBox(
-                                widthFactor: 0.94, // Adjust percentage to taste (e.g. 0.94 leaves a clean 3% border)
+                                widthFactor:
+                                    0.94, // Adjust percentage to taste (e.g. 0.94 leaves a clean 3% border)
                                 heightFactor: 0.94,
                                 child: Container(color: tileColor),
                               ),
@@ -269,9 +270,9 @@ void gShowDatabaseSeedDialog(
                 ),
               ),
             ),
-            
+
             SizedBox(width: GlobalAppDisplay.safeWidth * 0.016),
-            
+
             // Column 2: Right-Side Stack (Title, Content, and Buttons)
             Expanded(
               child: SingleChildScrollView(
@@ -283,101 +284,141 @@ void gShowDatabaseSeedDialog(
                     Container(
                       padding: EdgeInsets.symmetric(
                         vertical: GlobalAppDisplay.safeWidth * 0.008,
-                        horizontal: GlobalAppDisplay.safeWidth * 0.016
-                        ),
+                        horizontal: GlobalAppDisplay.safeWidth * 0.016,
+                      ),
                       decoration: BoxDecoration(
                         color: tileColor,
-                        borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.008),
-                        border: Border.all(color: tileBackgroundColor, width: GlobalAppDisplay.safeHeight * 0.003),
+                        borderRadius: BorderRadius.circular(
+                          GlobalAppDisplay.safeWidth * 0.008,
+                        ),
+                        border: Border.all(
+                          color: tileBackgroundColor,
+                          width: GlobalAppDisplay.safeHeight * 0.003,
+                        ),
                       ),
                       child: Text(
                         headerText,
                         textAlign: TextAlign.center,
-                        style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015, gTextColor: Colors.amber),
+                        style: gBuildArcadeTextStyle(
+                          GlobalAppDisplay.safeWidth * 0.015,
+                          gTextColor: Colors.amber,
+                        ),
                       ),
                     ),
 
                     SizedBox(height: GlobalAppDisplay.safeWidth * 0.026),
-                    
+
                     Text(
                       titleText,
                       textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                      style: gBuildArcadeTextStyle(
+                        GlobalAppDisplay.safeWidth * 0.015,
+                      ),
                     ),
-                    
+
                     SizedBox(height: GlobalAppDisplay.safeWidth * 0.026),
 
                     // Content Question Text
                     Text(
                       questionText,
-                      style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                      style: gBuildArcadeTextStyle(
+                        GlobalAppDisplay.safeWidth * 0.015,
+                      ),
                     ),
 
                     SizedBox(height: GlobalAppDisplay.safeWidth * 0.026),
-                    
+
                     // Action Buttons
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.white, width: GlobalAppDisplay.safeHeight * 0.003),
+                              side: BorderSide(
+                                color: Colors.white,
+                                width: GlobalAppDisplay.safeHeight * 0.003,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.025),
+                                borderRadius: BorderRadius.circular(
+                                  GlobalAppDisplay.safeWidth * 0.025,
+                                ),
                               ),
                               backgroundColor: Colors.red.shade800,
-                              padding: EdgeInsets.symmetric(horizontal: GlobalAppDisplay.safeWidth * 0.016, vertical: GlobalAppDisplay.safeWidth * 0.016),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: GlobalAppDisplay.safeWidth * 0.016,
+                                vertical: GlobalAppDisplay.safeWidth * 0.016,
+                              ),
                             ),
                             onPressed: () => onNoPressed(dialogContext),
                             child: Column(
                               children: [
-                                  Text(
+                                Text(
                                   noButtonText1,
                                   textAlign: TextAlign.center,
-                                  style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                  style: gBuildArcadeTextStyle(
+                                    GlobalAppDisplay.safeWidth * 0.015,
+                                  ),
                                 ),
                                 if (noButtonText2 != null)
-                                  SizedBox(height: GlobalAppDisplay.safeWidth * 0.006),
-
-                                  Text(
-                                    noButtonText2!,
-                                    textAlign: TextAlign.center,
-                                    style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                  SizedBox(
+                                    height: GlobalAppDisplay.safeWidth * 0.006,
                                   ),
+
+                                Text(
+                                  noButtonText2!,
+                                  textAlign: TextAlign.center,
+                                  style: gBuildArcadeTextStyle(
+                                    GlobalAppDisplay.safeWidth * 0.015,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ),
-                          
+
                         SizedBox(width: GlobalAppDisplay.safeWidth * 0.008),
-                          
+
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.amber, width: GlobalAppDisplay.safeHeight * 0.003),
+                              side: BorderSide(
+                                color: Colors.amber,
+                                width: GlobalAppDisplay.safeHeight * 0.003,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(GlobalAppDisplay.safeWidth * 0.025),
+                                borderRadius: BorderRadius.circular(
+                                  GlobalAppDisplay.safeWidth * 0.025,
+                                ),
                               ),
                               backgroundColor: Colors.green.shade600,
-                              padding: EdgeInsets.symmetric(horizontal: GlobalAppDisplay.safeWidth * 0.016, vertical: GlobalAppDisplay.safeWidth * 0.016),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: GlobalAppDisplay.safeWidth * 0.016,
+                                vertical: GlobalAppDisplay.safeWidth * 0.016,
+                              ),
                             ),
                             onPressed: () => onYesPressed(dialogContext),
                             child: Column(
                               children: [
-                                  Text(
-                                    yesButtonText1,
-                                    textAlign: TextAlign.center,
-                                    style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
+                                Text(
+                                  yesButtonText1,
+                                  textAlign: TextAlign.center,
+                                  style: gBuildArcadeTextStyle(
+                                    GlobalAppDisplay.safeWidth * 0.015,
                                   ),
-                                  if (yesButtonText2 != null)
-                                    SizedBox(height: GlobalAppDisplay.safeWidth * 0.006),
-                                    
-                                    Text(
-                                      yesButtonText2!,
-                                      textAlign: TextAlign.center,
-                                      style: gBuildArcadeTextStyle(GlobalAppDisplay.safeWidth * 0.015),
-                                    ),
-                                ],
+                                ),
+                                if (yesButtonText2 != null)
+                                  SizedBox(
+                                    height: GlobalAppDisplay.safeWidth * 0.006,
+                                  ),
+
+                                Text(
+                                  yesButtonText2!,
+                                  textAlign: TextAlign.center,
+                                  style: gBuildArcadeTextStyle(
+                                    GlobalAppDisplay.safeWidth * 0.015,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -389,7 +430,8 @@ void gShowDatabaseSeedDialog(
             ),
           ],
         ),
-        actions: const [], // Empty since buttons are contained in the right column
+        actions:
+            const [], // Empty since buttons are contained in the right column
       );
     },
   );
@@ -397,7 +439,7 @@ void gShowDatabaseSeedDialog(
 
 Widget gBuildPlayerAvatarCard({
   required TblPlayer player,
-  required double avatarHeight, 
+  required double avatarHeight,
   required Color bgColor,
   required bool isSlicedAvatar,
   required bool isSlicedVertical,
@@ -407,7 +449,8 @@ Widget gBuildPlayerAvatarCard({
     child: AspectRatio(
       aspectRatio: 1.0,
       child: FittedBox(
-        fit: BoxFit.contain, // Forces artwork and text to scale together proportionally
+        fit: BoxFit
+            .contain, // Forces artwork and text to scale together proportionally
         child: SizedBox(
           width: avatarHeight,
           height: avatarHeight,
@@ -472,7 +515,9 @@ Widget gBuildPlayerAvatarCard({
                           ),
                           decoration: BoxDecoration(
                             color: Colors.purpleAccent.shade100.withAlpha(200),
-                            borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                            borderRadius: BorderRadius.circular(
+                              avatarHeight * 0.04,
+                            ),
                             border: Border.all(
                               color: Colors.purpleAccent.shade700,
                               width: avatarHeight * 0.006,
@@ -509,8 +554,12 @@ Widget gBuildPlayerAvatarCard({
                               vertical: avatarHeight * 0.012,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.purpleAccent.shade100.withAlpha(200),
-                              borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                              color: Colors.purpleAccent.shade100.withAlpha(
+                                200,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                avatarHeight * 0.04,
+                              ),
                               border: Border.all(
                                 color: Colors.purpleAccent.shade700,
                                 width: avatarHeight * 0.006,
@@ -529,10 +578,10 @@ Widget gBuildPlayerAvatarCard({
                             ),
                           ),
                         ),
-                      ]
+                      ],
                     ),
                   ),
-                ]
+                ],
               ] else ...[
                 Positioned(
                   bottom: 0,
@@ -546,7 +595,9 @@ Widget gBuildPlayerAvatarCard({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(avatarHeight * 0.04),
+                        borderRadius: BorderRadius.circular(
+                          avatarHeight * 0.04,
+                        ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: avatarHeight * 0.006,
@@ -566,8 +617,7 @@ Widget gBuildPlayerAvatarCard({
                     ),
                   ),
                 ),
-              ]
-              
+              ],
             ],
           ),
         ),
@@ -591,7 +641,8 @@ Widget gBuildTeamCardH({
     child: AspectRatio(
       aspectRatio: 1.4628,
       child: FittedBox(
-        fit: BoxFit.contain, // Forces height and width to scale down together proportionally
+        fit: BoxFit
+            .contain, // Forces height and width to scale down together proportionally
         child: SizedBox(
           height: cardHeight,
           width: cardWidth,
@@ -628,7 +679,7 @@ Widget gBuildTeamCardH({
                   ),
                 ),
               ),
-              
+
               // 3. Player 1 Avatar Artwork (Left Half)
               Positioned(
                 top: 0,
@@ -673,7 +724,7 @@ Widget gBuildTeamCardH({
                     filterQuality: FilterQuality.high,
                   ),
                 ),
-              
+
               // 7. Player 1 Nickname Pill (Left Slot)
               if (selectedPlayer1 != null && !isSlicedCard) ...[
                 Positioned(
@@ -688,7 +739,9 @@ Widget gBuildTeamCardH({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        borderRadius: BorderRadius.circular(
+                          avatarHeightCard * 0.04,
+                        ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: avatarHeightCard * 0.006,
@@ -721,7 +774,9 @@ Widget gBuildTeamCardH({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100.withAlpha(200),
-                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        borderRadius: BorderRadius.circular(
+                          avatarHeightCard * 0.04,
+                        ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: avatarHeightCard * 0.006,
@@ -742,7 +797,7 @@ Widget gBuildTeamCardH({
                   ),
                 ),
               ],
-              
+
               // 8. Player 2 Nickname Pill (Right Slot)
               if (selectedPlayer2 != null && !isSlicedCard) ...[
                 Positioned(
@@ -757,7 +812,9 @@ Widget gBuildTeamCardH({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        borderRadius: BorderRadius.circular(
+                          avatarHeightCard * 0.04,
+                        ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: avatarHeightCard * 0.006,
@@ -790,7 +847,9 @@ Widget gBuildTeamCardH({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100.withAlpha(200),
-                        borderRadius: BorderRadius.circular(avatarHeightCard * 0.04),
+                        borderRadius: BorderRadius.circular(
+                          avatarHeightCard * 0.04,
+                        ),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: avatarHeightCard * 0.006,
@@ -833,10 +892,12 @@ PreferredSizeWidget gBuildAppBar({
     iconTheme: const IconThemeData(
       color: Colors.white, // Hardcoded leading/icon color here
     ),
-    title: Row (
+    title: Row(
       children: [
         Padding(
-          padding: EdgeInsets.all((GlobalAppDisplay.safeHeight * 0.12).clamp(4.0, 12.0)),
+          padding: EdgeInsets.all(
+            (GlobalAppDisplay.safeHeight * 0.12).clamp(4.0, 12.0),
+          ),
           child: SizedBox(
             height: (GlobalAppDisplay.safeHeight * 0.08).clamp(48.0, 128.0),
             child: AspectRatio(
@@ -853,31 +914,36 @@ PreferredSizeWidget gBuildAppBar({
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              gAppBarTitle, 
-              style: gBuildArcadeTextStyle((GlobalAppDisplay.safeWidth * 0.02).clamp(18.0, 60.0)),
-            ),
-          ),
-        ),
-      ]          
-    ),
-    actions: [
-      if (kDebugMode && gCallFromMainScreen) ...[
-        
-          TextButton.icon(
-            onPressed: gOnPressed,
-            icon: Icon(Icons.aspect_ratio, color: Colors.amber, size: GlobalAppDisplay.safeHeight * 0.03),
-            label: Text(
-              'Reset DB',
-              style: TextStyle(
-                color: Colors.amber,
-                fontWeight: FontWeight.bold,
-                fontSize: GlobalAppDisplay.safeHeight * 0.022,
+              gAppBarTitle,
+              style: gBuildArcadeTextStyle(
+                (GlobalAppDisplay.safeWidth * 0.02).clamp(18.0, 60.0),
               ),
             ),
           ),
-          
-          ?gRightPopupMenu,
-        ]
+        ),
+      ],
+    ),
+    actions: [
+      if (kDebugMode && gCallFromMainScreen) ...[
+        TextButton.icon(
+          onPressed: gOnPressed,
+          icon: Icon(
+            Icons.aspect_ratio,
+            color: Colors.amber,
+            size: GlobalAppDisplay.safeHeight * 0.03,
+          ),
+          label: Text(
+            'Reset DB',
+            style: TextStyle(
+              color: Colors.amber,
+              fontWeight: FontWeight.bold,
+              fontSize: GlobalAppDisplay.safeHeight * 0.022,
+            ),
+          ),
+        ),
+
+        ?gRightPopupMenu,
+      ],
     ],
   );
 }
@@ -914,7 +980,9 @@ Widget gBuildSlicedPlayerAvatarV({
             height: avatarHeightOuterSize,
             decoration: BoxDecoration(
               color: slotBgColor,
-              borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+              borderRadius: BorderRadius.circular(
+                avatarSlicedWidthOuterSize * 0.15,
+              ),
               border: Border.all(
                 color: Colors.yellowAccent,
                 width: avatarHeightOuterSize * 0.012,
@@ -948,7 +1016,9 @@ Widget gBuildSlicedPlayerAvatarV({
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.blue,
-                  borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                  borderRadius: BorderRadius.circular(
+                    avatarSlicedWidthOuterSize * 0.07,
+                  ),
                   border: Border.all(
                     color: Colors.yellowAccent,
                     width: avatarSlicedWidthOuterSize * 0.015,
@@ -1002,125 +1072,135 @@ Widget gBuildSlicedPlayerAvatarVPanel({
         height: avatarHeightOuterSize + heightBoost,
         decoration: BoxDecoration(
           color: slotBgColor,
-          borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
+          borderRadius: BorderRadius.circular(
+            avatarSlicedWidthOuterSize * 0.15,
+          ),
           border: Border.all(
             color: Colors.yellowAccent,
             width: avatarHeightOuterSize * 0.012,
           ),
         ),
         child: isEmptyPanel
-          ? Stack(
-              children:[
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: responsiveTile * 0.050),
-                    child: RotatedBox(
+            ? Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: responsiveTile * 0.050),
+                      child: RotatedBox(
                         quarterTurns: 3,
                         child: Text(
                           !isNextPlayer ? "WAITING..." : "NO NEXT PLAYER...",
                           style: gBuildArcadeTextStyle(responsiveTile * 0.035),
                         ),
                       ),
+                    ),
                   ),
-                ),
 
-                if (isPreviousPlayer) ...[
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
-                      child: RotatedBox(
+                  if (isPreviousPlayer) ...[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                        child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
                             "PREVIOUS PLAYER",
-                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                            style: gBuildArcadeTextStyle(
+                              responsiveTile * 0.035,
+                            ),
                           ),
                         ),
+                      ),
                     ),
-                  )
+                  ],
                 ],
-              ]
-            )
-          : Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                ClipRect(
-                  child: OverflowBox(
-                    maxWidth: double.infinity,
-                    maxHeight: double.infinity,
-                    alignment: Alignment.topCenter,
+              )
+            : Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  ClipRect(
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: avatarHeight,
+                        height: avatarHeight,
+                        child: gBuildPlayerAvatarCard(
+                          player: player,
+                          avatarHeight: avatarHeight,
+                          bgColor: Colors.transparent,
+                          isSlicedAvatar: true,
+                          isSlicedVertical: true,
+                          isTagNickNameLeft: false,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Align(
+                    alignment: const Alignment(0.0, -0.99),
                     child: SizedBox(
-                      width: avatarHeight,
-                      height: avatarHeight,
-                      child: gBuildPlayerAvatarCard(
-                        player: player,
-                        avatarHeight: avatarHeight,
-                        bgColor: Colors.transparent,
-                        isSlicedAvatar: true,
-                        isSlicedVertical: true,
-                        isTagNickNameLeft: false,
-                      ),
-                    ),
-                  ),
-                ),
-              
-                Align(
-                  alignment: const Alignment(0.0, -0.99),
-                  child: SizedBox(
-                    width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
-                    height: avatarHeight * 0.20,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
-                        border: Border.all(
-                          color: Colors.yellowAccent,
-                          width: avatarSlicedWidthOuterSize * 0.015,
+                      width: avatarHeight * 0.20 * ratioPlayerTeamBadge,
+                      height: avatarHeight * 0.20,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(
+                            avatarSlicedWidthOuterSize * 0.07,
+                          ),
+                          border: Border.all(
+                            color: Colors.yellowAccent,
+                            width: avatarSlicedWidthOuterSize * 0.015,
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
                         ),
                       ),
-                      child: Image.asset(
-                        'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
                     ),
                   ),
-                ),
 
-                if (isPreviousPlayer) ...[
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
-                      child: RotatedBox(
+                  if (isPreviousPlayer) ...[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                        child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
                             "PREVIOUS PLAYER",
-                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                            style: gBuildArcadeTextStyle(
+                              responsiveTile * 0.035,
+                            ),
                           ),
                         ),
+                      ),
                     ),
-                  )
-                ],
+                  ],
 
-                if (isNextPlayer) ...[
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
-                      child: RotatedBox(
+                  if (isNextPlayer) ...[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                        child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
                             "NEXT PLAYER",
-                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                            style: gBuildArcadeTextStyle(
+                              responsiveTile * 0.035,
+                            ),
                           ),
                         ),
+                      ),
                     ),
-                  )
+                  ],
                 ],
-              ],
-            ),
+              ),
       ),
     ),
   );
@@ -1154,90 +1234,96 @@ Widget gBuildSlicedPlayerAvatarH({
       width: avatarHeightOuterSize,
       height: avatarSlicedWidthOuterSize,
       child: isEmptyPanel
-        ? Stack(
-            children: [
-              Container(
-                width: avatarHeightOuterSize,
-                height: avatarSlicedWidthOuterSize,
-                decoration: BoxDecoration(
-                  color: slotBgColor,
-                  borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
-                  border: Border.all(
-                    color: Colors.yellowAccent,
-                    width: avatarHeightOuterSize * 0.012,
-                  ),
-                ),
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      "WAITING...",
-                      style: gBuildArcadeTextStyle(responsiveTile * 0.035),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        : Stack(
-          children: [
-            Container(
-              width: avatarHeightOuterSize,
-              height: avatarSlicedWidthOuterSize,
-              decoration: BoxDecoration(
-                color: slotBgColor,
-                borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.15),
-                border: Border.all(
-                  color: Colors.yellowAccent,
-                  width: avatarHeightOuterSize * 0.012,
-                ),
-              ),
-              child: ClipRect(
-                child: OverflowBox(
-                  maxWidth: double.infinity,
-                  maxHeight: double.infinity,
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: avatarHeight,
-                    height: avatarHeight,
-                    child: gBuildPlayerAvatarCard(
-                      player: player,
-                      avatarHeight: avatarHeight,
-                      bgColor: Colors.transparent,
-                      isSlicedAvatar: true,
-                      isSlicedVertical: false,
-                      isTagNickNameLeft: isTagNickNameLeft,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Align(
-              alignment: isTagNickNameLeft
-                ? const Alignment(-0.86, -0.1)
-                : const Alignment(0.86, -0.1),
-              child: SizedBox(
-                width: avatarHeight * 0.17 * ratioPlayerTeamBadge,
-                height: avatarHeight * 0.17,
-                child: Container(
+          ? Stack(
+              children: [
+                Container(
+                  width: avatarHeightOuterSize,
+                  height: avatarSlicedWidthOuterSize,
                   decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(avatarSlicedWidthOuterSize * 0.07),
+                    color: slotBgColor,
+                    borderRadius: BorderRadius.circular(
+                      avatarSlicedWidthOuterSize * 0.15,
+                    ),
                     border: Border.all(
                       color: Colors.yellowAccent,
-                      width: avatarSlicedWidthOuterSize * 0.015,
+                      width: avatarHeightOuterSize * 0.012,
                     ),
                   ),
-                  child: Image.asset(
-                    'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        "WAITING...",
+                        style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
+            )
+          : Stack(
+              children: [
+                Container(
+                  width: avatarHeightOuterSize,
+                  height: avatarSlicedWidthOuterSize,
+                  decoration: BoxDecoration(
+                    color: slotBgColor,
+                    borderRadius: BorderRadius.circular(
+                      avatarSlicedWidthOuterSize * 0.15,
+                    ),
+                    border: Border.all(
+                      color: Colors.yellowAccent,
+                      width: avatarHeightOuterSize * 0.012,
+                    ),
+                  ),
+                  child: ClipRect(
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: avatarHeight,
+                        height: avatarHeight,
+                        child: gBuildPlayerAvatarCard(
+                          player: player,
+                          avatarHeight: avatarHeight,
+                          bgColor: Colors.transparent,
+                          isSlicedAvatar: true,
+                          isSlicedVertical: false,
+                          isTagNickNameLeft: isTagNickNameLeft,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: isTagNickNameLeft
+                      ? const Alignment(-0.86, -0.1)
+                      : const Alignment(0.86, -0.1),
+                  child: SizedBox(
+                    width: avatarHeight * 0.17 * ratioPlayerTeamBadge,
+                    height: avatarHeight * 0.17,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(
+                          avatarSlicedWidthOuterSize * 0.07,
+                        ),
+                        border: Border.all(
+                          color: Colors.yellowAccent,
+                          width: avatarSlicedWidthOuterSize * 0.015,
+                        ),
+                      ),
+                      child: Image.asset(
+                        'assets/png/mechanics/rs_tag_p_${playerPosition + 1}.png',
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
     ),
   );
 }
@@ -1276,7 +1362,9 @@ Widget gBuildSlicedTeamCardV({
             height: cardWidthOuterSize,
             decoration: BoxDecoration(
               color: slotBgColor,
-              borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+              borderRadius: BorderRadius.circular(
+                cardSlicedHeightOuterSize * 0.15,
+              ),
               border: Border.all(
                 color: Colors.yellowAccent,
                 width: cardWidthOuterSize * 0.008,
@@ -1311,7 +1399,9 @@ Widget gBuildSlicedTeamCardV({
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.blue,
-                  borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                  borderRadius: BorderRadius.circular(
+                    cardSlicedHeightOuterSize * 0.07,
+                  ),
                   border: Border.all(
                     color: Colors.yellowAccent,
                     width: cardSlicedHeightOuterSize * 0.015,
@@ -1376,168 +1466,183 @@ Widget gBuildSlicedTeamCardVPanel({
           ),
         ),
         child: isEmptyPanel
-          ? Stack(
-              children:[
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: responsiveTile * 0.050),
-                    child: RotatedBox(
+            ? Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: responsiveTile * 0.050),
+                      child: RotatedBox(
                         quarterTurns: 3,
                         child: Text(
                           !isNextPlayer ? "WAITING..." : "NO NEXT PLAYER...",
                           style: gBuildArcadeTextStyle(responsiveTile * 0.035),
                         ),
                       ),
+                    ),
                   ),
-                ),
 
-                if (isPreviousPlayer) ...[
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.19),
-                      child: RotatedBox(
+                  if (isPreviousPlayer) ...[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: responsiveTile * 0.19),
+                        child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
                             "PREVIOUS TEAM",
-                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                            style: gBuildArcadeTextStyle(
+                              responsiveTile * 0.035,
+                            ),
                           ),
                         ),
+                      ),
                     ),
-                  )
+                  ],
                 ],
-              ]
-            )
-          : Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                ClipRect(
-                  child: OverflowBox(
-                    maxWidth: double.infinity,
-                    maxHeight: double.infinity,
-                    alignment: Alignment.topCenter,
+              )
+            : Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  ClipRect(
+                    child: OverflowBox(
+                      maxWidth: double.infinity,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: cardHeight,
+                        height: cardWidth,
+                        child: gBuildTeamCardV(
+                          team: team,
+                          cardHeight: cardWidth,
+                          cardWidth: cardHeight,
+                          colorBgAvatar: slotBgColor,
+                          isSlicedCard: true,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  if (isDummy) ...[
+                    // Pulsing Glow Overlay for Player 1 (Top)
+                    if ((team.fldPlayers[0] == focusPlayer) && focusPlayerFirst)
+                      Align(
+                        alignment: const Alignment(0.0, -0.89),
+                        child: ArcadeSpinningRing(
+                          size: responsiveTile * 0.2,
+                          glowColor: Colors.amberAccent,
+                        ),
+                      ),
+
+                    // Pulsing Glow Overlay for Player 2 (Bottom)
+                    if ((team.fldPlayers[1] == focusPlayer) &&
+                        !focusPlayerFirst)
+                      Align(
+                        alignment: const Alignment(0.0, -0.34),
+                        child: ArcadeSpinningRing(
+                          size: responsiveTile * 0.2,
+                          glowColor: Colors.amberAccent,
+                        ),
+                      ),
+                  ] else ...[
+                    // Pulsing Glow Overlay for Player 1 (Top)
+                    if (team.fldPlayers[0] == focusPlayer)
+                      Align(
+                        alignment: const Alignment(0.0, -0.89),
+                        child: ArcadeSpinningRing(
+                          size: responsiveTile * 0.2,
+                          glowColor: Colors.amberAccent,
+                        ),
+                      ),
+
+                    // Pulsing Glow Overlay for Player 2 (Bottom)
+                    if (team.fldPlayers[1] == focusPlayer)
+                      Align(
+                        alignment: const Alignment(0.0, -0.34),
+                        child: ArcadeSpinningRing(
+                          size: responsiveTile * 0.2,
+                          glowColor: Colors.amberAccent,
+                        ),
+                      ),
+                  ],
+
+                  Align(
+                    alignment: !isDummy
+                        ? const Alignment(0.0, -0.56)
+                        : const Alignment(0.0, -0.995),
                     child: SizedBox(
-                      width: cardHeight,
-                      height: cardWidth,
-                      child: gBuildTeamCardV(
-                        team: team,
-                        cardHeight: cardWidth,
-                        cardWidth: cardHeight,
-                        colorBgAvatar: slotBgColor,
-                        isSlicedCard: true,
-                      ),
-                    ),
-                  ),
-                ),
-
-                if (isDummy) ...[
-                  // Pulsing Glow Overlay for Player 1 (Top)
-                  if ((team.fldPlayers[0] == focusPlayer) && focusPlayerFirst)
-                    Align(
-                      alignment: const Alignment(0.0, -0.89),
-                      child: ArcadeSpinningRing(size: responsiveTile * 0.2, glowColor: Colors.amberAccent),
-                    ),
-
-                  // Pulsing Glow Overlay for Player 2 (Bottom)
-                  if ((team.fldPlayers[1] == focusPlayer) && !focusPlayerFirst)
-                    Align(
-                      alignment: const Alignment(0.0, -0.34),
-                      child: ArcadeSpinningRing(size: responsiveTile * 0.2, glowColor: Colors.amberAccent),
-                    ),
-                ] else ...[
-                  // Pulsing Glow Overlay for Player 1 (Top)
-                  if (team.fldPlayers[0] == focusPlayer)
-                    Align(
-                      alignment: const Alignment(0.0, -0.89),
-                      child: ArcadeSpinningRing(size: responsiveTile * 0.2, glowColor: Colors.amberAccent),
-                    ),
-
-                  // Pulsing Glow Overlay for Player 2 (Bottom)
-                  if (team.fldPlayers[1] == focusPlayer)
-                    Align(
-                      alignment: const Alignment(0.0, -0.34),
-                      child: ArcadeSpinningRing(size: responsiveTile * 0.2, glowColor: Colors.amberAccent),
-                    ),
-                ],
-            
-                Align(
-                  alignment: !isDummy
-                      ? const Alignment(0.0, -0.56)
-                      : const Alignment(0.0, -0.995),
-                  child: SizedBox(
-                    width: cardHeight * 0.2 * ratioPlayerTeamBadge,
-                    height: cardHeight * 0.2,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
-                        border: Border.all(
-                          color: Colors.yellowAccent,
-                          width: cardSlicedHeightOuterSize * 0.015,
+                      width: cardHeight * 0.2 * ratioPlayerTeamBadge,
+                      height: cardHeight * 0.2,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(
+                            cardSlicedHeightOuterSize * 0.07,
+                          ),
+                          border: Border.all(
+                            color: Colors.yellowAccent,
+                            width: cardSlicedHeightOuterSize * 0.015,
+                          ),
+                        ),
+                        child: Image.asset(
+                          'assets/png/mechanics/rs_tag_t_${teamPosition + 1}.png',
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
                         ),
                       ),
-                      child: Image.asset(
-                        'assets/png/mechanics/rs_tag_t_${teamPosition + 1}.png',
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
                     ),
                   ),
-                ),
 
-                if (isPreviousPlayer) ...[
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
-                      child: RotatedBox(
+                  if (isPreviousPlayer) ...[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                        child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
                             "PREVIOUS TEAM",
-                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                            style: gBuildArcadeTextStyle(
+                              responsiveTile * 0.035,
+                            ),
                           ),
                         ),
+                      ),
                     ),
-                  )
-                ],
+                  ],
 
-                if (isNextPlayer) ...[
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
-                      child: RotatedBox(
+                  if (isNextPlayer) ...[
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: responsiveTile * 0.2),
+                        child: RotatedBox(
                           quarterTurns: 3,
                           child: Text(
                             "NEXT TEAM",
-                            style: gBuildArcadeTextStyle(responsiveTile * 0.035),
+                            style: gBuildArcadeTextStyle(
+                              responsiveTile * 0.035,
+                            ),
                           ),
                         ),
+                      ),
                     ),
-                  )
+                  ],
                 ],
-              ],
-            ),
+              ),
       ),
     ),
   );
 }
 
-Widget gArcadeSpinningRing({
-  required double gSize,
-  required Color gGlowColor,
-}){
-  return ArcadeSpinningRing(
-    size: gSize,
-    glowColor: gGlowColor,
-  );
+Widget gArcadeSpinningRing({required double gSize, required Color gGlowColor}) {
+  return ArcadeSpinningRing(size: gSize, glowColor: gGlowColor);
 }
 
 class ArcadeSpinningRing extends StatefulWidget {
   final double size;
   final Color glowColor;
-  
+
   const ArcadeSpinningRing({
     super.key,
     required this.size,
@@ -1548,7 +1653,8 @@ class ArcadeSpinningRing extends StatefulWidget {
   State<ArcadeSpinningRing> createState() => _ArcadeSpinningRingState();
 }
 
-class _ArcadeSpinningRingState extends State<ArcadeSpinningRing> with SingleTickerProviderStateMixin {
+class _ArcadeSpinningRingState extends State<ArcadeSpinningRing>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 1),
     vsync: this,
@@ -1598,7 +1704,8 @@ class _ArcadeSpinningRingState extends State<ArcadeSpinningRing> with SingleTick
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Colors.white,
-                  width: widget.size * 0.04, // Thickness of the glowing ring frame
+                  width:
+                      widget.size * 0.04, // Thickness of the glowing ring frame
                 ),
               ),
             ),
@@ -1643,7 +1750,9 @@ Widget gBuildSlicedTeamCardH({
             height: cardSlicedHeightOuterSize,
             decoration: BoxDecoration(
               color: slotBgColor,
-              borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.15),
+              borderRadius: BorderRadius.circular(
+                cardSlicedHeightOuterSize * 0.15,
+              ),
               border: Border.all(
                 color: Colors.yellowAccent,
                 width: cardWidthOuterSize * 0.008,
@@ -1674,15 +1783,17 @@ Widget gBuildSlicedTeamCardH({
             alignment: !isDummy
                 ? const Alignment(0.0, 0.0)
                 : teamPosition.isEven
-                    ? const Alignment(-0.95, -0.80)
-                    : const Alignment(0.95, -0.80),
+                ? const Alignment(-0.95, -0.80)
+                : const Alignment(0.95, -0.80),
             child: SizedBox(
               width: cardWidth * 0.15 * ratioPlayerTeamBadge,
               height: cardWidth * 0.15,
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.blue,
-                  borderRadius: BorderRadius.circular(cardSlicedHeightOuterSize * 0.07),
+                  borderRadius: BorderRadius.circular(
+                    cardSlicedHeightOuterSize * 0.07,
+                  ),
                   border: Border.all(
                     color: Colors.yellowAccent,
                     width: cardSlicedHeightOuterSize * 0.015,
@@ -1715,7 +1826,8 @@ Widget gBuildTeamCardV({
     child: AspectRatio(
       aspectRatio: 0.6836,
       child: FittedBox(
-        fit: BoxFit.contain, // Forces height and width to scale down together proportionally
+        fit: BoxFit
+            .contain, // Forces height and width to scale down together proportionally
         child: SizedBox(
           height: cardHeight,
           width: cardWidth,
@@ -1740,7 +1852,8 @@ Widget gBuildTeamCardV({
 
               // 2. Bottom Dynamic Circle Background Layer
               Positioned(
-                bottom: cardHeight * 0.03, // Positions inside bottom metallic ring
+                bottom:
+                    cardHeight * 0.03, // Positions inside bottom metallic ring
                 left: 0,
                 right: 0,
                 child: Center(
@@ -1754,7 +1867,7 @@ Widget gBuildTeamCardV({
                   ),
                 ),
               ),
-              
+
               // 3. Top Player Avatar Layer
               Positioned(
                 top: cardHeight * 0.015,
@@ -1824,9 +1937,7 @@ Widget gBuildTeamCardV({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(
-                          cardHeight * 0.04,
-                        ),
+                        borderRadius: BorderRadius.circular(cardHeight * 0.04),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: cardHeight * 0.006,
@@ -1837,7 +1948,10 @@ Widget gBuildTeamCardV({
                         child: Text(
                           team.fldPlayers[0].fldNickName.toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
+                          style: gBuildArcadeTextStyle(
+                            cardHeight * 0.032,
+                            gFontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
@@ -1858,9 +1972,7 @@ Widget gBuildTeamCardV({
                         ),
                         decoration: BoxDecoration(
                           color: Colors.purpleAccent.shade100.withAlpha(200),
-                          borderRadius: BorderRadius.circular(
-                            cardWidth * 0.04,
-                          ),
+                          borderRadius: BorderRadius.circular(cardWidth * 0.04),
                           border: Border.all(
                             color: Colors.purpleAccent.shade700,
                             width: cardWidth * 0.006,
@@ -1871,7 +1983,10 @@ Widget gBuildTeamCardV({
                           child: Text(
                             team.fldPlayers[0].fldNickName.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
+                            style: gBuildArcadeTextStyle(
+                              cardHeight * 0.032,
+                              gFontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
@@ -1894,9 +2009,7 @@ Widget gBuildTeamCardV({
                       ),
                       decoration: BoxDecoration(
                         color: Colors.purpleAccent.shade100,
-                        borderRadius: BorderRadius.circular(
-                          cardHeight * 0.04,
-                        ),
+                        borderRadius: BorderRadius.circular(cardHeight * 0.04),
                         border: Border.all(
                           color: Colors.purpleAccent.shade700,
                           width: cardHeight * 0.006,
@@ -1907,7 +2020,10 @@ Widget gBuildTeamCardV({
                         child: Text(
                           team.fldPlayers[1].fldNickName.toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(cardHeight * 0.032, gFontWeight: FontWeight.w800),
+                          style: gBuildArcadeTextStyle(
+                            cardHeight * 0.032,
+                            gFontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
@@ -1928,9 +2044,7 @@ Widget gBuildTeamCardV({
                         ),
                         decoration: BoxDecoration(
                           color: Colors.purpleAccent.shade100.withAlpha(200),
-                          borderRadius: BorderRadius.circular(
-                            cardWidth * 0.04,
-                          ),
+                          borderRadius: BorderRadius.circular(cardWidth * 0.04),
                           border: Border.all(
                             color: Colors.purpleAccent.shade700,
                             width: cardWidth * 0.006,
@@ -1941,7 +2055,10 @@ Widget gBuildTeamCardV({
                           child: Text(
                             team.fldPlayers[1].fldNickName.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: gBuildArcadeTextStyle(cardHeight * 0.032,gFontWeight: FontWeight.w800),
+                            style: gBuildArcadeTextStyle(
+                              cardHeight * 0.032,
+                              gFontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
@@ -1971,15 +2088,17 @@ Widget gBuildArcadeOverlayHitsBadge({
     shadowColor: gShadowColor,
     responsiveTile: gResponsiveTile,
     responsiveFontSize: gResponsiveFontSize,
-    forceAnimate : gForceAnimate,
+    forceAnimate: gForceAnimate,
   );
 }
 
 // Global callback to trigger overlay removal from anywhere
-VoidCallback? gGlobalClearOverlaysCallback;
+final Set<VoidCallback> gGlobalClearOverlaysCallbacks = <VoidCallback>{};
 
 void gClearAllArcadeOverlays() {
-  gGlobalClearOverlaysCallback?.call();
+  for (final callback in List<VoidCallback>.of(gGlobalClearOverlaysCallbacks)) {
+    callback();
+  }
 }
 
 class ArcadeOverlayHitsBadge extends StatefulWidget {
@@ -2010,7 +2129,7 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
   @override
   void didUpdateWidget(ArcadeOverlayHitsBadge oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.forceAnimate) {
       // Defer overlay creation to the next frame to avoid 'setState during build' errors
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2041,16 +2160,18 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
           child: TweenAnimationBuilder<double>(
             key: ValueKey(widget.hitsText),
             tween: widget.hitsText == '0' || widget.hitsText == '-'
-              ? Tween<double>(begin: 1.0, end: 1.0) // Zero: stays completely still
-              : Tween<double>(begin: 2.5, end: 1.0),
-            duration: kIsWeb ? Duration(milliseconds: 20000) : Duration(milliseconds: 1000),
+                ? Tween<double>(
+                    begin: 1.0,
+                    end: 1.0,
+                  ) // Zero: stays completely still
+                : Tween<double>(begin: 2.5, end: 1.0),
+            duration: kIsWeb
+                ? Duration(milliseconds: 20000)
+                : Duration(milliseconds: 1000),
             curve: Curves.easeOut,
             onEnd: _removeOverlay,
             builder: (context, scale, child) {
-              return Transform.scale(
-                scale: scale,
-                child: child,
-              );
+              return Transform.scale(scale: scale, child: child);
             },
             child: SizedBox(
               width: widget.responsiveTile * 0.16,
@@ -2074,7 +2195,10 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
                         color: widget.textColor,
                         shadows: [
                           Shadow(
-                            offset: Offset(-(widget.responsiveFontSize * 0.07), widget.responsiveFontSize * 0.07),
+                            offset: Offset(
+                              -(widget.responsiveFontSize * 0.07),
+                              widget.responsiveFontSize * 0.07,
+                            ),
                             color: widget.shadowColor,
                             blurRadius: 0.5,
                           ),
@@ -2107,14 +2231,14 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
   @override
   void initState() {
     super.initState();
-    gGlobalClearOverlaysCallback = _removeOverlay; // <-- Hooks up your existing _removeOverlay function!
+    gGlobalClearOverlaysCallbacks.add(
+      _removeOverlay,
+    ); // <-- Hooks up your existing _removeOverlay function!
   }
 
   @override
   void dispose() {
-    if (gGlobalClearOverlaysCallback == _removeOverlay) {
-      gGlobalClearOverlaysCallback = null;
-    }
+    gGlobalClearOverlaysCallbacks.remove(_removeOverlay);
     _removeOverlay();
     super.dispose();
   }
@@ -2145,7 +2269,10 @@ class _ArcadeOverlayHitsBadgeState extends State<ArcadeOverlayHitsBadge> {
                   color: widget.textColor,
                   shadows: [
                     Shadow(
-                      offset: Offset(-(widget.responsiveFontSize * 0.07), widget.responsiveFontSize * 0.07),
+                      offset: Offset(
+                        -(widget.responsiveFontSize * 0.07),
+                        widget.responsiveFontSize * 0.07,
+                      ),
                       color: widget.shadowColor,
                       blurRadius: 0.5,
                     ),
@@ -2205,13 +2332,11 @@ class _ArcadeActiveTargetState extends State<ArcadeActiveTarget>
     // Moves slightly to the right (or left) and snaps back like a heartbeat rhythm
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0.15, 0.0), // Moves 15% of its width horizontally. Change to Offset(0.0, 0.15) for vertical!
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+      end: const Offset(
+        0.15,
+        0.0,
+      ), // Moves 15% of its width horizontally. Change to Offset(0.0, 0.15) for vertical!
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -2238,7 +2363,8 @@ class _ArcadeActiveTargetState extends State<ArcadeActiveTarget>
         width: responsiveTile * 0.18,
         height: responsiveTile * 0.18,
         decoration: BoxDecoration(
-          color: widget.targetBgColor, // Or your preferred solid/gradient background
+          color: widget
+              .targetBgColor, // Or your preferred solid/gradient background
           shape: BoxShape.circle, // Perfect circular rounded box decoration
           border: Border.all(
             color: Colors.yellowAccent,
@@ -2255,18 +2381,21 @@ class _ArcadeActiveTargetState extends State<ArcadeActiveTarget>
         child: Text(
           '${widget.currentTarget}',
           style: TextStyle(
-                fontSize: (responsiveTile * 0.035) * 3.2,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
-                  Shadow(
-                    offset: Offset(-((responsiveTile * 0.035) * 0.12), (responsiveTile * 0.035) * 0.12),
-                    color: Colors.black,
-                    blurRadius: 0.5,
-                  ),
-                ],
+            fontSize: (responsiveTile * 0.035) * 3.2,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: Offset(
+                  -((responsiveTile * 0.035) * 0.12),
+                  (responsiveTile * 0.035) * 0.12,
+                ),
+                color: Colors.black,
+                blurRadius: 0.5,
               ),
-              textAlign: TextAlign.center,
+            ],
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
