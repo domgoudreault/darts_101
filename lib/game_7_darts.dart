@@ -1,8 +1,6 @@
 // Flutter basics
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:lottie/lottie.dart';
 import 'package:gif_view/gif_view.dart';
 
 // Database Models
@@ -18,23 +16,24 @@ import 'package:darts_101/helpers_ui.dart';
 import 'package:darts_101/helpers_database.dart';
 import 'package:darts_101/helpers_dartboard.dart';
 
-class GameHalfItScreen extends StatefulWidget {
+class Game7DartsScreen extends StatefulWidget {
   final TblGame game;
   final bool resumeMode;
 
-  const GameHalfItScreen({
+  const Game7DartsScreen({
     super.key,
     required this.game,
     required this.resumeMode,
   });
 
   @override
-  State<GameHalfItScreen> createState() => _GameHalfItScreenState();
+  State<Game7DartsScreen> createState() => _Game7DartsScreenState();
 }
 
-class _GameHalfItScreenState extends State<GameHalfItScreen>
+class _Game7DartsScreenState extends State<Game7DartsScreen>
     with TickerProviderStateMixin {
   // Define all responsive height and width of the rosters selection UI
+  double get _safeWidth => GlobalAppDisplay.safeWidth;
   double get _safeHeight => GlobalAppDisplay.safeHeight;
   double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
   double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 6);
@@ -52,8 +51,6 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
   double get _cardSlicedHeight => _cardWidth * 0.305;
   double get _cardSlicedHeightOuterSize => _cardSlicedHeight * 1.12;
 
-  late AnimationController _slashController;
-  bool _showSlash = false;
   // flags for animation HitsBadge
   bool _previousHitsBadgeAnime = false;
   bool _activeHitsBadgeAnime = false;
@@ -62,7 +59,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
   late Box<TblPlayer> playersBox;
   late Box<TblTeam> teamsBox;
 
-  GameProgressStateHalf _progress = GameProgressStateHalf();
+  GameProgressState7Darts _progress = GameProgressState7Darts();
 
   double get _responsiveTile => _safeHeight * 0.67;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(8.0, 60.0);
@@ -192,8 +189,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
   Color get _nextTeamColor =>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
-  int get _activeTargetValue => gTargetsHalf[_progress.activeTargetIdx].value;
-  int get _nextTargetValue => gTargetsHalf[_progress.nextTargetIdx].value;
+  int get _activeTargetValue => gTargets7Darts[_progress.activeTargetIdx].value;
+  int get _nextTargetValue => gTargets7Darts[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
@@ -222,45 +219,25 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
   @override
   void initState() {
     super.initState();
+
     gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
     
     _initGameStartingScores();
 
     // Handle resume mode vs fresh game initialization using the helper
     if (widget.resumeMode) {
-      _progress = gStepGameStateHalf(
-        currentState: GameProgressStateHalf(),
+      _progress = gStepGameState7Darts(
+        currentState: GameProgressState7Darts(),
         gameState: GlobalGameState.backwardState,
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        totalRounds: _gameOptions.fldNbrRounds,
+        targetsList: gTargets7Darts,
       );
     } else {
-      _progress = GameProgressStateHalf();
+      _progress = GameProgressState7Darts();
     }
-
-    _slashController = AnimationController(
-      vsync: this,
-      duration: kIsWeb
-          ? Duration(seconds: 30)
-          : Duration(seconds: 2), // Fast like a sword
-    );
-
-    // Hide the animation overlay when it finishes playing
-    _slashController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() {
-          _showSlash = false;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _slashController.dispose(); // Always clean up
-    super.dispose();
   }
 
   // --- LOGIC: GAME OVER ---
@@ -912,31 +889,16 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
 
   bool get _hasGamePreviousPlayer {
     return gamesScoresBox.values.any(
-      (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 2,
+      (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 6,
     );
   }
 
   bool get _hasGameNextPlayer {
-    final isLastRound = _progress.activeRoundIdx >= gTargetsHalf.length - 1;
+    final isLastRound = _progress.activeRoundIdx >= gTargets7Darts.length - 1;
     final isLastPlayer = _progress.activeSeatIdx >= _gamePlayers.length - 1;
 
     // There is no next player if we are on the final player of the final round
     return !(isLastRound && isLastPlayer);
-  }
-
-  bool _checkIfHalfIt() {
-    final previousDartsThisRound = gamesScoresBox.values
-        .where(
-          (s) =>
-              s.fldGame == _gameConfig &&
-              s.fldPlayer == _activePlayer &&
-              s.fldRound == _progress.activeRoundIdx &&
-              s.fldDartIndex < 2,
-        )
-        .toList();
-
-    return previousDartsThisRound.length == 2 &&
-        previousDartsThisRound.every((d) => d.fldIsMiss);
   }
 
   void _processThrow(int hits) {
@@ -947,7 +909,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
       _recordThrow(hits);
 
       // 2. Set the animation flag if a round was just completed
-      if (_progress.activeDartIdx == 2) {
+      if (_progress.activeDartIdx == 6) {
         _previousHitsBadgeAnime = true;
         _activeHitsBadgeAnime = false;
       } else {
@@ -961,13 +923,14 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
 
       // 3. Advance the state machine pointers for the next turn
       // Step state forward using the global helper function
-      _progress = gStepGameStateHalf(
+      _progress = gStepGameState7Darts(
         currentState: _progress,
         gameState: GlobalGameState.forwardState,
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        totalRounds: _gameOptions.fldNbrRounds,
+        targetsList: gTargets7Darts,
       );
 
       if (_progress.endGame == true) {
@@ -984,37 +947,18 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
     bool isDouble = (hits == 2);
     bool isTriple = (hits == 3);
 
-    bool isHalfIt = false;
-    if (_progress.activeDartIdx == 2 && isMiss) {
-      isHalfIt = _checkIfHalfIt();
+    int lastDartPoints = 0;
+    if (!isMiss) {
+      lastDartPoints = _getPreviousDartPoints();
     }
-
-    // Trigger slash effect if Half-It penalty occurs
-    if (isHalfIt) {
-      setState(() {
-        _showSlash = true;
-      });
-      _slashController.reset();
-      _slashController.forward();
-    }
-
     int newPlayerScore;
     int? newTeamScore;
 
     if (_isPlayerMode) {
-      if (isHalfIt) {
-        newPlayerScore = (_activePlayerLastScore / 2).round();
-      } else {
-        newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits);
-      }
+      newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits) + lastDartPoints;
     } else {
-      if (isHalfIt) {
-        newPlayerScore = (_activePlayerLastScore / 2).round();
-        newTeamScore = (_activeTeamLastScore / 2).round();
-      } else {
-        newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits);
-        newTeamScore = _activeTeamLastScore + (_activeTargetValue * hits);
-      }
+      newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits) + lastDartPoints;
+      newTeamScore = _activeTeamLastScore + (_activeTargetValue * hits) + lastDartPoints;
     }
 
     final scoreRecord = TblGameScore(
@@ -1025,7 +969,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
       fldRound: _progress.activeRoundIdx,
       fldTargetIndex: _progress.activeTargetIdx,
       fldTargetValue: _activeTargetValue,
-      fldNextTargetIndex: _progress.activeTargetIdx == _progress.nextTargetIdx 
+      fldNextTargetIndex: _progress.activeTargetIdx == _progress.nextTargetIdx
         ? null
         : _progress.nextTargetIdx,
       fldNextTargetValue: _activeTargetValue == _nextTargetValue
@@ -1036,12 +980,27 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
       fldIsTriple: isTriple,
       fldIsMiss: isMiss,
       fldHits: hits,
-      fldIsHalfIt: isHalfIt,
       fldScorePlayerSnapshot: newPlayerScore,
       fldScoreTeamSnapshot: newTeamScore,
     );
 
     gamesScoresBox.add(scoreRecord);
+  }
+
+  int _getPreviousDartPoints() {
+    final prevDart = gamesScoresBox.values.where((s) =>
+      s.fldGame == _gameConfig &&
+      s.fldPlayer == _activePlayer &&
+      s.fldRound == _progress.activeRoundIdx &&
+      s.fldSeatIndex == _progress.activeSeatIdx &&
+      s.fldDartIndex == _progress.activeDartIdx - 1
+    ).firstOrNull;
+
+    if (prevDart == null) {
+      return 0; // First dart of the turn has no preceding dart
+    }
+
+    return prevDart.fldTargetValue * prevDart.fldHits;
   }
 
   void _undoLastThrow() {
@@ -1059,13 +1018,14 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
       gamesScoresBox.delete(gameRecords.last.key);
 
       // 3. Step the state machine backward
-      _progress = gStepGameStateHalf(
+      _progress = gStepGameState7Darts(
         currentState: _progress,
         gameState: GlobalGameState.backwardState,
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        totalRounds: _gameOptions.fldNbrRounds,
+        targetsList: gTargets7Darts,
       );
     });
   }
@@ -1778,7 +1738,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                                             Expanded(
                                               child: gBuildDartboardInputZone(
                                                 gActiveTargetIdx:
-                                                    _progress.activeRoundIdx,
+                                                    _progress.activeTargetIdx,
                                                 gGametype:
                                                     _gameConfig.fldGameType,
                                                 gOnTap: (leap) {
@@ -1833,11 +1793,11 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                                                     SizedBox(
                                                       height:
                                                           _responsiveTile *
-                                                          0.03,
+                                                          0.005,
                                                     ),
 
-                                                    // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
-                                                    ...List.generate(3, (dIdx) {
+                                                    // --- 7-DARTS INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
+                                                    ...List.generate(7, (dIdx) {
                                                       bool isThrown =
                                                           dIdx <
                                                           _progress
@@ -2282,27 +2242,6 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                 ),
               ],
             ),
-
-            // Samurai Slash Overlay Animation Layer
-            if (_showSlash)
-              IgnorePointer(
-                child: Center(
-                  child: Lottie.asset(
-                    'assets/lottie/magic-sword.json',
-                    controller: _slashController,
-                    width: GlobalAppDisplay.safeWidth,
-                    height: _safeHeight,
-                    onLoaded: kIsWeb
-                        ? (composition) {
-                            _slashController.duration =
-                                composition.duration * 20;
-                          }
-                        : (composition) {
-                            _slashController.duration = composition.duration;
-                          },
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -2332,8 +2271,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
             textAlign: TextAlign.center,
           ),
           content: SizedBox(
-            width: _responsiveTile * 0.8,
-            height: _responsiveTile * 1.1,
+            width: _safeWidth * 0.9,
+            height: _safeHeight * 0.9,
             child: _buildPlayerStatsTable(
               player: player,
               playerColor: playerColor,
@@ -2625,41 +2564,158 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
               topRight: Radius.circular(_responsiveTile * 0.02),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column (
             children: [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Target',
-                  textAlign: TextAlign.center,
-                  style: gBuildArcadeTextStyle(
-                    _responsiveFontSize * 0.53,
-                    gFontWeight: FontWeight.bold,
+              Row (
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      ' ',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  Expanded(
+                    flex: 21,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Targets',
+                          textAlign: TextAlign.center,
+                          style: gBuildArcadeTextStyle(
+                            _responsiveFontSize * 0.53,
+                            gFontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const Divider(color: Colors.white),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: Text(
+                      ' ',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  'Round',
-                  textAlign: TextAlign.center,
-                  style: gBuildArcadeTextStyle(
-                    _responsiveFontSize * 0.53,
-                    gFontWeight: FontWeight.bold,
+
+              //const Divider(color: Colors.white),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Round',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: Text(
-                  _isPlayerMode ? 'Total' : 'Player/Team',
-                  textAlign: TextAlign.end,
-                  style: gBuildArcadeTextStyle(
-                    _responsiveFontSize * 0.53,
-                    gFontWeight: FontWeight.bold,
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      '20',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      '19',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      '18',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      '17',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      '16',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      '15',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'BULL',
+                      textAlign: TextAlign.center,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: Text(
+                      _isPlayerMode ? 'Total' : 'Player/Team',
+                      textAlign: TextAlign.end,
+                      style: gBuildArcadeTextStyle(
+                        _responsiveFontSize * 0.53,
+                        gFontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -2668,87 +2724,17 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
         Expanded(
           child: ListView.builder(
             padding: EdgeInsets.zero,
-            itemCount: gTargetsHalf.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                final startPlayerScore = _startingScore;
-                final startTeamScore = _startingScore * 2;
-
-                return Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: _responsiveTile * 0.005,
-                    horizontal: _responsiveTile * 0.014,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade800.withAlpha(120),
-                    border: Border.all(
-                      color: playerColor.withAlpha(200),
-                      width: _responsiveTile * 0.002,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          "Start",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: _responsiveFontSize,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          "-",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: _responsiveFontSize,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 4,
-                        child: Text(
-                          _isPlayerMode
-                              ? '$startPlayerScore'
-                              : '$startPlayerScore / $startTeamScore',
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: _responsiveFontSize,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              final rIdx = index - 1;
-              final target = gTargetsHalf[rIdx];
-
+            itemCount: _gameOptions.fldNbrRounds,
+            itemBuilder: (context, roundIdx) {
               final roundRecords = gamesScoresBox.values
-                  .where(
-                    (s) =>
-                        s.fldGame == _gameConfig &&
-                        s.fldPlayer == player &&
-                        s.fldSeatIndex == seatIdx &&
-                        s.fldRound == rIdx &&
-                        (includeCurrentRound ? true : s.fldDartIndex >= 2),
-                  )
-                  .toList();
-
-              final record = roundRecords.isNotEmpty ? roundRecords.last : null;
-              final playerScore = record?.fldScorePlayerSnapshot;
-              final isPenalized = record?.fldIsHalfIt ?? false;
+                .where(
+                  (s) =>
+                      s.fldGame == _gameConfig &&
+                      s.fldPlayer == player &&
+                      s.fldSeatIndex == seatIdx &&
+                      s.fldRound == roundIdx,
+                )
+                .toList();
 
               final allPlayerRecords = gamesScoresBox.values
                   .where(
@@ -2767,67 +2753,37 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                   : null;
 
               final bool isLastThrownRound =
-                  (lastThrownRound != null && rIdx == lastThrownRound);
+                  (lastThrownRound != null && roundIdx == lastThrownRound);
 
-              int? teamScore;
+              final bool isPlayed = roundRecords.isNotEmpty;
+
+              // Map dart index (0 to 6) to points earned on that throw
+              Map<int, int> dartPoints = {};
+              int? roundFinalScore;
+              int? teamRoundFinalScore;
+
+              for (var record in roundRecords) {
+                int points = record.fldTargetValue * record.fldHits;
+                dartPoints[record.fldDartIndex] = points;
+                roundFinalScore = record.fldScorePlayerSnapshot;
+                teamRoundFinalScore = record.fldScoreTeamSnapshot;
+              }
+
+              // Team score calculation if applicable
               if (!_isPlayerMode && _gameConfig.fldTeams != null) {
                 final int totalTeams = _gameConfig.fldTeams!.length;
                 final int teamIdx = seatIdx % totalTeams;
-
-                final roundAllRecords = gamesScoresBox.values
+                final teamRoundRecords = gamesScoresBox.values
                     .where(
                       (s) =>
                           s.fldGame == _gameConfig &&
-                          s.fldRound == rIdx &&
-                          (includeCurrentRound ? true : s.fldDartIndex >= 2),
+                          s.fldRound == roundIdx &&
+                          (s.fldSeatIndex % totalTeams) == teamIdx,
                     )
                     .toList();
 
-                final teamRoundRecords = roundAllRecords
-                    .where((s) => (s.fldSeatIndex % totalTeams) == teamIdx)
-                    .toList();
-
                 if (teamRoundRecords.isNotEmpty) {
-                  teamScore = teamRoundRecords.last.fldScoreTeamSnapshot;
-                }
-              }
-
-              String roundScoreStr = "-";
-              if (record != null) {
-                if (isPenalized) {
-                  roundScoreStr = "(Half-It)";
-                } else {
-                  int previousRunningScore;
-                  if (rIdx == 0) {
-                    final baselineRecords = gamesScoresBox.values
-                        .where(
-                          (s) =>
-                              s.fldGame == _gameConfig &&
-                              s.fldPlayer == player &&
-                              s.fldRound == -1,
-                        )
-                        .toList();
-                    previousRunningScore = baselineRecords.isNotEmpty
-                        ? baselineRecords.last.fldScorePlayerSnapshot
-                        : (_isPlayerMode
-                              ? _startingScore
-                              : (_startingScore / 2).round());
-                  } else {
-                    final prevRoundRecords = gamesScoresBox.values
-                        .where(
-                          (s) =>
-                              s.fldGame == _gameConfig &&
-                              s.fldPlayer == player &&
-                              s.fldRound == rIdx - 1,
-                        )
-                        .toList();
-                    previousRunningScore = prevRoundRecords.isNotEmpty
-                        ? prevRoundRecords.last.fldScorePlayerSnapshot
-                        : 0;
-                  }
-
-                  final int diff = playerScore! - previousRunningScore;
-                  roundScoreStr = diff >= 0 ? "+ $diff" : "$diff";
+                  teamRoundFinalScore = teamRoundRecords.last.fldScoreTeamSnapshot;
                 }
               }
 
@@ -2837,11 +2793,6 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                   horizontal: _responsiveTile * 0.014,
                 ),
                 decoration: BoxDecoration(
-                  color: isPenalized
-                      ? Colors.red.shade100
-                      : (isLastThrownRound
-                            ? Colors.grey.shade800.withAlpha(120)
-                            : null),
                   border: Border.all(
                     color: playerColor.withAlpha(200),
                     width: _responsiveTile * 0.002,
@@ -2850,53 +2801,45 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Round Number Column
                     Expanded(
                       flex: 2,
                       child: Text(
-                        target.label,
+                        '${roundIdx + 1}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: _responsiveFontSize,
-                          color: isPenalized
-                              ? Colors.red.shade900
-                              : (isLastThrownRound
-                                    ? Colors.amber
-                                    : Colors.black),
+                          color: isLastThrownRound ? Colors.amber : Colors.black,
                         ),
                       ),
                     ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        roundScoreStr,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: _responsiveFontSize,
-                          color: isPenalized
-                              ? Colors.red.shade900
-                              : (isLastThrownRound
-                                    ? Colors.amber
-                                    : Colors.black),
-                        ),
-                      ),
-                    ),
+                    // 7 Target Columns (Dart Index 0 to 6)
+                    ...List.generate(7, (dartIdx) {
+                      final record = roundRecords.where((s) => s.fldDartIndex == dartIdx).firstOrNull;
+                      final prevRecord = dartIdx > 0 
+                          ? roundRecords.where((s) => s.fldDartIndex == dartIdx - 1).firstOrNull 
+                          : null;
+
+                      return Expanded(
+                        flex: 3,
+                        child: _buildDartScoreCell(record, prevRecord, isLastThrownRound),
+                      );
+                    }),
+                    // Total Column
                     Expanded(
                       flex: 4,
                       child: Text(
-                        _isPlayerMode
-                            ? '${playerScore ?? '-'}'
-                            : '${playerScore ?? '-'} / ${teamScore ?? '-'}',
+                        isPlayed
+                            ? (_isPlayerMode
+                                ? '${roundFinalScore ?? '-'}'
+                                : '${roundFinalScore ?? '-'} / ${teamRoundFinalScore ?? '-'}')
+                            : '-',
                         textAlign: TextAlign.end,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: _responsiveFontSize,
-                          color: isPenalized
-                              ? Colors.red.shade900
-                              : (isLastThrownRound
-                                    ? Colors.amber
-                                    : Colors.black),
+                          color: isLastThrownRound ? Colors.amber : Colors.black,
                         ),
                       ),
                     ),
@@ -2904,6 +2847,91 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                 ),
               );
             },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDartScoreCell(TblGameScore? record, TblGameScore? prevRecord, bool isLastThrownRound) {
+    final Color textColor = isLastThrownRound ? Colors.amber : Colors.black;
+    
+    if (record == null) {
+      return Text(
+        '-',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+      );
+    }
+
+    int currentHits = record.fldHits;
+    int currentPoints = record.fldTargetValue * currentHits;
+
+    // If there is a previous record in the sequence, show the sequence (+ previous)
+    if (prevRecord != null && prevRecord.fldHits > 0 && record.fldHits > 0) {
+      int prevHits = prevRecord.fldHits;
+      int prevPoints = prevRecord.fldTargetValue * prevHits;
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildHitPillWithScore(currentHits, currentPoints, textColor),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2),
+            child: Text(' + ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black)),
+          ),
+          _buildHitPillWithScore(prevHits, prevPoints, textColor),
+        ],
+      );
+    }
+
+    // Otherwise, just show the single target throw pill and score
+    return Center(
+      child: _buildHitPillWithScore(currentHits, currentPoints, textColor),
+    );
+  }
+
+  Widget _buildHitPillWithScore(int hits, int points, Color textColor) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Pill container only around the hits number
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: _responsiveTile * 0.003,
+            vertical: _responsiveTile * 0.002,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.amber,
+            borderRadius: BorderRadius.circular(
+              _responsiveTile * 0.012,
+            ),
+            border: Border.all(
+              color: Colors.black,
+              width: _responsiveTile * 0.002,
+            ),
+          ),
+          child: Text(
+            '$hits',
+            style: TextStyle(
+              color: const Color.fromARGB(255, 207, 20, 17),
+              fontWeight: FontWeight.bold,
+              fontSize: _responsiveFontSize * 0.75,
+            ),
+          ),
+        ),
+        Icon(
+          Icons.arrow_right_alt,
+          color: Colors.black, // Adjusted for clear visibility against the row background
+          size: _responsiveFontSize * 0.9,
+        ),
+        Text(
+          '$points',
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.bold,
+            fontSize: _responsiveFontSize * 0.8,
           ),
         ),
       ],
@@ -3607,8 +3635,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                       ),
 
                       // --- TARGET ROWS ---
-                      ...List.generate(gTargetsHalf.length, (rowIndex) {
-                        final target = gTargetsHalf[rowIndex];
+                      ...List.generate(gTargets7Darts.length, (rowIndex) {
+                        final target = gTargets7Darts[rowIndex];
                         final rIdx = rowIndex;
 
                         return TableRow(

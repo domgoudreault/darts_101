@@ -17,6 +17,7 @@ import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
 import 'package:darts_101/game_half_it.dart';
+import 'package:darts_101/game_7_darts.dart';
 
 class RostersSelection extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
@@ -106,25 +107,18 @@ class _RostersSelectionState extends State<RostersSelection> {
     // Guard against any async gaps if needed
     if (!mounted) return;
 
-    // 4. Navigate to the game screen if it's Half-It
-    /* if (widget.enuGameType.tileCode == 'half-it') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameHalfItScreen(
-            game: newGame,
-            resumeMode: false,
+    switch (widget.enuGameType) {
+      case GlobalGameType.halfIt:
+      case GlobalGameType.sevenDarts:
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GameMatchupScreen(game: newGame),
           ),
-        ),
-      );
-    } */
-    if (widget.enuGameType.tileCode == 'half-it') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameMatchupScreen(game: newGame),
-        ),
-      );
+        );
+        break;
+      default:
+        break;
     }
 
     if (!mounted) return;
@@ -147,16 +141,21 @@ class _RostersSelectionState extends State<RostersSelection> {
       (g) => g.fldGameType == widget.enuGameType && !g.fldIsEnded,
     );
 
-    if (widget.enuGameType.tileCode == 'half-it') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameMatchupScreen(
-            game: lastUnfinishedGame,
-            resumeMode: true, // Pass true so the splash screen knows to resume!
+    switch (widget.enuGameType) {
+      case GlobalGameType.halfIt:
+      case GlobalGameType.sevenDarts:
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GameMatchupScreen(
+              game: lastUnfinishedGame,
+              resumeMode: true, // Pass true so the splash screen knows to resume!
+            ),
           ),
-        ),
-      );
+        );
+        break;
+      default:
+        break;
     }
 
     // Add other game types here if needed (e.g., build-up)
@@ -1853,14 +1852,28 @@ class _GameMatchupScreenState extends State<GameMatchupScreen> {
     Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
 
+      late final Widget gameScreen;
+      switch (widget.game.fldGameType) {
+        case GlobalGameType.halfIt:
+          gameScreen = GameHalfItScreen(
+            game: widget.game,
+            resumeMode: widget.resumeMode,
+          );
+          break;
+        case GlobalGameType.sevenDarts:
+          gameScreen = Game7DartsScreen(
+            game: widget.game,
+            resumeMode: widget.resumeMode,
+          );
+          break;
+        default:
+          return;
+      }
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => GameHalfItScreen(
-            game: widget.game,
-            resumeMode: widget
-                .resumeMode, // Respect whether we are resuming or starting fresh
-          ),
+          builder: (context) => gameScreen,
         ),
       );
     });

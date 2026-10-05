@@ -52,7 +52,17 @@ final List<({int value, String label})> gTargetsHalf = [
   (value: 25, label: 'BULL'),
 ];
 
-class GameProgressState {
+final List<({int value, String label})> gTargets7Darts = [
+  (value: 20, label: '20'),
+  (value: 19, label: '19'),
+  (value: 18, label: '18'),
+  (value: 17, label: '17'),
+  (value: 16, label: '16'),
+  (value: 15, label: '15'),
+  (value: 25, label: 'BULL'),
+];
+
+class GameProgressStateHalf {
   int activeSeatIdx;
   int previousSeatIdx;
   int nextSeatIdx;
@@ -60,13 +70,12 @@ class GameProgressState {
   int previousDartIdx;
   int activeRoundIdx;
   int previousRoundIdx;
-
   int activeTargetIdx;
   int previousTargetIdx;
   int nextTargetIdx;
   bool endGame;
 
-  GameProgressState({
+  GameProgressStateHalf({
     this.activeSeatIdx = 0,
     this.previousSeatIdx = 0,
     this.nextSeatIdx = 1,
@@ -76,13 +85,13 @@ class GameProgressState {
     this.previousRoundIdx = 0,
     this.activeTargetIdx = 0,
     this.previousTargetIdx = 0,
-    this.nextTargetIdx = 0,
+    this.nextTargetIdx = 1,
     this.endGame = false,
   });
 }
 
-GameProgressState gStepGameState({
-  required GameProgressState currentState,
+GameProgressStateHalf gStepGameStateHalf({
+  required GameProgressStateHalf currentState,
   required GlobalGameState gameState,
   required TblGame gameConfig,
   required Box<TblGameScore> gamesScoresBox,
@@ -110,11 +119,10 @@ GameProgressState gStepGameState({
       if (currentState.activeSeatIdx == 0) {
         if (currentState.activeRoundIdx < targetsList.length - 1) {
           currentState.activeRoundIdx++;
-          currentState.activeTargetIdx = currentState.activeRoundIdx;
-          currentState.nextTargetIdx =
-              currentState.activeRoundIdx < targetsList.length - 1
-              ? currentState.activeRoundIdx + 1
-              : currentState.activeRoundIdx;
+          currentState.activeTargetIdx++;
+          if (currentState.nextTargetIdx != targetsList.length - 1){
+            currentState.nextTargetIdx++;
+          }          
         } else {
           currentState.endGame = true;
         }
@@ -128,7 +136,7 @@ GameProgressState gStepGameState({
 
     if (updatedRecords.isEmpty) {
       // Reset to start state
-      return GameProgressState();
+      return GameProgressStateHalf();
     }
 
     final activeRec = updatedRecords.last;
@@ -160,6 +168,132 @@ GameProgressState gStepGameState({
     currentState.activeRoundIdx = nextRound;
     currentState.activeTargetIdx = nextTarget;
     currentState.nextTargetIdx = nextTargetIdxVal;
+
+    // Find previous player correctly
+    final prevRecord = updatedRecords.reversed.firstWhere(
+      (s) => s.fldSeatIndex != currentState.activeSeatIdx,
+      orElse: () => updatedRecords.first,
+    );
+
+    currentState.previousSeatIdx = prevRecord.fldSeatIndex;
+    currentState.previousDartIdx = prevRecord.fldDartIndex;
+    currentState.previousRoundIdx = prevRecord.fldRound;
+    currentState.previousTargetIdx = prevRecord.fldTargetIndex;
+  }
+
+  currentState.nextSeatIdx = (currentState.activeSeatIdx + 1) % totalPlayers;
+
+  return currentState;
+}
+
+class GameProgressState7Darts {
+  int activeSeatIdx;
+  int previousSeatIdx;
+  int nextSeatIdx;
+  int activeDartIdx;
+  int previousDartIdx;
+  int activeTargetIdx;
+  int previousTargetIdx;
+  int nextTargetIdx;
+  int activeRoundIdx;
+  int previousRoundIdx;
+  bool endGame;
+
+  GameProgressState7Darts({
+    this.activeSeatIdx = 0,
+    this.previousSeatIdx = 0,
+    this.nextSeatIdx = 1,
+    this.activeDartIdx = 0,
+    this.previousDartIdx = 0,
+    this.activeTargetIdx = 0,
+    this.previousTargetIdx = 0,
+    this.nextTargetIdx = 1,
+    this.activeRoundIdx = 0,
+    this.previousRoundIdx = 0,
+    this.endGame = false,
+  });
+}
+
+GameProgressState7Darts gStepGameState7Darts({
+  required GameProgressState7Darts currentState,
+  required GlobalGameState gameState,
+  required TblGame gameConfig,
+  required Box<TblGameScore> gamesScoresBox,
+  required int totalPlayers,
+  required int totalRounds,
+  required List<dynamic> targetsList,
+}) {
+  if (gameState == GlobalGameState.forwardState) {
+    // 1. Save current state to previous before moving forward
+    currentState.previousDartIdx = currentState.activeDartIdx;
+    currentState.previousTargetIdx = currentState.activeTargetIdx;
+
+    // 2. Advance Dart and Target Index
+    currentState.activeDartIdx++;
+    currentState.activeTargetIdx++;
+    if (currentState.nextTargetIdx != targetsList.length - 1){
+      currentState.nextTargetIdx++;
+    }
+
+    // 3. Check if turn is complete (7 darts thrown)
+    if (currentState.activeDartIdx >= targetsList.length) {
+      // 4. Shift current active states to previous before moving forward
+      currentState.previousSeatIdx = currentState.activeSeatIdx;
+      currentState.previousRoundIdx = currentState.activeRoundIdx;
+
+      // 5. Advance Seat Index in rotation
+      currentState.activeDartIdx = 0;
+      currentState.activeTargetIdx = 0;
+      currentState.nextTargetIdx = 1;
+      currentState.activeSeatIdx =
+          (currentState.activeSeatIdx + 1) % totalPlayers;
+
+      // 6. Check if a full round rotation is complete
+      if (currentState.activeSeatIdx == 0) {
+        if (currentState.activeRoundIdx < totalRounds - 1) {
+          currentState.activeRoundIdx++;
+        } else {
+          currentState.endGame = true;
+        }
+      }
+    }
+  } else {
+    // BACKWARD / RESUME ENGINE
+    final updatedRecords = gamesScoresBox.values
+        .where((s) => s.fldGame == gameConfig && s.fldRound >= 0)
+        .toList();
+
+    if (updatedRecords.isEmpty) {
+      // Reset to start state
+      return GameProgressState7Darts();
+    }
+
+    final activeRec = updatedRecords.last;
+
+    final isTurnComplete = activeRec.fldDartIndex >= targetsList.length - 1;
+    int nextSeat = activeRec.fldSeatIndex;
+    int nextDart = activeRec.fldDartIndex + 1;
+    int nextRound = activeRec.fldRound;
+
+    if (isTurnComplete) {
+      nextDart = 0;
+      nextSeat = (nextSeat + 1) % totalPlayers;
+      if (nextSeat == 0) {
+        if (nextRound < totalRounds - 1) {
+          nextRound++;
+        } else {
+          currentState.endGame = true;
+        }
+      }
+    }
+
+    currentState.activeSeatIdx = nextSeat;
+    currentState.activeDartIdx = nextDart;
+    currentState.activeRoundIdx = nextRound;
+    currentState.activeTargetIdx = nextDart;
+    currentState.nextTargetIdx = nextDart < targetsList.length - 1
+        ? nextDart + 1
+        : nextDart;
 
     // Find previous player correctly
     final prevRecord = updatedRecords.reversed.firstWhere(
@@ -366,6 +500,9 @@ Widget gBuildDartboardInputZone({
     case GlobalGameType.halfIt:
     case GlobalGameType.buildUp:
       targetsList = gTargetsHalf;
+      break;
+    case GlobalGameType.sevenDarts: // Add this!
+      targetsList = gTargets7Darts;
       break;
     default:
       targetsList = gTargets;

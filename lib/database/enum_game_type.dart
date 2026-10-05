@@ -13,14 +13,14 @@ enum GlobalGameType {
     tileDisplayName: 'Half-It Game',
   ),
   @HiveField(1)
-  aroundClock(
-    tileType: 'games', tileCode: 'around-clock', tileColor: Color(0xFF26A69A), tileBackgroundColor: Color(0xFF80CBC4),
-    tileDisplayName: 'Around the Clock (skip the numbers) Game',
-  ),
-  @HiveField(2)
   sevenDarts(
     tileType: 'games', tileCode: '7-darts', tileColor: Color(0xFF66BB6A), tileBackgroundColor: Color(0xFFA5D6A7),
     tileDisplayName: '7 Darts Game',
+  ),
+  @HiveField(2)
+  aroundClock(
+    tileType: 'games', tileCode: 'around-clock', tileColor: Color(0xFF26A69A), tileBackgroundColor: Color(0xFF80CBC4),
+    tileDisplayName: 'Around the Clock (skip the numbers) Game',
   ),
   @HiveField(3)
   allFives(

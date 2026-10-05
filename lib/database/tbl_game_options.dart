@@ -35,6 +35,12 @@ class TblGameOptions extends HiveObject {
   @HiveField(8, defaultValue: false)
   bool fldShowOptStartingScore;
 
+  @HiveField(9)
+  int fldNbrRounds;
+
+  @HiveField(10, defaultValue: false)
+  bool fldShowOptNbrRounds;
+
   TblGameOptions({
     required this.fldGameType,
     required this.fldMinNbrPlayers,
@@ -45,5 +51,7 @@ class TblGameOptions extends HiveObject {
     this.fldShowOptNbrLives = false,
     required this.fldStartingScore,
     this.fldShowOptStartingScore = false,
+    required this.fldNbrRounds,
+    this.fldShowOptNbrRounds = false,
   });
 }

@@ -466,6 +466,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: false,
       fldStartingScore: 50,
       fldShowOptStartingScore: true,
+      fldNbrRounds: 0,
+      fldShowOptNbrRounds: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.aroundClock,
@@ -477,6 +479,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: false,
       fldStartingScore: 0,
       fldShowOptStartingScore: false,
+      fldNbrRounds: 0,
+      fldShowOptNbrRounds: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.sevenDarts,
@@ -488,6 +492,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: false,
       fldStartingScore: 0,
       fldShowOptStartingScore: false,
+      fldNbrRounds: 3,
+      fldShowOptNbrRounds: true,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.allFives,
@@ -499,6 +505,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: false,
       fldStartingScore: 0,
       fldShowOptStartingScore: false,
+      fldNbrRounds: 0,
+      fldShowOptNbrRounds: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.killers,
@@ -510,6 +518,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: true,
       fldStartingScore: 0,
       fldShowOptStartingScore: false,
+      fldNbrRounds: 0,
+      fldShowOptNbrRounds: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.suddenDeath,
@@ -521,6 +531,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: false,
       fldStartingScore: 0,
       fldShowOptStartingScore: false,
+      fldNbrRounds: 0,
+      fldShowOptNbrRounds: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.buildUp,
@@ -532,6 +544,8 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptNbrLives: false,
       fldStartingScore: 0,
       fldShowOptStartingScore: false,
+      fldNbrRounds: 0,
+      fldShowOptNbrRounds: false,
     ),
   ];
 
@@ -627,10 +641,12 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
-                ? rIdx + 1
-                : rIdx,
-            fldNextTargetValue: nextTargetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
             fldIsHalfIt: false,
@@ -732,10 +748,12 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
-                ? rIdx + 1
-                : rIdx,
-            fldNextTargetValue: nextTargetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
             fldIsHalfIt: false,
@@ -879,10 +897,12 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
-                ? rIdx + 1
-                : rIdx,
-            fldNextTargetValue: nextTargetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
             fldIsHalfIt: false,
@@ -1031,10 +1051,12 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
             fldRound: rIdx,
             fldTargetIndex: rIdx,
             fldTargetValue: targetValue,
-            fldNextTargetIndex: rIdx < gTargetsHalf.length - 1
-                ? rIdx + 1
-                : rIdx,
-            fldNextTargetValue: nextTargetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
             fldIsSingle: hits == 1,
             fldIsDouble: hits == 2,
             fldIsHalfIt: false,
