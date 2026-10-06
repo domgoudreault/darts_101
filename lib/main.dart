@@ -22,6 +22,7 @@ import 'package:darts_101/helpers_ui.dart';
 import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
+import 'package:darts_101/options_game.dart';
 import 'package:darts_101/settings_players.dart';
 import 'package:darts_101/settings_teams.dart';
 import 'package:darts_101/rosters_selection.dart';
@@ -516,7 +517,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   // Accordion State: GAMES active by default
-  MainScreenSection _activeSection = MainScreenSection.section05Games;
+  MainScreenSection _activeSection = MainScreenSection.section10Settings;
 
   bool _isCached = false;
 
@@ -605,7 +606,15 @@ class _MainScreenState extends State<MainScreen> {
     Widget? destination;
 
     if (tile is GlobalGameType) {
-      destination = RostersSelection(enuGameType: tile);
+      if (_activeSection == MainScreenSection.section15Options) {
+        showDialog(
+          context: context,
+          builder: (_) => GameOptionsDialog(enuGameType: tile),
+        );
+        return;
+      } else {
+        destination = RostersSelection(enuGameType: tile);
+      }
     } else if (tile is GlobalSettingType) {
       destination = switch (tile) {
         GlobalSettingType.players => SettingsPlayers(enuSettingType: tile),
@@ -621,7 +630,9 @@ class _MainScreenState extends State<MainScreen> {
     gShowArcadeErrorSnackBar(
       gContext: context,
       gFontSize: (GlobalAppDisplay.safeWidth * 0.011).clamp(14.0, 28.0),
-      gMessage: '${tile.tileDisplayName} was clicked!',
+      gMessage: _activeSection == MainScreenSection.section15Options
+          ? 'Configure options for ${tile.tileDisplayName}!'
+          : '${tile.tileDisplayName} was clicked!',
       gDuration: 2,
     );
   }
@@ -643,10 +654,19 @@ class _MainScreenState extends State<MainScreen> {
         activeTiles.addAll(GlobalSettingType.values);
         break;
       case MainScreenSection.section15Options:
-        
+        final optionsBox = Hive.box<TblGameOptions>('gameOptionsBox');
+
+        for (final gameType in GlobalGameType.values) {
+          final options = optionsBox.values.firstWhere(
+            (opt) => opt.fldGameType == gameType,
+          );
+
+          if (options.hasVisibleOptions) {
+            activeTiles.add(gameType);
+          }
+        }
         break;
     }
-    
 
     return Scaffold(
       backgroundColor: Colors.grey.shade800,
@@ -666,7 +686,7 @@ class _MainScreenState extends State<MainScreen> {
                 horizontal: safeWidth * 0.008,
                 vertical: safeHeight * 0.008,
               ),
-              height: contentHeight * (1 / 4),
+              height: contentHeight * (7 / 32),
               color: Colors.grey.shade900,
               child: Row(
                 children: [
@@ -688,9 +708,9 @@ class _MainScreenState extends State<MainScreen> {
               child: Align(
                 alignment: Alignment.topCenter,
                 child: SizedBox(
-                  width: (contentHeight * (3 / 4)) * activeTiles.length,
+                  width: (contentHeight * (25 / 32)) * activeTiles.length,
                   child: CarouselView(
-                    itemExtent: contentHeight * (3 / 4),
+                    itemExtent: contentHeight * (25 / 32),
                     shrinkExtent: contentHeight * 0.15,
                     backgroundColor: Colors.transparent,
                     overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -743,6 +763,29 @@ class _MainScreenState extends State<MainScreen> {
                   filterQuality: FilterQuality.high,
                 ),
               ),
+
+              // Top-right corner options badge overlay
+              if (_activeSection == MainScreenSection.section15Options)
+                Positioned(
+                  top: safeWidth * 0.005,
+                  right: safeWidth * 0.005,
+                  child: Container(
+                    padding: EdgeInsets.all(safeWidth * 0.003),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900.withAlpha(150),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.amber,
+                        width: safeWidth * 0.003,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.amber,
+                      size: safeWidth * 0.04,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

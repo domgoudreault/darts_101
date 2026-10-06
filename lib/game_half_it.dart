@@ -272,8 +272,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
 
     // 1. We'll store the results in a list of Map for easy sorting
     List<GameResultRecord> finalResults = gComputeGameResults(
-      gameConfig: _gameConfig, 
-      gamePlayers: _gamePlayers, 
+      gameConfig: _gameConfig,
+      gamePlayers: _gamePlayers,
       gameTeams: _gameTeams
     );
 

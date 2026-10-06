@@ -54,4 +54,10 @@ class TblGameOptions extends HiveObject {
     required this.fldNbrRounds,
     this.fldShowOptNbrRounds = false,
   });
+
+  bool get hasVisibleOptions {
+    return fldShowOptNbrLives || 
+           fldShowOptStartingScore || 
+           fldShowOptNbrRounds;
+  }
 }

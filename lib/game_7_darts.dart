@@ -221,8 +221,8 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
     gClearAllArcadeOverlays();
 
     List<GameResultRecord> finalResults = gComputeGameResults(
-      gameConfig: _gameConfig, 
-      gamePlayers: _gamePlayers, 
+      gameConfig: _gameConfig,
+      gamePlayers: _gamePlayers,
       gameTeams: _gameTeams
     );
 
