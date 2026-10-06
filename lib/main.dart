@@ -631,11 +631,22 @@ class _MainScreenState extends State<MainScreen> {
     final size = MediaQuery.sizeOf(context);
     final safeWidth = size.width;
     final safeHeight = size.height;
-    final activeTiles = _activeSection == MainScreenSection.section05Games
-        ? GlobalGameType.values
-        : GlobalSettingType.values;
     final toolbarHeight = (safeHeight * 0.10).clamp(56.0, 142.0);
     final contentHeight = safeHeight - toolbarHeight;
+    final activeTiles = [];
+    
+    switch (_activeSection) {
+      case MainScreenSection.section05Games:
+        activeTiles.addAll(GlobalGameType.values);
+        break;
+      case MainScreenSection.section10Settings:
+        activeTiles.addAll(GlobalSettingType.values);
+        break;
+      case MainScreenSection.section15Options:
+        
+        break;
+    }
+    
 
     return Scaffold(
       backgroundColor: Colors.grey.shade800,

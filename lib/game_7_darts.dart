@@ -15,6 +15,7 @@ import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 import 'package:darts_101/helpers_database.dart';
 import 'package:darts_101/helpers_dartboard.dart';
+import 'package:darts_101/helpers_standings.dart';
 
 class Game7DartsScreen extends StatefulWidget {
   final TblGame game;
@@ -37,10 +38,8 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   double get _safeHeight => GlobalAppDisplay.safeHeight;
   double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
   double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 6);
-  double get _heightBoostPlayerPanel =>
-      (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.595;
-  double get _heightBoostTeamPanel =>
-      (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.45;
+  double get _heightBoostPlayerPanel => (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.595;
+  double get _heightBoostTeamPanel => (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.45;
   double get _avatarHeight => _headerHeight * 2;
   double get _avatarHeightOuterSize => _avatarHeight * 1.12;
   double get _avatarSlicedWidth => _avatarHeight * 0.42;
@@ -84,8 +83,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   // Pair each player with their original index and player color for the game
   List<({TblPlayer player, int originalIndex, Color playerColor})>
   get _gamePlayers => List.generate(_gameConfig.fldPlayers.length, (index) {
-    return (
-      player: _gameConfig.fldPlayers[index],
+    return (player: _gameConfig.fldPlayers[index],
       originalIndex: index,
       playerColor: playersSlotColors[index],
     );
@@ -96,8 +94,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
       return [];
     }
     return List.generate(_gameConfig.fldTeams!.length, (index) {
-      return (
-        team: _gameConfig.fldTeams![index],
+      return (team: _gameConfig.fldTeams![index],
         originalIndex: index,
         teamColor: teamsSlotColors[index],
       );
@@ -110,32 +107,27 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   bool get _isPlayerMode => _gameConfig.fldPlayersGM;
 
   TblPlayer get _activePlayer => _gamePlayers[_progress.activeSeatIdx].player;
-  int get _activePlayerIndex =>
-      _gamePlayers[_progress.activeSeatIdx].originalIndex;
-  Color get _activePlayerColor =>
-      _gamePlayers[_progress.activeSeatIdx].playerColor;
+  int get _activePlayerIndex => _gamePlayers[_progress.activeSeatIdx].originalIndex;
+  Color get _activePlayerColor => _gamePlayers[_progress.activeSeatIdx].playerColor;
   int get _activePlayerLastScore {
     return gamesScoresBox.values
-        .lastWhere(
-          (gamesScores) =>
+        .lastWhere((gamesScores) =>
               gamesScores.fldGame == _gameConfig &&
-              gamesScores.fldPlayer == _activePlayer,
+              gamesScores.fldPlayer == _activePlayer &&
+              gamesScores.fldSeatIndex == _progress.activeSeatIdx
         )
         .fldScorePlayerSnapshot;
   }
 
-  TblPlayer get _previousPlayer =>
-      _gamePlayers[_progress.previousSeatIdx].player;
-  int get _previousPlayerIndex =>
-      _gamePlayers[_progress.previousSeatIdx].originalIndex;
-  Color get _previousPlayerColor =>
-      _gamePlayers[_progress.previousSeatIdx].playerColor;
+  TblPlayer get _previousPlayer => _gamePlayers[_progress.previousSeatIdx].player;
+  int get _previousPlayerIndex => _gamePlayers[_progress.previousSeatIdx].originalIndex;
+  Color get _previousPlayerColor => _gamePlayers[_progress.previousSeatIdx].playerColor;
   int get _previousPlayerLastScore {
     return gamesScoresBox.values
-        .lastWhere(
-          (gamesScores) =>
+        .lastWhere((gamesScores) =>
               gamesScores.fldGame == _gameConfig &&
-              gamesScores.fldPlayer == _previousPlayer,
+              gamesScores.fldPlayer == _previousPlayer &&
+              gamesScores.fldSeatIndex == _progress.previousSeatIdx,
         )
         .fldScorePlayerSnapshot;
   }
@@ -144,18 +136,13 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   int get _nextPlayerIndex => _gamePlayers[_progress.nextSeatIdx].originalIndex;
   Color get _nextPlayerColor => _gamePlayers[_progress.nextSeatIdx].playerColor;
 
-  TblTeam get _activeTeam =>
-      _gameTeams[_progress.activeSeatIdx % _gameTeams.length].team;
-  int get _activeTeamIndex =>
-      _gameTeams[_progress.activeSeatIdx % _gameTeams.length].originalIndex;
-  Color get _activeTeamColor =>
-      _gameTeams[_progress.activeSeatIdx % _gameTeams.length].teamColor;
+  TblTeam get _activeTeam => _gameTeams[_progress.activeSeatIdx % _gameTeams.length].team;
+  int get _activeTeamIndex => _gameTeams[_progress.activeSeatIdx % _gameTeams.length].originalIndex;
+  Color get _activeTeamColor => _gameTeams[_progress.activeSeatIdx % _gameTeams.length].teamColor;
   int get _activeTeamLastScore {
-    final teamScores = gamesScoresBox.values.where(
-      (gamesScores) =>
+    final teamScores = gamesScoresBox.values.where((gamesScores) =>
           gamesScores.fldGame == _gameConfig &&
-          _gameTeams.any(
-            (gameTeams) =>
+          _gameTeams.any((gameTeams) =>
                 gameTeams.team == _activeTeam &&
                 gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer),
           ),
@@ -163,18 +150,13 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
     return teamScores.last.fldScoreTeamSnapshot!;
   }
 
-  TblTeam get _previousTeam =>
-      _gameTeams[_progress.previousSeatIdx % _gameTeams.length].team;
-  int get _previousTeamIndex =>
-      _gameTeams[_progress.previousSeatIdx % _gameTeams.length].originalIndex;
-  Color get _previousTeamColor =>
-      _gameTeams[_progress.previousSeatIdx % _gameTeams.length].teamColor;
+  TblTeam get _previousTeam => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].team;
+  int get _previousTeamIndex => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].originalIndex;
+  Color get _previousTeamColor => _gameTeams[_progress.previousSeatIdx % _gameTeams.length].teamColor;
   int get _previousTeamLastScore {
-    final teamScores = gamesScoresBox.values.where(
-      (gamesScores) =>
+    final teamScores = gamesScoresBox.values.where((gamesScores) =>
           gamesScores.fldGame == _gameConfig &&
-          _gameTeams.any(
-            (gameTeams) =>
+          _gameTeams.any((gameTeams) =>
                 gameTeams.team == _previousTeam &&
                 gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer),
           ),
@@ -182,20 +164,16 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
     return teamScores.last.fldScoreTeamSnapshot!;
   }
 
-  TblTeam get _nextTeam =>
-      _gameTeams[_progress.nextSeatIdx % _gameTeams.length].team;
-  int get _nextTeamIndex =>
-      _gameTeams[_progress.nextSeatIdx % _gameTeams.length].originalIndex;
-  Color get _nextTeamColor =>
-      _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
+  TblTeam get _nextTeam => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].team;
+  int get _nextTeamIndex => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].originalIndex;
+  Color get _nextTeamColor => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
   int get _activeTargetValue => gTargets7Darts[_progress.activeTargetIdx].value;
   int get _nextTargetValue => gTargets7Darts[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
-    final activeDartsThisRound = gamesScoresBox.values.where(
-      (s) =>
+    final activeDartsThisRound = gamesScoresBox.values.where((s) =>
           s.fldGame == _gameConfig &&
           s.fldPlayer == _activePlayer &&
           s.fldSeatIndex == _progress.activeSeatIdx &&
@@ -206,8 +184,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
 
   // Get total hits for the previous player in their last completed round and specific seat index
   int get _previousPlayerLastRoundHits {
-    final allDartsThisRound = gamesScoresBox.values.where(
-      (s) =>
+    final allDartsThisRound = gamesScoresBox.values.where((s) =>
           s.fldGame == _gameConfig &&
           s.fldPlayer == _previousPlayer &&
           s.fldSeatIndex == _progress.previousSeatIdx &&
@@ -219,11 +196,10 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   @override
   void initState() {
     super.initState();
-
     gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
-    
-    _initGameStartingScores();
 
+    _initGameStartingScores();
+    
     // Handle resume mode vs fresh game initialization using the helper
     if (widget.resumeMode) {
       _progress = gStepGameState7Darts(
@@ -244,614 +220,29 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   void _endGame() {
     gClearAllArcadeOverlays();
 
-    // 1. We'll store the results in a list of Map for easy sorting
-    List<GameResultRecord> finalResults = [];
+    List<GameResultRecord> finalResults = gComputeGameResults(
+      gameConfig: _gameConfig, 
+      gamePlayers: _gamePlayers, 
+      gameTeams: _gameTeams
+    );
 
-    if (_isPlayerMode) {
-      for (var gamePlayer in _gamePlayers) {
-        final playerScores = gamesScoresBox.values.where(
-          (s) => s.fldGame == _gameConfig && s.fldPlayer == gamePlayer.player,
-        );
-
-        final lastScore = playerScores.last.fldScorePlayerSnapshot;
-
-        int triples = 0;
-        int doubles = 0;
-        int hitsBull = 0;
-
-        for (var score in playerScores) {
-          if (score.fldIsTriple) triples++;
-          if (score.fldIsDouble) doubles++;
-          if (score.fldTargetValue == 25) hitsBull += score.fldHits;
-        }
-
-        finalResults.add(
-          GameResultRecord(
-            objReference: gamePlayer.player,
-            originalIndex: gamePlayer.originalIndex,
-            playerPosition1: gamePlayer.originalIndex,
-            displayName: gamePlayer.player.fldNickName,
-            lastScore: lastScore,
-            color: gamePlayer.playerColor,
-            triplesCount: triples,
-            doublesCount: doubles,
-            hitsBull: hitsBull,
-          ),
-        );
-      }
-    } else {
-      for (var gameTeam in _gameTeams) {
-        final teamPlayers = gameTeam.team.fldPlayers;
-
-        final teamScores = gamesScoresBox.values.where(
-          (s) => s.fldGame == _gameConfig && teamPlayers.contains(s.fldPlayer),
-        );
-
-        final lastScore = teamScores.last.fldScoreTeamSnapshot!;
-
-        int triples = 0;
-        int doubles = 0;
-        int hitsBull = 0;
-
-        for (var score in teamScores) {
-          if (score.fldIsTriple) triples++;
-          if (score.fldIsDouble) doubles++;
-          if (score.fldTargetValue == 25) hitsBull += score.fldHits;
-        }
-
-        int playerPosition1 = 0;
-        int playerPosition2 = 0;
-
-        // verify if dummy
-        if (teamPlayers[0] == teamPlayers[1]) {
-          playerPosition1 = _gamePlayers.indexWhere(
-            (gp) => gp.player == teamPlayers[0],
-          );
-          playerPosition2 = playerPosition1 + (_gamePlayers.length ~/ 2);
-        } else {
-          playerPosition1 = _gamePlayers.indexWhere(
-            (gp) => gp.player == teamPlayers[0],
-          );
-          playerPosition2 = _gamePlayers.indexWhere(
-            (gp) => gp.player == teamPlayers[1],
-          );
-        }
-
-        finalResults.add(
-          GameResultRecord(
-            objReference: gameTeam.team,
-            originalIndex: gameTeam.originalIndex,
-            playerPosition1: playerPosition1,
-            playerPosition2: playerPosition2,
-            displayName:
-                '${teamPlayers[0].fldNickName} & ${teamPlayers[1].fldNickName}',
-            lastScore: lastScore,
-            color: gameTeam.teamColor,
-            triplesCount: triples,
-            doublesCount: doubles,
-            hitsBull: hitsBull,
-          ),
-        );
-      }
-    }
-
-    // 2. Sort results (Highest score first)
-    finalResults.sort((a, b) {
-      if (b.lastScore != a.lastScore) {
-        return b.lastScore.compareTo(a.lastScore);
-      }
-      if (b.triplesCount != a.triplesCount) {
-        return b.triplesCount.compareTo(a.triplesCount);
-      }
-      if (b.doublesCount != a.doublesCount) {
-        return b.doublesCount.compareTo(a.doublesCount);
-      }
-      return b.hitsBull.compareTo(a.hitsBull);
-    });
-
-    // 3. Compute proper rankings handling ties
-    int currentRank = 1;
-    for (int i = 0; i < finalResults.length; i++) {
-      if (i > 0) {
-        final prev = finalResults[i - 1];
-        final curr = finalResults[i];
-        bool isIdentical =
-            (curr.lastScore == prev.lastScore &&
-            curr.triplesCount == prev.triplesCount &&
-            curr.doublesCount == prev.doublesCount &&
-            curr.hitsBull == prev.hitsBull);
-        if (!isIdentical) {
-          currentRank = i + 1;
-        }
-      }
-      finalResults[i].ranking = currentRank; // Direct write!
-    }
-
-    // 3. Extract top record & collect all winners (handles ties)
-    final topScore = finalResults.first;
-
-    final List<GameResultRecord> winners = finalResults
-        .where(
-          (result) =>
-              result.lastScore == topScore.lastScore &&
-              result.triplesCount == topScore.triplesCount &&
-              result.doublesCount == topScore.doublesCount &&
-              result.hitsBull == topScore.hitsBull,
-        )
-        .toList();
-
-    final bool isTie = winners.length > 1;
-
-    // 4. Prepare winning players and winning teams locally for the dialog
-    List<TblPlayer> winningPlayers = [];
-    List<TblTeam> winningTeams = [];
-
-    if (_isPlayerMode) {
-      winningPlayers = winners.map((r) => r.objReference as TblPlayer).toList();
-    } else {
-      winningTeams = winners.map((r) => r.objReference as TblTeam).toList();
-
-      for (var record in winners) {
-        final team = record.objReference as TblTeam;
-
-        // If it's a dummy team dummy
-        if (team.fldPlayers[0] == team.fldPlayers[1]) {
-          winningPlayers.add(team.fldPlayers[0]);
-        } else {
-          winningPlayers.add(team.fldPlayers[0]);
-          winningPlayers.add(team.fldPlayers[1]);
-        }
-      }
-    }
-
-    showDialog(
+    gshowStandingsDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
-        ),
-        // We leave 'title' and 'actions' null to give all space to 'content'
-        content: SizedBox(
-          width: GlobalAppDisplay.safeWidth * 0.9,
-          height: _safeHeight * 0.9,
-          child: Padding(
-            padding: EdgeInsets.all(_responsiveTile * 0.03),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildWinnerTopBanner(
-                  winners: winners,
-                  winningPlayers: winningPlayers,
-                  winningTeams: winningTeams,
-                ),
-
-                SizedBox(height: _responsiveTile * 0.03),
-
-                Expanded(
-                  child: Row(
-                    children: [
-                      // Left Trophy
-                      Column(
-                        children: [
-                          if (!_isPlayerMode) ...[
-                            if (!isTie) ...[
-                              gBuildSlicedPlayerAvatarH(
-                                player: winners[0].objReference.fldPlayers[0],
-                                avatarHeight: _avatarHeight,
-                                avatarHeightOuterSize: _avatarHeightOuterSize,
-                                avatarSlicedWidth: _avatarSlicedWidth,
-                                avatarSlicedWidthOuterSize:
-                                    _avatarSlicedWidthOuterSize,
-                                slotBgColor: winners[0].color,
-                                playerPosition: winners[0].playerPosition1,
-                                responsiveTile: _responsiveTile,
-                                isTagNickNameLeft: true,
-                                isEmptyPanel: false,
-                              ),
-
-                              SizedBox(height: _responsiveTile * 0.02),
-                            ],
-                          ],
-
-                          Center(
-                            child: SizedBox(
-                              height: _responsiveTile * 0.3,
-                              width: _responsiveTile * 0.3,
-                              child: Image.asset(
-                                'assets/png/mechanics/trophy.png',
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(width: _responsiveTile * 0.02),
-
-                      // Final Standings
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: (winners[0].color).withAlpha(100),
-                            borderRadius: BorderRadius.circular(
-                              _responsiveTile * 0.03,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              SingleChildScrollView(
-                                padding: EdgeInsets.all(
-                                  _responsiveTile * 0.005,
-                                ),
-                                child: Column(
-                                  children: [
-                                    // 3. STANDINGS LIST
-                                    Container(
-                                      width: double.infinity,
-                                      alignment: Alignment.center,
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: _responsiveTile * 0.01,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: (winners[0].color).withAlpha(
-                                          220,
-                                        ),
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(
-                                            _responsiveTile * 0.025,
-                                          ),
-                                          bottom: Radius.zero,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        "FINAL STANDINGS",
-                                        style: gBuildArcadeTextStyle(
-                                          _responsiveFontSize,
-                                          gFontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-
-                                    SizedBox(height: _responsiveTile * 0.015),
-
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          flex:  
-                                            _isPlayerMode
-                                              ? 2 
-                                              : isTie
-                                                ? 2
-                                                : 1,
-                                          child: Text(
-                                            "RANK",
-                                            textAlign: TextAlign.center,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(
-                                                _responsiveFontSize * 0.5,
-                                                60,
-                                              ),
-                                              gFontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 5,
-                                          child: Text(
-                                            !_isPlayerMode
-                                                ? "TEAMS"
-                                                : "PLAYERS",
-                                            textAlign: TextAlign.left,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(
-                                                _responsiveFontSize * 0.5,
-                                                60,
-                                              ),
-                                              gFontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex:  
-                                            _isPlayerMode
-                                              ? 2 
-                                              : isTie
-                                                ? 2
-                                                : 1,
-                                          child: Text(
-                                            _isPlayerMode
-                                              ? "TRIPLES" 
-                                              : isTie
-                                                ? "TRIPLES"
-                                                : "TRP",
-                                            textAlign: TextAlign.center,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(
-                                                _responsiveFontSize * 0.5,
-                                                60,
-                                              ),
-                                              gFontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex:  
-                                            _isPlayerMode
-                                              ? 2 
-                                              : isTie
-                                                ? 2
-                                                : 1,
-                                          child: Text(
-                                            _isPlayerMode
-                                              ? "DOUBLES" 
-                                              : isTie
-                                                ? "DOUBLES"
-                                                : "DBL",
-                                            textAlign: TextAlign.center,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(
-                                                _responsiveFontSize * 0.5,
-                                                60,
-                                              ),
-                                              gFontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 
-                                            _isPlayerMode
-                                              ? 2 
-                                              : isTie
-                                                ? 2
-                                                : 1,
-                                          child: Text(
-                                            "BULLS",
-                                            textAlign: TextAlign.center,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(
-                                                _responsiveFontSize * 0.5,
-                                                60,
-                                              ),
-                                              gFontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 
-                                            _isPlayerMode
-                                              ? 2 
-                                              : isTie
-                                                ? 2
-                                                : 1,
-                                          child: Text(
-                                            _isPlayerMode
-                                              ? "POINTS" 
-                                              : isTie
-                                                ? "POINTS"
-                                                : "PTS",
-                                            textAlign: TextAlign.end,
-                                            style: gBuildArcadeTextStyle(
-                                              (_responsiveFontSize * 0.6).clamp(
-                                                _responsiveFontSize * 0.5,
-                                                60,
-                                              ),
-                                              gFontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    const Divider(color: Colors.white),
-
-                                    // Map the results directly into the column
-                                    ...finalResults.map((res) {
-                                      final bool isWinner = res.ranking == 1;
-
-                                      return _buildCreateListResults(
-                                        res,
-                                        isWinner,
-                                        isTie,
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(width: _responsiveTile * 0.02),
-
-                      // Right Trophy
-                      Column(
-                        children: [
-                          if (!_isPlayerMode) ...[
-                            if (!isTie) ...[
-                              gBuildSlicedPlayerAvatarH(
-                                player: winners[0].objReference.fldPlayers[1],
-                                avatarHeight: _avatarHeight,
-                                avatarHeightOuterSize: _avatarHeightOuterSize,
-                                avatarSlicedWidth: _avatarSlicedWidth,
-                                avatarSlicedWidthOuterSize:
-                                    _avatarSlicedWidthOuterSize,
-                                slotBgColor: winners[0].color,
-                                playerPosition: winners[0].playerPosition2,
-                                responsiveTile: _responsiveTile,
-                                isTagNickNameLeft: true,
-                                isEmptyPanel: false,
-                              ),
-
-                              SizedBox(height: _responsiveTile * 0.02),
-                            ],
-                          ],
-
-                          Center(
-                            child: SizedBox(
-                              height: _responsiveTile * 0.3,
-                              width: _responsiveTile * 0.3,
-                              child: Image.asset(
-                                'assets/png/mechanics/trophy.png',
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      gameConfig: _gameConfig,
+      finalResults: finalResults,
+      onUndoLastThrow: () {_undoLastThrow();},
+      responsiveTile: _responsiveTile,
+      responsiveFontSize: _responsiveFontSize,
+      avatarHeight: _avatarHeight,
+      avatarHeightOuterSize: _avatarHeightOuterSize,
+      avatarSlicedWidth: _avatarSlicedWidth,
+      avatarSlicedWidthOuterSize: _avatarSlicedWidthOuterSize,
+      cardHeight: _cardHeight,
+      cardWidth: _cardWidth,
+      cardWidthOuterSize: _cardWidthOuterSize,
+      cardSlicedHeight: _cardSlicedHeight,
+      cardSlicedHeightOuterSize: _cardSlicedHeightOuterSize
     );
-  }
-
-  Widget _buildCreateListResults(GameResultRecord<dynamic> res, bool isWinner, bool isTie) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: _responsiveTile * 0.01,
-        horizontal: _responsiveTile * 0.015,
-      ),
-      margin: EdgeInsets.symmetric(vertical: _responsiveTile * 0.001),
-      decoration: BoxDecoration(
-        color: isWinner ? res.color : Colors.transparent,
-        borderRadius: BorderRadius.circular(_responsiveTile * 0.01),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            flex:  
-              _isPlayerMode
-                ? 2 
-                : isTie
-                  ? 2
-                  : 1,
-            child: Text(
-              "${res.ranking}.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: _responsiveFontSize * 0.8,
-                fontWeight: FontWeight.bold,
-                color: isWinner ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 5,
-            child: Text(
-              res.displayName,
-              textAlign: TextAlign.left,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: _responsiveFontSize * 0.8,
-                color: isWinner ? Colors.white : Colors.black,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            flex:  
-              _isPlayerMode
-                ? 2 
-                : isTie
-                  ? 2
-                  : 1,
-            child: Text(
-              "${res.triplesCount}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: _responsiveFontSize * 0.8,
-                fontWeight: FontWeight.bold,
-                color: isWinner ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          Expanded(
-            flex:   
-              _isPlayerMode
-                ? 2 
-                : isTie
-                  ? 2
-                  : 1,
-            child: Text(
-              "${res.doublesCount}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: _responsiveFontSize * 0.8,
-                fontWeight: FontWeight.bold,
-                color: isWinner ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          Expanded(
-            flex:   
-              _isPlayerMode
-                ? 2 
-                : isTie
-                  ? 2
-                  : 1,
-            child: Text(
-              "${res.hitsBull}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: _responsiveFontSize * 0.8,
-                fontWeight: FontWeight.bold,
-                color: isWinner ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          Expanded(
-            flex:   
-              _isPlayerMode
-                ? 2 
-                : isTie
-                  ? 2
-                  : 1,
-            child: Text(
-              "${res.lastScore}",
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: _responsiveFontSize * 0.8,
-                color: isWinner ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _gameClosed({
-    required List<TblPlayer> winningPlayers,
-    required List<TblTeam> winningTeams,
-  }) {
-    // Save the winning teams if in team mode
-    if (!_isPlayerMode) {
-      widget.game.fldTeamsWinner = winningTeams;
-    }
-
-    // Save and end the game :)
-    widget.game.fldPlayersWinner = winningPlayers;
-    widget.game.fldIsEnded = true;
-    widget.game.save();
-
-    // 2. Clear the Navigation stack back to the very first screen
-    // This will dismiss the Dialog AND the GameScoreScreen in one go.
-    Navigator.of(
-      context,
-      rootNavigator: true,
-    ).popUntil((route) => route.isFirst);
   }
 
   void _initGameStartingScores() {
@@ -1484,14 +875,14 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                       child: Center(
                                         child: Stack(
                                           children: [
-                                            AnimatedOpacity(
-                                              opacity: _hasGamePreviousPlayer
-                                                  ? 1.0
-                                                  : 0.3,
-                                              duration: const Duration(
-                                                milliseconds: 200,
-                                              ),
-                                              child: Positioned.fill(
+                                            Positioned.fill(
+                                              child: AnimatedOpacity(
+                                                opacity: _hasGamePreviousPlayer
+                                                    ? 1.0
+                                                    : 0.3,
+                                                duration: const Duration(
+                                                  milliseconds: 200,
+                                                ),
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
@@ -2183,14 +1574,14 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                       child: Center(
                                         child: Stack(
                                           children: [
-                                            AnimatedOpacity(
-                                              opacity: _hasGameNextPlayer
-                                                  ? 1.0
-                                                  : 0.3,
-                                              duration: const Duration(
-                                                milliseconds: 200,
-                                              ),
-                                              child: Positioned.fill(
+                                            Positioned.fill(
+                                              child: AnimatedOpacity(
+                                                opacity: _hasGameNextPlayer
+                                                    ? 1.0
+                                                    : 0.3,
+                                                duration: const Duration(
+                                                  milliseconds: 200,
+                                                ),
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
@@ -2277,7 +1668,6 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
               player: player,
               playerColor: playerColor,
               seatIdx: seatIndex,
-              includeCurrentRound: player == _activePlayer ? true : false,
             ),
           ),
           actions: [
@@ -2539,7 +1929,6 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
     required TblPlayer player,
     required Color playerColor,
     required int seatIdx,
-    required bool includeCurrentRound,
   }) {
     return Column(
       children: [
@@ -3228,215 +2617,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
     );
   }
 
-  Widget _buildWinnerTopBanner({
-    required List<GameResultRecord<dynamic>> winners,
-    required List<TblPlayer> winningPlayers,
-    required List<TblTeam> winningTeams,
-  }) {
-    final bool isTie = winners.length > 1;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: (winners[0].color).withAlpha(100),
-        borderRadius: BorderRadius.circular(_responsiveTile * 0.03),
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: _responsiveTile * 0.01),
-
-          // Save button
-          SizedBox(
-            width: _responsiveTile * 0.18,
-            height: _responsiveTile * 0.18,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                padding: EdgeInsets.zero,
-                elevation: 4,
-              ),
-              onPressed: () {
-                _gameClosed(
-                  winningPlayers: winningPlayers,
-                  winningTeams: winningTeams,
-                );
-              },
-              child: Center(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: _responsiveTile * 0.015,
-                              offset: Offset(
-                                _responsiveTile * 0.003,
-                                _responsiveTile * 0.003,
-                              ), // Casts shadow upward onto the screen content
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    Image.asset(
-                      'assets/png/mechanics/save_game.png',
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: _responsiveTile * 0.01,
-                    horizontal: _responsiveTile * 0.03,
-                  ),
-                  decoration: BoxDecoration(
-                    color: (winners[0].color).withAlpha(220),
-                    borderRadius: BorderRadius.circular(
-                      _responsiveTile * 0.015,
-                    ),
-                  ),
-                  child: Text(
-                    isTie
-                        ? "IT'S A TIE!"
-                        : _isPlayerMode
-                        ? "WINNER"
-                        : "WINNERS",
-                    style: gBuildArcadeTextStyle(
-                      _responsiveFontSize * 1.1,
-                      gFontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          if (!isTie) ...[
-            Expanded(
-              child: Column(
-                children: [
-                  if (_isPlayerMode) ...[
-                    gBuildSlicedPlayerAvatarH(
-                      player: winners[0].objReference,
-                      avatarHeight: _avatarHeight,
-                      avatarHeightOuterSize: _avatarHeightOuterSize,
-                      avatarSlicedWidth: _avatarSlicedWidth,
-                      avatarSlicedWidthOuterSize: _avatarSlicedWidthOuterSize,
-                      slotBgColor: winners[0].color,
-                      playerPosition: winners[0].playerPosition1,
-                      responsiveTile: _responsiveTile,
-                      isTagNickNameLeft: true,
-                      isEmptyPanel: false,
-                    ),
-                  ] else ...[
-                    gBuildSlicedTeamCardH(
-                      team: winners[0].objReference,
-                      cardHeight: _cardHeight,
-                      cardWidth: _cardWidth,
-                      cardWidthOuterSize: _cardWidthOuterSize,
-                      cardSlicedHeight: _cardSlicedHeight,
-                      cardSlicedHeightOuterSize: _cardSlicedHeightOuterSize,
-                      slotBgColor: winners[0].color,
-                      teamPosition: winners[0].originalIndex,
-                      responsiveTile: _responsiveTile,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-
-          if (!isTie) ...[
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: _responsiveTile * 0.01,
-                      horizontal: _responsiveTile * 0.03,
-                    ),
-                    decoration: BoxDecoration(
-                      color: (winners[0].color).withAlpha(220),
-                      borderRadius: BorderRadius.circular(
-                        _responsiveTile * 0.015,
-                      ),
-                    ),
-                    child: Text(
-                      _isPlayerMode ? "WINNER" : "WINNERS",
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 1.1,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          // Undo Button
-          SizedBox(
-            width: _responsiveTile * 0.18,
-            height: _responsiveTile * 0.18,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                padding: EdgeInsets.zero,
-                elevation: 4,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _undoLastThrow();
-              },
-              child: Center(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: _responsiveTile * 0.015,
-                              offset: Offset(
-                                _responsiveTile * 0.003,
-                                _responsiveTile * 0.003,
-                              ), // Casts shadow upward onto the screen content
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    Image.asset(
-                      'assets/png/mechanics/undo.png',
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          SizedBox(width: _responsiveTile * 0.01),
-        ],
-      ),
-    );
-  }
+  
 
   Widget _buildFullScoreboardTable() {
     final totalColumns = _gamePlayers.length + 1;
@@ -3960,32 +3141,4 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
       },
     );
   }
-}
-
-class GameResultRecord<objRef> {
-  final objRef objReference;
-  final int originalIndex;
-  final String displayName;
-  final int lastScore;
-  final Color color;
-  final int playerPosition1;
-  final int playerPosition2;
-  final int triplesCount;
-  final int doublesCount;
-  final int hitsBull;
-  int ranking;
-
-  GameResultRecord({
-    required this.objReference,
-    required this.originalIndex,
-    required this.displayName,
-    required this.lastScore,
-    required this.color,
-    required this.playerPosition1,
-    this.playerPosition2 = 0,
-    this.triplesCount = 0,
-    this.doublesCount = 0,
-    this.hitsBull = 0,
-    this.ranking = 999,
-  });
 }
