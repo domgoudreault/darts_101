@@ -468,6 +468,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: true,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
+      fldStartEndBull: false,
+      fldShowOptStartEndBull: false,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: false,
+      fldUpDownBull: false,
+      fldShowOptUpDownBull: false,
+      fldMidDoubleBull: false,
+      fldShowOptMidDoubleBull: false,
+      fldNoSkipWhenBull: false,
+      fldShowOptNoSkipWhenBull: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.aroundClock,
@@ -481,6 +491,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
+      fldStartEndBull: true,
+      fldShowOptStartEndBull: true,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: true,
+      fldUpDownBull: true,
+      fldShowOptUpDownBull: true,
+      fldMidDoubleBull: true,
+      fldShowOptMidDoubleBull: true,
+      fldNoSkipWhenBull: true,
+      fldShowOptNoSkipWhenBull: true,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.sevenDarts,
@@ -494,6 +514,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 3,
       fldShowOptNbrRounds: true,
+      fldStartEndBull: false,
+      fldShowOptStartEndBull: false,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: false, 
+      fldUpDownBull: false,
+      fldShowOptUpDownBull: false,
+      fldMidDoubleBull: false,
+      fldShowOptMidDoubleBull: false,
+      fldNoSkipWhenBull: false,
+      fldShowOptNoSkipWhenBull: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.allFives,
@@ -507,6 +537,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
+      fldStartEndBull: false,
+      fldShowOptStartEndBull: false,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: false, 
+      fldUpDownBull: false,
+      fldShowOptUpDownBull: false,
+      fldMidDoubleBull: false,
+      fldShowOptMidDoubleBull: false,
+      fldNoSkipWhenBull: false,
+      fldShowOptNoSkipWhenBull: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.killers,
@@ -520,6 +560,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
+      fldStartEndBull: false,
+      fldShowOptStartEndBull: false,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: false, 
+      fldUpDownBull: false,
+      fldShowOptUpDownBull: false,
+      fldMidDoubleBull: false,
+      fldShowOptMidDoubleBull: false,
+      fldNoSkipWhenBull: false,
+      fldShowOptNoSkipWhenBull: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.suddenDeath,
@@ -533,6 +583,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
+      fldStartEndBull: false,
+      fldShowOptStartEndBull: false,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: false, 
+      fldUpDownBull: false,
+      fldShowOptUpDownBull: false,
+      fldMidDoubleBull: false,
+      fldShowOptMidDoubleBull: false,
+      fldNoSkipWhenBull: false,
+      fldShowOptNoSkipWhenBull: false,
     ),
     TblGameOptions(
       fldGameType: GlobalGameType.buildUp,
@@ -546,6 +606,16 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
+      fldStartEndBull: false,
+      fldShowOptStartEndBull: false,
+      fldStartEndDoubleBull: false,
+      fldShowOptStartEndDoubleBull: false, 
+      fldUpDownBull: false,
+      fldShowOptUpDownBull: false,
+      fldMidDoubleBull: false,
+      fldShowOptMidDoubleBull: false,
+      fldNoSkipWhenBull: false,
+      fldShowOptNoSkipWhenBull: false,
     ),
   ];
 
@@ -573,7 +643,7 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
   await gamesBox.add(game);
 
   final options = gGetGameOptions(GlobalGameType.halfIt);
-  final startingScore = options.fldStartingScore;
+  final int startingScore = options.fldStartingScore;
 
   // Baseline starting scores (Round -1)
   for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
@@ -608,23 +678,6 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
-      final player = gamePlayers[seatIdx];
-
-      final playerScores = gamesScoresBox.values
-          .where((s) => s.fldGame == game && s.fldPlayer == player)
-          .toList();
-      int currentScore = playerScores.last.fldScorePlayerSnapshot;
-
-      int hits;
-      if (seatIdx == 0) {
-        hits = 3; // Triples every round for a decisive winner
-      } else {
-        // Randomize between 1 and 3 so there are no misses/half-its
-        hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
-      }
-
-      int newScore = currentScore + (targetValue * hits);
-
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
           (rIdx == gTargetsHalf.length - 1 &&
@@ -632,6 +685,31 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        final player = gamePlayers[seatIdx];
+
+        final playerScores = gamesScoresBox.values
+            .where((s) => s.fldGame == game && s.fldPlayer == player)
+            .toList();
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+
+        int hits;
+        if (seatIdx == 0) {
+          if (rIdx != gTargetsHalf.length - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (rIdx != gTargetsHalf.length - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int newScore = currentScore + (targetValue * hits);
+      
         gamesScoresBox.add(
           TblGameScore(
             fldGame: game,
@@ -652,7 +730,7 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
             fldIsHalfIt: false,
             fldIsMiss: false,
             fldIsTriple: hits == 3,
-            fldHits: (dIdx == 0) ? hits : 0,
+            fldHits: hits,
             fldScorePlayerSnapshot: newScore,
           ),
         );
@@ -661,7 +739,6 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
   }
 }
 
-// 2. Seed a Half-It player game with a tie (to test tiebreakers)
 Future<void> gSeedHiveGameHalfItPlayerTie() async {
   final gamesBox = Hive.box<TblGame>('gamesBox');
   final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
@@ -678,7 +755,7 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
   await gamesBox.add(game);
 
   final options = gGetGameOptions(GlobalGameType.halfIt);
-  final startingScore = options.fldStartingScore;
+  final int startingScore = options.fldStartingScore;
 
   // Baseline starting scores (Round -1)
   for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
@@ -713,25 +790,6 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
-      final player = gamePlayers[seatIdx];
-
-      final playerScores = gamesScoresBox.values
-          .where((s) => s.fldGame == game && s.fldPlayer == player)
-          .toList();
-      int currentScore = playerScores.last.fldScorePlayerSnapshot;
-      int currentTeamScore = playerScores.last.fldScoreTeamSnapshot!;
-
-      int hits;
-      if (seatIdx == 0 || seatIdx == 1 || seatIdx == 2) {
-        hits = 3;
-      } else {
-        // Randomize between 1 and 3 so there are no misses/half-its
-        hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
-      }
-
-      int newScore = currentScore + (targetValue * hits);
-      int newTeamScore = currentTeamScore + (targetValue * hits);
-
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
           (rIdx == gTargetsHalf.length - 1 &&
@@ -739,6 +797,33 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        final player = gamePlayers[seatIdx];
+
+        final playerScores = gamesScoresBox.values
+            .where((s) => s.fldGame == game && s.fldPlayer == player)
+            .toList();
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+        int currentTeamScore = playerScores.last.fldScoreTeamSnapshot!;
+
+        int hits;
+        if (seatIdx == 0 || seatIdx == 1 || seatIdx == 2) {
+          if (rIdx != gTargetsHalf.length - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (rIdx != gTargetsHalf.length - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int newScore = currentScore + (targetValue * hits);
+        int newTeamScore = currentTeamScore + (targetValue * hits);
+      
         gamesScoresBox.add(
           TblGameScore(
             fldGame: game,
@@ -759,7 +844,7 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
             fldIsHalfIt: false,
             fldIsMiss: false,
             fldIsTriple: hits == 3,
-            fldHits: (dIdx == 0) ? hits : 0,
+            fldHits: hits,
             fldScorePlayerSnapshot: newScore,
             fldScoreTeamSnapshot: newTeamScore,
           ),
@@ -775,8 +860,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
   final teamsBox = Hive.box<TblTeam>('teamsBox');
 
   final List<TblTeam> gameTeams = [];
-  List<TblPlayer> gamePlayers = [];
-
+  
   for (var team in teamsBox.values.toList()) {
     if (gameTeams.length >= 6) break;
 
@@ -813,7 +897,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
     return [...firstHalf, ...secondHalf];
   }
 
-  gamePlayers = resolveGamePlayers();
+  final List<TblPlayer> gamePlayers = resolveGamePlayers();
 
   // This guarantees exactly 12 unique players across the 6 unique teams
 
@@ -827,7 +911,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
   await gamesBox.add(game);
 
   final options = gGetGameOptions(GlobalGameType.halfIt);
-  final startingScore = options.fldStartingScore;
+  final int startingScore = options.fldStartingScore;
 
   // Baseline starting scores (Round -1)
   for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
@@ -862,25 +946,6 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
-      final player = gamePlayers[seatIdx];
-
-      final playerScores = gamesScoresBox.values
-          .where((s) => s.fldGame == game && s.fldPlayer == player)
-          .toList();
-      int currentScore = playerScores.last.fldScorePlayerSnapshot;
-      int currentTeamScore = playerScores.last.fldScoreTeamSnapshot!;
-
-      int hits;
-      if (seatIdx == 0) {
-        hits = 3; // Triples every round for a decisive winner
-      } else {
-        // Randomize between 1 and 3 so there are no misses/half-its
-        hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
-      }
-
-      int newScore = currentScore + (targetValue * hits);
-      int newTeamScore = currentTeamScore + (targetValue * hits);
-
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
           (rIdx == gTargetsHalf.length - 1 &&
@@ -888,6 +953,43 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        final player = gamePlayers[seatIdx];
+
+        final playerScores = gamesScoresBox.values
+            .where((s) => s.fldGame == game && s.fldPlayer == player)
+            .toList();
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+
+        final currentTeam = gameTeams.firstWhere(
+          (team) => team.fldPlayers.contains(player),
+        );
+        final teamScores = gamesScoresBox.values.where(
+          (score) =>
+              score.fldGame == game &&
+              (score.fldPlayer == currentTeam.fldPlayers[0] ||
+                  score.fldPlayer == currentTeam.fldPlayers[1]),
+        );
+        int currentTeamScore = teamScores.last.fldScoreTeamSnapshot!;
+
+        int hits;
+        if (seatIdx == 0) {
+          if (rIdx != gTargetsHalf.length - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (rIdx != gTargetsHalf.length - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int newScore = currentScore + (targetValue * hits);
+        int newTeamScore = currentTeamScore + (targetValue * hits);
+
         gamesScoresBox.add(
           TblGameScore(
             fldGame: game,
@@ -908,7 +1010,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
             fldIsHalfIt: false,
             fldIsMiss: false,
             fldIsTriple: hits == 3,
-            fldHits: (dIdx == 0) ? hits : 0,
+            fldHits: hits,
             fldScorePlayerSnapshot: newScore,
             fldScoreTeamSnapshot: newTeamScore,
           ),
@@ -924,8 +1026,7 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
   final teamsBox = Hive.box<TblTeam>('teamsBox');
 
   final List<TblTeam> gameTeams = [];
-  List<TblPlayer> gamePlayers = [];
-
+  
   for (var team in teamsBox.values.toList()) {
     if (gameTeams.length >= 6) break;
 
@@ -962,7 +1063,7 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
     return [...firstHalf, ...secondHalf];
   }
 
-  gamePlayers = resolveGamePlayers();
+  final List<TblPlayer> gamePlayers = resolveGamePlayers();
 
   // This guarantees exactly 12 unique players across the 6 unique teams
 
@@ -976,7 +1077,7 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
   await gamesBox.add(game);
 
   final options = gGetGameOptions(GlobalGameType.halfIt);
-  final startingScore = options.fldStartingScore;
+  final int startingScore = options.fldStartingScore;
 
   // Baseline starting scores (Round -1)
   for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
@@ -1011,30 +1112,6 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
-      final player = gamePlayers[seatIdx];
-
-      final playerScores = gamesScoresBox.values
-          .where((s) => s.fldGame == game && s.fldPlayer == player)
-          .toList();
-      int currentScore = playerScores.last.fldScorePlayerSnapshot;
-      int currentTeamScore = playerScores.last.fldScoreTeamSnapshot!;
-
-      int hits;
-      if (seatIdx == 0 ||
-          seatIdx == 1 ||
-          seatIdx == 2 ||
-          seatIdx == 6 ||
-          seatIdx == 7 ||
-          seatIdx == 8) {
-        hits = 3;
-      } else {
-        // Randomize between 1 and 3 so there are no misses/half-its
-        hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
-      }
-
-      int newScore = currentScore + (targetValue * hits);
-      int newTeamScore = currentTeamScore + (targetValue * hits);
-
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
           (rIdx == gTargetsHalf.length - 1 &&
@@ -1042,6 +1119,45 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
       for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        final player = gamePlayers[seatIdx];
+
+        final playerScores = gamesScoresBox.values
+            .where((s) => s.fldGame == game && s.fldPlayer == player)
+            .toList();
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+        
+        final currentTeam = gameTeams.firstWhere(
+          (team) => team.fldPlayers.contains(player),
+        );
+        final teamScores = gamesScoresBox.values.where(
+          (score) =>
+              score.fldGame == game &&
+              (score.fldPlayer == currentTeam.fldPlayers[0] ||
+                  score.fldPlayer == currentTeam.fldPlayers[1]),
+        );
+        int currentTeamScore = teamScores.last.fldScoreTeamSnapshot!;
+
+        int hits;
+        if (seatIdx == 0 || seatIdx == 1 ||
+            seatIdx == 2 || seatIdx == 6 ||
+            seatIdx == 7 || seatIdx == 8) {
+          if (rIdx != gTargetsHalf.length - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (rIdx != gTargetsHalf.length - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int newScore = currentScore + (targetValue * hits);
+        int newTeamScore = currentTeamScore + (targetValue * hits);
+
         gamesScoresBox.add(
           TblGameScore(
             fldGame: game,
@@ -1062,7 +1178,610 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
             fldIsHalfIt: false,
             fldIsMiss: false,
             fldIsTriple: hits == 3,
-            fldHits: (dIdx == 0) ? hits : 0,
+            fldHits: hits,
+            fldScorePlayerSnapshot: newScore,
+            fldScoreTeamSnapshot: newTeamScore,
+          ),
+        );
+      }
+    }
+  }
+}
+
+Future<void> gSeedHiveGame7DartsPlayerWinner() async {
+  final gamesBox = Hive.box<TblGame>('gamesBox');
+  final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
+  final playersBox = Hive.box<TblPlayer>('playersBox');
+
+  final gamePlayers = playersBox.values.toList().sublist(0, 12);
+
+  final game = TblGame(
+    fldGameType: GlobalGameType.sevenDarts,
+    fldPlayersGM: true,
+    fldPlayers: gamePlayers,
+    fldIsEnded: false,
+  );
+  await gamesBox.add(game);
+
+  final options = gGetGameOptions(GlobalGameType.sevenDarts);
+  final int startingScore = options.fldStartingScore;
+  final int nbrRounds = options.fldNbrRounds;
+
+  // Baseline starting scores (Round -1)
+  for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+    gamesScoresBox.add(
+      TblGameScore(
+        fldGame: game,
+        fldPlayer: gamePlayers[seatIdx],
+        fldSeatIndex: seatIdx,
+        fldDartIndex: -1,
+        fldRound: -1,
+        fldTargetIndex: -1,
+        fldTargetValue: 0,
+        fldHits: 0,
+        fldIsSingle: false,
+        fldIsDouble: false,
+        fldIsTriple: false,
+        fldIsMiss: false,
+        fldIsHalfIt: false,
+        fldScorePlayerSnapshot: startingScore,
+        fldScoreTeamSnapshot: startingScore * 2,
+      ),
+    );
+  }
+
+  final random = Random();
+
+  // Seed throws across targets
+  for (int rIdx = 0; rIdx < nbrRounds; rIdx++) {
+    for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+      // Check if this is the very last player on the final round
+      bool isLastPlayerFinalRound =
+          (rIdx == nbrRounds - 1 && seatIdx == gamePlayers.length - 1);
+      int dartsToThrow = isLastPlayerFinalRound ? 6 : 7;
+      
+      for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        int hits;
+        if (seatIdx == 0) {
+          if (dIdx != dartsToThrow - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (dIdx != dartsToThrow - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int lastDartPoints = 0;
+        final prevDart = gamesScoresBox.values.where((s) =>
+          s.fldGame == game &&
+          s.fldSeatIndex == seatIdx &&
+          s.fldRound == rIdx &&
+          s.fldDartIndex == dIdx - 1
+        ).firstOrNull;
+
+        if (prevDart != null) {
+          lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
+        }
+
+        final targetValue = gTargets7Darts[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
+          ? gTargets7Darts[dIdx + 1].value
+          : 0;
+
+        final player = gamePlayers[seatIdx];
+        final playerScores = gamesScoresBox.values
+          .where((s) => s.fldGame == game && s.fldPlayer == player)
+          .toList();
+        
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+        int newScore = currentScore + (targetValue * hits) + lastDartPoints;
+
+        gamesScoresBox.add(
+          TblGameScore(
+            fldGame: game,
+            fldPlayer: player,
+            fldSeatIndex: seatIdx,
+            fldDartIndex: dIdx,
+            fldRound: rIdx,
+            fldTargetIndex: rIdx,
+            fldTargetValue: targetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
+            fldIsSingle: hits == 1,
+            fldIsDouble: hits == 2,
+            fldIsHalfIt: false,
+            fldIsMiss: false,
+            fldIsTriple: hits == 3,
+            fldHits: hits,
+            fldScorePlayerSnapshot: newScore,
+          ),
+        );
+      }
+    }
+  }
+}
+
+Future<void> gSeedHiveGame7DartsPlayerTie() async {
+  final gamesBox = Hive.box<TblGame>('gamesBox');
+  final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
+  final playersBox = Hive.box<TblPlayer>('playersBox');
+
+  final gamePlayers = playersBox.values.toList().sublist(0, 12);
+
+  final game = TblGame(
+    fldGameType: GlobalGameType.sevenDarts,
+    fldPlayersGM: true,
+    fldPlayers: gamePlayers,
+    fldIsEnded: false,
+  );
+  await gamesBox.add(game);
+
+  final options = gGetGameOptions(GlobalGameType.sevenDarts);
+  final int startingScore = options.fldStartingScore;
+  final int nbrRounds = options.fldNbrRounds;
+
+  // Baseline starting scores (Round -1)
+  for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+    gamesScoresBox.add(
+      TblGameScore(
+        fldGame: game,
+        fldPlayer: gamePlayers[seatIdx],
+        fldSeatIndex: seatIdx,
+        fldDartIndex: -1,
+        fldRound: -1,
+        fldTargetIndex: -1,
+        fldTargetValue: 0,
+        fldHits: 0,
+        fldIsSingle: false,
+        fldIsDouble: false,
+        fldIsTriple: false,
+        fldIsMiss: false,
+        fldIsHalfIt: false,
+        fldScorePlayerSnapshot: startingScore,
+        fldScoreTeamSnapshot: startingScore * 2,
+      ),
+    );
+  }
+
+  final random = Random();
+
+  // Seed throws across targets
+  for (int rIdx = 0; rIdx < nbrRounds; rIdx++) {
+    for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+      // Check if this is the very last player on the final round
+      bool isLastPlayerFinalRound =
+          (rIdx == nbrRounds - 1 && seatIdx == gamePlayers.length - 1);
+      int dartsToThrow = isLastPlayerFinalRound ? 6 : 7;
+      
+      for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        int hits;
+        if (seatIdx == 0 || seatIdx == 1 || seatIdx == 2) {
+          if (dIdx != dartsToThrow - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (dIdx != dartsToThrow - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int lastDartPoints = 0;
+        final prevDart = gamesScoresBox.values.where((s) =>
+          s.fldGame == game &&
+          s.fldSeatIndex == seatIdx &&
+          s.fldRound == rIdx &&
+          s.fldDartIndex == dIdx - 1
+        ).firstOrNull;
+
+        if (prevDart != null) {
+          lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
+        }
+
+        final targetValue = gTargets7Darts[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
+          ? gTargets7Darts[dIdx + 1].value
+          : 0;
+
+        final player = gamePlayers[seatIdx];
+        final playerScores = gamesScoresBox.values
+          .where((s) => s.fldGame == game && s.fldPlayer == player)
+          .toList();
+        
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+        int newScore = currentScore + (targetValue * hits) + lastDartPoints;
+
+        gamesScoresBox.add(
+          TblGameScore(
+            fldGame: game,
+            fldPlayer: player,
+            fldSeatIndex: seatIdx,
+            fldDartIndex: dIdx,
+            fldRound: rIdx,
+            fldTargetIndex: rIdx,
+            fldTargetValue: targetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
+            fldIsSingle: hits == 1,
+            fldIsDouble: hits == 2,
+            fldIsHalfIt: false,
+            fldIsMiss: false,
+            fldIsTriple: hits == 3,
+            fldHits: hits,
+            fldScorePlayerSnapshot: newScore,
+          ),
+        );
+      }
+    }
+  }
+}
+
+Future<void> gSeedHiveGame7DartsTeamWinner() async {
+  final gamesBox = Hive.box<TblGame>('gamesBox');
+  final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
+  final teamsBox = Hive.box<TblTeam>('teamsBox');
+
+  final List<TblTeam> gameTeams = [];
+  
+  for (var team in teamsBox.values.toList()) {
+    if (gameTeams.length >= 6) break;
+
+    // 1. Exclude dummy teams where the same player is used twice
+    if (team.fldPlayers[0] == team.fldPlayers[1]) continue;
+
+    // 2. Check if either player is already playing in a previously selected game team
+    bool playerAlreadyUsed = false;
+    for (var existingTeam in gameTeams) {
+      if (existingTeam.fldPlayers.contains(team.fldPlayers[0]) ||
+          existingTeam.fldPlayers.contains(team.fldPlayers[1])) {
+        playerAlreadyUsed = true;
+        break;
+      }
+    }
+
+    if (playerAlreadyUsed) continue;
+
+    // 3. Add to our valid list
+    gameTeams.add(team);
+  }
+
+  // Ordering players in the game
+  List<TblPlayer> resolveGamePlayers() {
+    List<TblPlayer> firstHalf = [];
+    List<TblPlayer> secondHalf = [];
+
+    for (var team in gameTeams) {
+      List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)
+        ..shuffle();
+      firstHalf.add(shuffled[0]);
+      secondHalf.add(shuffled[1]);
+    }
+    return [...firstHalf, ...secondHalf];
+  }
+
+  final List<TblPlayer> gamePlayers = resolveGamePlayers();
+
+  // This guarantees exactly 12 unique players across the 6 unique teams
+
+  final game = TblGame(
+    fldGameType: GlobalGameType.sevenDarts,
+    fldPlayersGM: false,
+    fldPlayers: gamePlayers,
+    fldTeams: List<TblTeam>.from(gameTeams),
+    fldIsEnded: false,
+  );
+  await gamesBox.add(game);
+
+  final options = gGetGameOptions(GlobalGameType.sevenDarts);
+  final int startingScore = options.fldStartingScore;
+  final int nbrRounds = options.fldNbrRounds;
+
+  // Baseline starting scores (Round -1)
+  for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+    gamesScoresBox.add(
+      TblGameScore(
+        fldGame: game,
+        fldPlayer: gamePlayers[seatIdx],
+        fldSeatIndex: seatIdx,
+        fldDartIndex: -1,
+        fldRound: -1,
+        fldTargetIndex: -1,
+        fldTargetValue: 0,
+        fldHits: 0,
+        fldIsSingle: false,
+        fldIsDouble: false,
+        fldIsTriple: false,
+        fldIsMiss: false,
+        fldIsHalfIt: false,
+        fldScorePlayerSnapshot: startingScore,
+        fldScoreTeamSnapshot: startingScore * 2,
+      ),
+    );
+  }
+
+  final random = Random();
+
+  // Seed throws across targets
+  for (int rIdx = 0; rIdx < nbrRounds; rIdx++) {
+    for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+      // Check if this is the very last player on the final round
+      bool isLastPlayerFinalRound =
+          (rIdx == nbrRounds - 1 && seatIdx == gamePlayers.length - 1);
+      int dartsToThrow = isLastPlayerFinalRound ? 6 : 7;
+      
+      for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        int hits;
+        if (seatIdx == 0) {
+          if (dIdx != dartsToThrow - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (dIdx != dartsToThrow - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int lastDartPoints = 0;
+        final prevDart = gamesScoresBox.values.where((s) =>
+          s.fldGame == game &&
+          s.fldSeatIndex == seatIdx &&
+          s.fldRound == rIdx &&
+          s.fldDartIndex == dIdx - 1
+        ).firstOrNull;
+
+        if (prevDart != null) {
+          lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
+        }
+
+        final targetValue = gTargets7Darts[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
+          ? gTargets7Darts[dIdx + 1].value
+          : 0;
+      
+        final player = gamePlayers[seatIdx];
+        final playerScores = gamesScoresBox.values
+          .where((s) => s.fldGame == game && s.fldPlayer == player)
+          .toList();
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+        
+        final currentTeam = gameTeams.firstWhere(
+          (team) => team.fldPlayers.contains(player),
+        );
+        final teamScores = gamesScoresBox.values.where(
+          (score) =>
+              score.fldGame == game &&
+              (score.fldPlayer == currentTeam.fldPlayers[0] ||
+                  score.fldPlayer == currentTeam.fldPlayers[1]),
+        );
+        int currentTeamScore = teamScores.last.fldScoreTeamSnapshot!;
+        
+        int newScore = currentScore + (targetValue * hits) + lastDartPoints;
+        int newTeamScore = currentTeamScore + (targetValue * hits) + lastDartPoints;
+
+        gamesScoresBox.add(
+          TblGameScore(
+            fldGame: game,
+            fldPlayer: player,
+            fldSeatIndex: seatIdx,
+            fldDartIndex: dIdx,
+            fldRound: rIdx,
+            fldTargetIndex: rIdx,
+            fldTargetValue: targetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
+            fldIsSingle: hits == 1,
+            fldIsDouble: hits == 2,
+            fldIsHalfIt: false,
+            fldIsMiss: false,
+            fldIsTriple: hits == 3,
+            fldHits: hits,
+            fldScorePlayerSnapshot: newScore,
+            fldScoreTeamSnapshot: newTeamScore,
+          ),
+        );
+      }
+    }
+  }
+}
+
+Future<void> gSeedHiveGame7DartsTeamTie() async {
+  final gamesBox = Hive.box<TblGame>('gamesBox');
+  final gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
+  final teamsBox = Hive.box<TblTeam>('teamsBox');
+
+  final List<TblTeam> gameTeams = [];
+  
+  for (var team in teamsBox.values.toList()) {
+    if (gameTeams.length >= 6) break;
+
+    // 1. Exclude dummy teams where the same player is used twice
+    if (team.fldPlayers[0] == team.fldPlayers[1]) continue;
+
+    // 2. Check if either player is already playing in a previously selected game team
+    bool playerAlreadyUsed = false;
+    for (var existingTeam in gameTeams) {
+      if (existingTeam.fldPlayers.contains(team.fldPlayers[0]) ||
+          existingTeam.fldPlayers.contains(team.fldPlayers[1])) {
+        playerAlreadyUsed = true;
+        break;
+      }
+    }
+
+    if (playerAlreadyUsed) continue;
+
+    // 3. Add to our valid list
+    gameTeams.add(team);
+  }
+
+  // Ordering players in the game
+  List<TblPlayer> resolveGamePlayers() {
+    List<TblPlayer> firstHalf = [];
+    List<TblPlayer> secondHalf = [];
+
+    for (var team in gameTeams) {
+      List<TblPlayer> shuffled = List<TblPlayer>.from(team.fldPlayers)
+        ..shuffle();
+      firstHalf.add(shuffled[0]);
+      secondHalf.add(shuffled[1]);
+    }
+    return [...firstHalf, ...secondHalf];
+  }
+
+  final List<TblPlayer> gamePlayers = resolveGamePlayers();
+
+  // This guarantees exactly 12 unique players across the 6 unique teams
+
+  final game = TblGame(
+    fldGameType: GlobalGameType.sevenDarts,
+    fldPlayersGM: false,
+    fldPlayers: gamePlayers,
+    fldTeams: List<TblTeam>.from(gameTeams),
+    fldIsEnded: false,
+  );
+  await gamesBox.add(game);
+
+  final options = gGetGameOptions(GlobalGameType.sevenDarts);
+  final int startingScore = options.fldStartingScore;
+  final int nbrRounds = options.fldNbrRounds;
+
+  // Baseline starting scores (Round -1)
+  for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+    gamesScoresBox.add(
+      TblGameScore(
+        fldGame: game,
+        fldPlayer: gamePlayers[seatIdx],
+        fldSeatIndex: seatIdx,
+        fldDartIndex: -1,
+        fldRound: -1,
+        fldTargetIndex: -1,
+        fldTargetValue: 0,
+        fldHits: 0,
+        fldIsSingle: false,
+        fldIsDouble: false,
+        fldIsTriple: false,
+        fldIsMiss: false,
+        fldIsHalfIt: false,
+        fldScorePlayerSnapshot: startingScore,
+        fldScoreTeamSnapshot: startingScore * 2,
+      ),
+    );
+  }
+
+  final random = Random();
+
+  /// Seed throws across targets
+  for (int rIdx = 0; rIdx < nbrRounds; rIdx++) {
+    for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
+      // Check if this is the very last player on the final round
+      bool isLastPlayerFinalRound =
+          (rIdx == nbrRounds - 1 && seatIdx == gamePlayers.length - 1);
+      int dartsToThrow = isLastPlayerFinalRound ? 6 : 7;
+      
+      for (int dIdx = 0; dIdx < dartsToThrow; dIdx++) {
+        int hits;
+        if (seatIdx == 0 || seatIdx == 1 ||
+            seatIdx == 2 || seatIdx == 6 ||
+            seatIdx == 7 || seatIdx == 8) {
+          if (dIdx != dartsToThrow - 1) {
+            hits = 3; // Triples every round for a decisive winner
+          } else {
+            hits = 2; // Doubles on the last round to win
+          }
+        } else {
+          if (dIdx != dartsToThrow - 1) {
+            // Randomize between 1 and 3 so there are no misses/half-its
+            hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
+          } else {
+            hits = random.nextInt(2) + 1; // Gives 1, 2
+          }
+        }
+
+        int lastDartPoints = 0;
+        final prevDart = gamesScoresBox.values.where((s) =>
+          s.fldGame == game &&
+          s.fldSeatIndex == seatIdx &&
+          s.fldRound == rIdx &&
+          s.fldDartIndex == dIdx - 1
+        ).firstOrNull;
+
+        if (prevDart != null) {
+          lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
+        }
+
+        final targetValue = gTargets7Darts[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
+          ? gTargets7Darts[dIdx + 1].value
+          : 0;
+      
+        final player = gamePlayers[seatIdx];
+        final playerScores = gamesScoresBox.values
+          .where((s) => s.fldGame == game && s.fldPlayer == player)
+          .toList();
+      
+        int currentScore = playerScores.last.fldScorePlayerSnapshot;
+        
+        final currentTeam = gameTeams.firstWhere(
+          (team) => team.fldPlayers.contains(player),
+        );
+        final teamScores = gamesScoresBox.values.where(
+          (score) =>
+              score.fldGame == game &&
+              (score.fldPlayer == currentTeam.fldPlayers[0] ||
+                  score.fldPlayer == currentTeam.fldPlayers[1]),
+        );
+        int currentTeamScore = teamScores.last.fldScoreTeamSnapshot!;
+        
+        int newScore = currentScore + (targetValue * hits) + lastDartPoints;
+        int newTeamScore = currentTeamScore + (targetValue * hits) + lastDartPoints;
+
+        gamesScoresBox.add(
+          TblGameScore(
+            fldGame: game,
+            fldPlayer: player,
+            fldSeatIndex: seatIdx,
+            fldDartIndex: dIdx,
+            fldRound: rIdx,
+            fldTargetIndex: rIdx,
+            fldTargetValue: targetValue,
+            fldNextTargetIndex: nextTargetValue == 0
+              ? null
+              : rIdx + 1,
+            fldNextTargetValue: nextTargetValue == 0
+              ? null
+              : nextTargetValue,
+            fldIsSingle: hits == 1,
+            fldIsDouble: hits == 2,
+            fldIsHalfIt: false,
+            fldIsMiss: false,
+            fldIsTriple: hits == 3,
+            fldHits: hits,
             fldScorePlayerSnapshot: newScore,
             fldScoreTeamSnapshot: newTeamScore,
           ),

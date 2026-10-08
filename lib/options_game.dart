@@ -24,6 +24,11 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
   late int _startingScore;
   late int _nbrRounds;
   late int _nbrLives;
+  late bool _startEndBull;
+  late bool _startEndDoubleBull;
+  late bool _upDownBull;
+  late bool _midDoubleBull;
+  late bool _noSkipWhenBull;
 
   @override
   void initState() {
@@ -37,12 +42,22 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     _startingScore = _options.fldStartingScore;
     _nbrRounds = _options.fldNbrRounds;
     _nbrLives = _options.fldNbrLives;
+    _startEndBull = _options.fldStartEndBull;
+    _startEndDoubleBull = _options.fldStartEndDoubleBull;
+    _upDownBull = _options.fldUpDownBull;
+    _midDoubleBull = _options.fldMidDoubleBull;
+    _noSkipWhenBull = _options.fldNoSkipWhenBull;
   }
 
   Future<void> _saveOptions() async {
     _options.fldStartingScore = _startingScore;
     _options.fldNbrRounds = _nbrRounds;
     _options.fldNbrLives = _nbrLives;
+    _options.fldStartEndBull = _startEndBull;
+    _options.fldStartEndDoubleBull = _startEndDoubleBull;
+    _options.fldUpDownBull = _upDownBull;
+    _options.fldMidDoubleBull = _midDoubleBull;
+    _options.fldNoSkipWhenBull = _noSkipWhenBull;
     
     await _options.save(); // Save changes to Hive
     if (mounted) Navigator.pop(context, true);
@@ -63,7 +78,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
         ),
       ),
       content: SizedBox(
-        width: safeWidth * 0.25,
+        width: safeWidth * 0.35,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -234,6 +249,65 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                   ],
                 ),
               ),
+            
+            // Start/End Bull Option (if visible)
+            if (_options.fldShowOptStartEndBull)
+              _buildSwitchOption(
+                label: 'Start and End the game with one Bullseye',
+                value: _startEndBull,
+                onChanged: (val) => setState(() => _startEndBull = val),
+                safeHeight: safeHeight
+              ),
+
+            // Start/End Double Bull Option (if visible)
+            if (_options.fldShowOptStartEndDoubleBull)
+              _buildSwitchOption(
+                label: 'Start and End the game with two Bullseyes',
+                value: _startEndDoubleBull,
+                onChanged: (val) => setState(() => _startEndDoubleBull = val),
+                safeHeight: safeHeight
+              ),
+
+            // Up/Down Bull Option (if visible)
+            if (_options.fldShowOptUpDownBull)
+              _buildSwitchOption(
+                label: 'Game goes Up with one Middle Bullseye and Down',
+                value: _upDownBull,
+                onChanged: (val) {
+                  setState(() {
+                    _upDownBull = val;
+                    if (!_upDownBull) {
+                      _midDoubleBull = false; // Force false and disable when upDownBull is false
+                    }
+                  });
+                },
+                safeHeight: safeHeight
+              ),
+
+            // Mid Double Bull Option (if visible)
+            if (_options.fldShowOptMidDoubleBull)
+              Opacity(
+                opacity: _upDownBull ? 1.0 : 0.4, // Visual cue that it's disabled
+                child: AbsorbPointer(
+                  absorbing: !_upDownBull, // Blocks touches when upDownBull is false
+                  child: _buildSwitchOption(
+                    label: 'Middle with two Bullseyes',
+                    value: _midDoubleBull,
+                    onChanged: (val) => setState(() => _midDoubleBull = val),
+                    safeHeight: safeHeight,
+                  ),
+                ),
+              ),
+
+            // No Skip When Bull Option (if visible)
+            if (_options.fldShowOptNoSkipWhenBull)
+              _buildSwitchOption(
+                label: 'No Skip on Bullseye',
+                value: _noSkipWhenBull,
+                onChanged: (val) => setState(() => _noSkipWhenBull = val),
+                safeHeight: safeHeight,
+                hasInfo: true,
+              ),
           ],
         ),
       ),
@@ -293,6 +367,72 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchOption({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required double safeHeight,
+    bool hasInfo = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: safeHeight * 0.005),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            hasInfo ? '$label ' : label,
+            style: TextStyle(
+              fontSize: safeHeight * 0.02,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+          if (hasInfo) ...[
+            _buildPillButton(
+              safeHeight, 
+              Icon(
+                Icons.question_mark, // or Icons.info_outline
+                color: Color.fromARGB(255, 207, 20, 17),
+                size: safeHeight * 0.025,
+              ),
+              () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: widget.enuGameType.tileColor,
+                    title: Text(
+                      'No Skip on Bullseye',
+                      style: gBuildArcadeTextStyle(safeHeight * 0.025, gFontWeight: FontWeight.bold),
+                    ),
+                    content: Text(
+                      'No Skipping when arriving to Bullseyes or after hitting them',
+                      style: TextStyle(fontSize: safeHeight * 0.02, color: Colors.white),
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Got it', style: TextStyle(color: Colors.black)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            const Spacer(),
+          ],
+
+          Switch(
+            value: value,
+            activeThumbColor: Colors.amber,
+            onChanged: onChanged,
+          ),
+        ],
       ),
     );
   }

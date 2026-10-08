@@ -285,7 +285,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   }
 
   bool get _hasGameNextPlayer {
-    final isLastRound = _progress.activeRoundIdx >= gTargets7Darts.length - 1;
+    final isLastRound = _progress.activeRoundIdx >= _gameOptions.fldNbrRounds - 1;
     final isLastPlayer = _progress.activeSeatIdx >= _gamePlayers.length - 1;
 
     // There is no next player if we are on the final player of the final round
@@ -2681,7 +2681,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                             height: _responsiveTile * 0.1,
                             child: Center(
                               child: Text(
-                                'Targets',
+                                'Rounds',
                                 style: TextStyle(
                                   color: Colors.amber,
                                   fontWeight: FontWeight.bold,
@@ -2765,68 +2765,15 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                         ],
                       ),
 
-                      // --- START ROW ---
-                      TableRow(
-                        children: [
-                          SizedBox(
-                            height: _responsiveTile * 0.09,
-                            child: Center(
-                              child: Text(
-                                'Start',
-                                style: TextStyle(
-                                  color: Colors.amber,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: _responsiveFontSize * 0.7,
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (_isPlayerMode)
-                            ..._gamePlayers.map(
-                              (_) => SizedBox(
-                                height: _responsiveTile * 0.09,
-                                child: Center(
-                                  child: Text(
-                                    '$_startingScore',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: _responsiveFontSize * 0.7,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          else
-                            ..._gamePlayers.map((_) {
-                              final startTeamScore = _startingScore * 2;
-                              return SizedBox(
-                                height: _responsiveTile * 0.09,
-                                child: Center(
-                                  child: Text(
-                                    '$_startingScore / $startTeamScore',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: _responsiveFontSize * 0.65,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                        ],
-                      ),
-
-                      // --- TARGET ROWS ---
-                      ...List.generate(gTargets7Darts.length, (rowIndex) {
-                        final target = gTargets7Darts[rowIndex];
-                        final rIdx = rowIndex;
-
+                      // --- ROUND ROWS ---
+                      ...List.generate(_gameOptions.fldNbrRounds, (roundIdx) {
                         return TableRow(
                           children: [
                             SizedBox(
                               height: _responsiveTile * 0.09,
                               child: Center(
                                 child: Text(
-                                  target.label,
+                                  '${roundIdx + 1}',
                                   style: TextStyle(
                                     color: Colors.amber,
                                     fontWeight: FontWeight.bold,
@@ -2842,24 +2789,18 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                       (s) =>
                                           s.fldGame == _gameConfig &&
                                           s.fldPlayer == gp.player &&
-                                          s.fldRound == rIdx &&
+                                          s.fldRound == roundIdx &&
                                           s.fldDartIndex >= 0,
                                     )
                                     .toList();
 
                                 final hasCompletedRound = records.any(
-                                  (s) => s.fldDartIndex == 2,
+                                  (s) => s.fldDartIndex == 6,
                                 );
                                 final latestRecord = records.isNotEmpty
                                     ? records.last
                                     : null;
-                                final isHalfIt =
-                                    latestRecord?.fldIsHalfIt ?? false;
-
-                                final totalHits = records.fold(
-                                  0,
-                                  (sum, r) => sum + r.fldHits,
-                                );
+                                
                                 final scoreStr = latestRecord != null
                                     ? '${latestRecord.fldScorePlayerSnapshot}'
                                     : '-';
@@ -2868,116 +2809,25 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                   height: _responsiveTile * 0.09,
                                   child: Center(
                                     child: hasCompletedRound
-                                        ? (isHalfIt
-                                              ? Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        _responsiveTile * 0.01,
-                                                    vertical:
-                                                        _responsiveTile * 0.003,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.red.shade700,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          _responsiveTile *
-                                                              0.02,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: Colors.white,
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    scoreStr,
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize:
-                                                          _responsiveFontSize *
-                                                          0.7,
-                                                    ),
-                                                  ),
-                                                )
-                                              : Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Container(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                            horizontal:
-                                                                _responsiveTile *
-                                                                0.006,
-                                                            vertical: 1,
-                                                          ),
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.amber,
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              _responsiveTile *
-                                                                  0.012,
-                                                            ),
-                                                        border: Border.all(
-                                                          color: Colors.white24,
-                                                          width: 1,
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        '$totalHits',
-                                                        style: TextStyle(
-                                                          color:
-                                                              const Color.fromARGB(
-                                                                255,
-                                                                207,
-                                                                20,
-                                                                17,
-                                                              ),
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize:
-                                                              _responsiveFontSize *
-                                                              0.65,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                            horizontal: 2,
-                                                          ),
-                                                      child: Icon(
-                                                        Icons.arrow_right_alt,
-                                                        color: Colors.white70,
-                                                        size:
-                                                            _responsiveFontSize *
-                                                            0.8,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      scoreStr,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize:
-                                                            _responsiveFontSize *
-                                                            0.7,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ))
-                                        : Text(
-                                            '-',
-                                            style: TextStyle(
-                                              color: Colors.grey.shade500,
-                                              fontSize:
-                                                  _responsiveFontSize * 0.7,
-                                            ),
+                                      ? Text(
+                                          scoreStr,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight:
+                                                FontWeight.bold,
+                                            fontSize:
+                                                _responsiveFontSize *
+                                                0.7,
                                           ),
+                                        )
+                                      : Text(
+                                          '-',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize:
+                                                _responsiveFontSize * 0.7,
+                                          ),
+                                        ),
                                   ),
                                 );
                               })
@@ -2988,13 +2838,13 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                       (s) =>
                                           s.fldGame == _gameConfig &&
                                           s.fldPlayer == gp.player &&
-                                          s.fldRound == rIdx &&
+                                          s.fldRound == roundIdx &&
                                           s.fldDartIndex >= 0,
                                     )
                                     .toList();
 
                                 final hasCompletedRound = records.any(
-                                  (s) => s.fldDartIndex == 2,
+                                  (s) => s.fldDartIndex == 6,
                                 );
                                 final latestRecord = records.isNotEmpty
                                     ? records.last
@@ -3005,112 +2855,22 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                       latestRecord.fldScorePlayerSnapshot;
                                   final tScore =
                                       latestRecord.fldScoreTeamSnapshot ?? '-';
-                                  final isHalfIt = latestRecord.fldIsHalfIt;
-                                  final totalHits = records.fold(
-                                    0,
-                                    (sum, r) => sum + r.fldHits,
-                                  );
                                   final scoreDisplay =
                                       '$pScore / $tScore'; // Added proper spacing around the slash
 
                                   return SizedBox(
                                     height: _responsiveTile * 0.09,
                                     child: Center(
-                                      child: isHalfIt
-                                          ? Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    _responsiveTile * 0.01,
-                                                vertical:
-                                                    _responsiveTile * 0.003,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.red.shade700,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      _responsiveTile * 0.02,
-                                                    ),
-                                                border: Border.all(
-                                                  color: Colors.white,
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              child: Text(
-                                                scoreDisplay,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize:
-                                                      _responsiveFontSize *
-                                                      0.65,
-                                                ),
-                                              ),
-                                            )
-                                          : Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        _responsiveTile * 0.006,
-                                                    vertical: 1,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.amber,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          _responsiveTile *
-                                                              0.012,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: Colors.white24,
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    '$totalHits',
-                                                    style: TextStyle(
-                                                      color:
-                                                          const Color.fromARGB(
-                                                            255,
-                                                            207,
-                                                            20,
-                                                            17,
-                                                          ),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize:
-                                                          _responsiveFontSize *
-                                                          0.6,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 1,
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.arrow_right_alt,
-                                                    color: Colors.white70,
-                                                    size:
-                                                        _responsiveFontSize *
-                                                        0.75,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  scoreDisplay,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize:
-                                                        _responsiveFontSize *
-                                                        0.65,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                      child: Text(
+                                          scoreDisplay,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize:
+                                                _responsiveFontSize *
+                                                0.65,
+                                          ),
+                                        ),
                                     ),
                                   );
                                 }

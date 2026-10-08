@@ -765,7 +765,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
 
               // Top-right corner options badge overlay
-              if (_activeSection == MainScreenSection.section15Options)
+              if (_activeSection == MainScreenSection.section15Options) ...[
                 Positioned(
                   top: safeWidth * 0.005,
                   right: safeWidth * 0.005,
@@ -786,6 +786,70 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 ),
+
+                Positioned(
+                  top: safeWidth * 0.005,
+                  left: safeWidth * 0.005,
+                  child: Container(
+                    padding: EdgeInsets.all(safeWidth * 0.003),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900.withAlpha(150),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.amber,
+                        width: safeWidth * 0.003,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.amber,
+                      size: safeWidth * 0.04,
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  bottom: safeWidth * 0.005,
+                  left: safeWidth * 0.005,
+                  child: Container(
+                    padding: EdgeInsets.all(safeWidth * 0.003),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900.withAlpha(150),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.amber,
+                        width: safeWidth * 0.003,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.amber,
+                      size: safeWidth * 0.04,
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  bottom: safeWidth * 0.005,
+                  right: safeWidth * 0.005,
+                  child: Container(
+                    padding: EdgeInsets.all(safeWidth * 0.003),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900.withAlpha(150),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.amber,
+                        width: safeWidth * 0.003,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.amber,
+                      size: safeWidth * 0.04,
+                    ),
+                  ),
+                ),
+              ]
             ],
           ),
         ),
@@ -1054,6 +1118,98 @@ void _showDebugCarouselImageDialog(BuildContext context) {
                     ),
                     label: Text(
                       'CREATE HALF-IT TEAM TIE',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGame7DartsPlayerWinner();
+                    },
+                    icon: Icon(
+                      Icons.add_alarm,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE 7-DARTS PLAYER WINNER',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGame7DartsPlayerTie();
+                    },
+                    icon: Icon(
+                      Icons.add_link,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE 7-DARTS PLAYER TIE',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGame7DartsTeamWinner();
+                    },
+                    icon: Icon(
+                      Icons.add_alarm,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE 7-DARTS TEAM WINNER',
+                      style: gBuildArcadeTextStyle(
+                        (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await gSeedHiveGame7DartsTeamTie();
+                    },
+                    icon: Icon(
+                      Icons.add_link,
+                      size: GlobalAppDisplay.safeHeight * 0.016,
+                    ),
+                    label: Text(
+                      'CREATE 7-DARTS TEAM TIE',
                       style: gBuildArcadeTextStyle(
                         (GlobalAppDisplay.safeWidth * 0.012).clamp(12.0, 28.0),
                       ),

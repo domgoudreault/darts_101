@@ -270,13 +270,19 @@ GameProgressState7Darts gStepGameState7Darts({
 
     final activeRec = updatedRecords.last;
 
-    final isTurnComplete = activeRec.fldDartIndex >= targetsList.length - 1;
     int nextSeat = activeRec.fldSeatIndex;
     int nextDart = activeRec.fldDartIndex + 1;
     int nextRound = activeRec.fldRound;
-
-    if (isTurnComplete) {
+    int nextTarget = nextDart;
+    int nextTargetIdxVal = nextTarget < targetsList.length - 1
+        ? nextTarget + 1
+        : nextTarget;
+    currentState.endGame = false;
+    
+    if (nextDart >= targetsList.length) {
       nextDart = 0;
+      nextTarget = 0;
+      nextTargetIdxVal = targetsList.length > 1 ? 1 : 0;
       nextSeat = (nextSeat + 1) % totalPlayers;
       if (nextSeat == 0) {
         if (nextRound < totalRounds - 1) {
@@ -290,10 +296,8 @@ GameProgressState7Darts gStepGameState7Darts({
     currentState.activeSeatIdx = nextSeat;
     currentState.activeDartIdx = nextDart;
     currentState.activeRoundIdx = nextRound;
-    currentState.activeTargetIdx = nextDart;
-    currentState.nextTargetIdx = nextDart < targetsList.length - 1
-        ? nextDart + 1
-        : nextDart;
+    currentState.activeTargetIdx = nextTarget;
+    currentState.nextTargetIdx = nextTargetIdxVal;
 
     // Find previous player correctly
     final prevRecord = updatedRecords.reversed.firstWhere(
