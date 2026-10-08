@@ -13,6 +13,7 @@ import 'package:darts_101/database/tbl_game_options.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_menus.dart';
 import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
@@ -282,7 +283,7 @@ class _RostersSelectionState extends State<RostersSelection> {
         gAppBarColorBg: widget.enuGameType.tileColor,
         gCallFromMainScreen: false,
         gOnPressed: null,
-        gRightPopupMenu: null,
+        gRightPopupMenu: RostersSelectionPopupMenu(enuGameType: widget.enuGameType),
       ),
 
       body: SafeArea(
@@ -1841,6 +1842,46 @@ class GameMatchupScreen extends StatefulWidget {
 
   @override
   State<GameMatchupScreen> createState() => _GameMatchupScreenState();
+}
+
+class RostersSelectionPopupMenu extends StatelessWidget {
+  final GlobalGameType enuGameType;
+
+  const RostersSelectionPopupMenu({super.key, required this.enuGameType});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      color: Colors.grey.shade700,
+      iconColor: Colors.white,
+      onSelected: (String value) {
+        switch (value) {
+          case 'rs_pop_menu_rules':
+            gShowGameRulesDialog(context, enuGameType);
+            break;
+          case 'rs_pop_menu_info':
+            gShowInformationDialog(context);
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMenuItem('rs_pop_menu_info', 'Information'),
+        _buildMenuItem('rs_pop_menu_rules', 'Game Rules'),        
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
+    );
+  }
 }
 
 class _GameMatchupScreenState extends State<GameMatchupScreen> {

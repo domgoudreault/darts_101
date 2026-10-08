@@ -11,6 +11,8 @@ import 'package:darts_101/database/tbl_team.dart';
 List<TblPlayer> gSelectedPlayers = <TblPlayer>[];
 List<TblTeam> gSelectedTeams = <TblTeam>[];
 
+enum GlobalFormMode { formAdd, formModify }
+
 class GlobalLeagueSession {
   static void setPlayers(Iterable<TblPlayer> players) {
     gSelectedPlayers

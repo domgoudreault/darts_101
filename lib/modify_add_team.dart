@@ -12,7 +12,7 @@ import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 
 class ModifyAddTeamForm extends StatefulWidget {
-  final FormMode enuFormMode;
+  final GlobalFormMode enuFormMode;
   final TblTeam? modifyTeam;
   final GlobalSettingType enuSettingType;
 
@@ -49,7 +49,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
   void initState() {
     super.initState();
     // If we are modifying, fill the controllers with existing data
-    if (widget.enuFormMode == FormMode.formModify &&
+    if (widget.enuFormMode == GlobalFormMode.formModify &&
         widget.modifyTeam != null) {
       _selectedPlayer1 = widget.modifyTeam!.fldPlayers[0];
       _selectedAvatarCodePlayer1 = _selectedPlayer1!.fldAvatar.fldAvatarCode;
@@ -149,7 +149,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     //Verify self Match
     if (existingTeam != null) {
       bool isSelfMatch = false;
-      if (widget.enuFormMode == FormMode.formModify &&
+      if (widget.enuFormMode == GlobalFormMode.formModify &&
           existingTeam == widget.modifyTeam) {
         isSelfMatch = true;
       }
@@ -166,7 +166,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
     }
 
     // 3. Save to Hive database if everything is ok
-    if (widget.enuFormMode == FormMode.formAdd) {
+    if (widget.enuFormMode == GlobalFormMode.formAdd) {
       final team = TblTeam(fldPlayers: targetPlayers, fldIsDeleted: false);
 
       teamsBox.add(team);
@@ -401,7 +401,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
                           child: gBuildArcadeActionBanner(
                             gLeadingText: 'SAVE',
                             gTrailingText: 'TEAM',
-                            gFormMode: FormMode.formAdd,
+                            gFormMode: GlobalFormMode.formAdd,
                             gOnTap: () => _saveTeam(),
                           ),
                         ),
@@ -722,7 +722,7 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
 
                                   // Delete Team button
                                   if (widget.enuFormMode ==
-                                          FormMode.formModify &&
+                                          GlobalFormMode.formModify &&
                                       widget.modifyTeam != null) ...[
                                     SizedBox(height: _responsiveTile * 0.02),
 

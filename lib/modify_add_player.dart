@@ -13,7 +13,7 @@ import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
 
 class ModifyAddPlayerForm extends StatefulWidget {
-  final FormMode enuFormMode;
+  final GlobalFormMode enuFormMode;
   final TblPlayer? modifyPlayer;
   final GlobalSettingType enuSettingType;
 
@@ -55,7 +55,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
   void initState() {
     super.initState();
     // If we are modifying, fill the controllers with existing data
-    if (widget.enuFormMode == FormMode.formModify &&
+    if (widget.enuFormMode == GlobalFormMode.formModify &&
         widget.modifyPlayer != null) {
       _firstNameController.text = widget.modifyPlayer!.fldFirstName;
       _lastNameController.text = widget.modifyPlayer!.fldLastName;
@@ -92,7 +92,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     // 3. Validate duplicate nickname in Hive Database
     final Iterable<TblPlayer> activePlayers;
 
-    if (widget.enuFormMode == FormMode.formAdd) {
+    if (widget.enuFormMode == GlobalFormMode.formAdd) {
       activePlayers = Hive.box<TblPlayer>(
         'playersBox',
       ).values.where((player) => !player.fldIsDeleted);
@@ -125,7 +125,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
     // Get the playersBox from Hive
     final playersBox = Hive.box<TblPlayer>('playersBox');
 
-    if (widget.enuFormMode == FormMode.formAdd) {
+    if (widget.enuFormMode == GlobalFormMode.formAdd) {
       // Create the player object
       final player = TblPlayer(
         fldFirstName: _firstNameController.text.trim(),
@@ -368,7 +368,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                         gBuildArcadeActionBanner(
                           gLeadingText: 'SAVE',
                           gTrailingText: 'PLAYER',
-                          gFormMode: FormMode.formModify,
+                          gFormMode: GlobalFormMode.formModify,
                           gOnTap: () => _savePlayer(),
                         ),
                   ),
@@ -505,7 +505,7 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
                                 ),
 
                                 // DELETE PLAYER BUTTON
-                                if (widget.enuFormMode == FormMode.formModify &&
+                                if (widget.enuFormMode == GlobalFormMode.formModify &&
                                     widget.modifyPlayer != null &&
                                     !widget
                                         .modifyPlayer!

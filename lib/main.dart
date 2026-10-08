@@ -2,9 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // Database Models
 import 'package:darts_101/database/enum_game_type.dart';
@@ -19,6 +17,7 @@ import 'package:darts_101/hive_registrar.g.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 import 'package:darts_101/helpers_ui.dart';
+import 'package:darts_101/helpers_menus.dart';
 import 'package:darts_101/helpers_database.dart';
 
 // UI Screens
@@ -116,359 +115,6 @@ class Darts101App extends StatelessWidget {
 class MainScreenPopupMenu extends StatelessWidget {
   const MainScreenPopupMenu({super.key});
 
-  void _showPrivacyDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      useSafeArea: true,
-      builder: (BuildContext context) {
-        MediaQuery.sizeOf(context);
-
-        return AlertDialog(
-          title: Text(
-            'Darts 101 - Privacy Policy',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: (GlobalAppDisplay.safeWidth * 0.026),
-            ),
-          ),
-          content: SizedBox(
-            height: GlobalAppDisplay.safeHeight * 0.7,
-            width: GlobalAppDisplay.safeWidth * 0.8,
-            child: Column(
-              children: [
-                // 1. SCROLLABLE TEXT AREA
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: GlobalAppDisplay.safeHeight * 0.022,
-                          ),
-                          child: Text(
-                            "Overview",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          gGetPrivacyPolicySection(1),
-                          style: TextStyle(
-                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: GlobalAppDisplay.safeHeight * 0.022,
-                          ),
-                          child: Text(
-                            "Information Collection and Use",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          gGetPrivacyPolicySection(2),
-                          style: TextStyle(
-                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: GlobalAppDisplay.safeHeight * 0.022,
-                          ),
-                          child: Text(
-                            "Third-Party Services & Analytics",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
-                            ),
-                          ),
-                        ),
-
-                        Text(
-                          gGetPrivacyPolicySection(3),
-                          style: TextStyle(
-                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: GlobalAppDisplay.safeHeight * 0.022,
-                          ),
-                          child: Text(
-                            "Log Data & Device Permissions",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          gGetPrivacyPolicySection(4),
-                          style: TextStyle(
-                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: GlobalAppDisplay.safeHeight * 0.022,
-                          ),
-                          child: Text(
-                            "Data Retention & Account Deletion",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          gGetPrivacyPolicySection(5),
-                          style: TextStyle(
-                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: GlobalAppDisplay.safeHeight * 0.022,
-                          ),
-                          child: Text(
-                            "Contact Us",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: (GlobalAppDisplay.safeWidth * 0.020),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          gGetPrivacyPolicySection(6),
-                          style: TextStyle(
-                            fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                          ),
-                        ),
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () async {
-                              final Uri url = Uri.parse(
-                                gGetPrivacyPolicySection(7),
-                              );
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(
-                                  url,
-                                  mode: LaunchMode.externalApplication,
-                                );
-                              }
-                            },
-                            child: Text(
-                              gGetPrivacyPolicySection(7),
-                              style: TextStyle(
-                                color: Colors.blueAccent,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.blueAccent,
-                                fontSize: (GlobalAppDisplay.safeWidth * 0.017),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // 2. FIXED DIVIDER AND BUTTON
-                Divider(
-                  thickness: GlobalAppDisplay.safeHeight * 0.003,
-                  height: GlobalAppDisplay.safeHeight * 0.04,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  height: GlobalAppDisplay.safeWidth * 0.052,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade800,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          GlobalAppDisplay.safeWidth * 0.012,
-                        ),
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Close',
-                      style: gBuildArcadeTextStyle(
-                        GlobalAppDisplay.safeWidth * 0.014,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showInformationDialog(BuildContext context) async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-
-    if (!context.mounted) return;
-
-    showDialog(
-      context: context,
-      useSafeArea: true,
-      builder: (BuildContext context) {
-        MediaQuery.sizeOf(context);
-
-        return AlertDialog(
-          content: SizedBox(
-            // Set a fixed height so the dialog doesn't jump around
-            height: GlobalAppDisplay.safeHeight * 0.85,
-            width: GlobalAppDisplay.safeWidth * 0.85,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // LEFT SIDE (All Text Details)
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: GlobalAppDisplay.safeHeight * 0.022,
-                                ),
-                                child: Text(
-                                  gGetInformationSection(1),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        GlobalAppDisplay.safeWidth * 0.020,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                "Version: ${packageInfo.version}\nBuild: ${packageInfo.buildNumber}",
-                                style: TextStyle(
-                                  fontSize: GlobalAppDisplay.safeWidth * 0.017,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: GlobalAppDisplay.safeHeight * 0.022,
-                                ),
-                                child: Text(
-                                  "\nLatest Changes:",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        GlobalAppDisplay.safeWidth * 0.020,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                gGetInformationSection(2),
-                                style: TextStyle(
-                                  fontSize:
-                                      (GlobalAppDisplay.safeWidth * 0.017),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: GlobalAppDisplay.safeHeight * 0.022,
-                                ),
-                                child: Text(
-                                  "Artwork Attributions:",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        GlobalAppDisplay.safeWidth * 0.020,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                gGetInformationSection(3),
-                                style: TextStyle(
-                                  fontSize:
-                                      (GlobalAppDisplay.safeWidth * 0.017),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: GlobalAppDisplay.safeWidth * 0.007,
-                        ), // Space between text and image
-                        // THE IMAGE ON THE RIGHT
-                        Expanded(
-                          flex: 1,
-                          child: Center(
-                            child: AspectRatio(
-                              aspectRatio: 1.0,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  GlobalAppDisplay.safeWidth * 0.012,
-                                ),
-                                child: Image.asset(
-                                  'assets/png/logos/LGGDS.png',
-                                  fit: BoxFit.contain,
-                                  filterQuality: FilterQuality.high,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // 2. FIXED DIVIDER AND BUTTON
-                Divider(
-                  thickness: GlobalAppDisplay.safeHeight * 0.003,
-                  height: GlobalAppDisplay.safeHeight * 0.04,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  height: GlobalAppDisplay.safeWidth * 0.052,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade800,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          GlobalAppDisplay.safeWidth * 0.012,
-                        ),
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Close',
-                      style: gBuildArcadeTextStyle(
-                        GlobalAppDisplay.safeWidth * 0.014,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
@@ -477,10 +123,10 @@ class MainScreenPopupMenu extends StatelessWidget {
       onSelected: (String value) {
         switch (value) {
           case 'main_pop_menu_privacy':
-            _showPrivacyDialog(context);
+            gShowPrivacyDialog(context);
             break;
           case 'main_pop_menu_info':
-            _showInformationDialog(context);
+            gShowInformationDialog(context);
             break;
         }
       },
@@ -500,7 +146,6 @@ class MainScreenPopupMenu extends StatelessWidget {
           (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
         ),
       ),
-      //child: Text(text, style: const TextStyle(color: Colors.white)),
     );
   }
 }

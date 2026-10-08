@@ -90,7 +90,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       MaterialPageRoute(
         // The add_player.dart page will be created and shown
         builder: (context) => ModifyAddPlayerForm(
-          enuFormMode: FormMode.formAdd,
+          enuFormMode: GlobalFormMode.formAdd,
           enuSettingType: widget.enuSettingType,
         ),
       ),
@@ -121,7 +121,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
       MaterialPageRoute(
         // The add_player.dart page will be created and shown
         builder: (context) => ModifyAddPlayerForm(
-          enuFormMode: FormMode.formModify,
+          enuFormMode: GlobalFormMode.formModify,
           modifyPlayer: player,
           enuSettingType: widget.enuSettingType,
         ),
@@ -246,7 +246,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                     child: gBuildArcadeActionBanner(
                       gLeadingText: 'ADD NEW',
                       gTrailingText: 'PLAYER',
-                      gFormMode: FormMode.formAdd,
+                      gFormMode: GlobalFormMode.formAdd,
                       gOnTap: () => _addPlayer(context, cardWidth),
                     ),
                   ),

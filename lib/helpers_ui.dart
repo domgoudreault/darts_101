@@ -12,45 +12,6 @@ import 'package:darts_101/database/tbl_team.dart';
 // Backend Logic
 import 'package:darts_101/global_be.dart';
 
-enum FormMode { formAdd, formModify }
-
-String gGetPrivacyPolicySection(int section) {
-  switch (section) {
-    case 1:
-      return "Darts 101 is a paid, standalone scorekeeping application designed for darts players.\n"
-          "Your privacy is paramount: Darts 101 operates entirely locally on your device and does not collect, transmit, share, or sell any personal or sensitive user data.\n";
-    case 2:
-      return "Players Data: Any information you enter into the application (such as : player first names, last names, nicknames, and game scores) is stored strictly on your device’s local internal storage.\n"
-          "Zero Remote Data Collection: We do not collect, transmit, or back up your information to any remote server, cloud platform, or developer-owned system. We have zero remote access to your device or your saved application data.\n";
-    case 3:
-      return "Darts 101 does not contain tracking code, third-party advertising SDKs, analytics frameworks (such as Firebase Analytics or Crashlytics), or remote database integrations.\n";
-    case 4:
-      return "Darts 101 does not track or log your IP address, device IDs, location data, or usage habits. The application only requires standard system execution permissions necessary to run locally on your devices.\n";
-    case 5:
-      return "Because Darts 101 does not require account creation and stores all data locally on your device, you remain in complete control of your data. You can permanently delete all saved profiles and game statistics at any time by clearing the app data in your device settings or by uninstalling the application.\n";
-    case 6:
-      return "If you have any questions regarding this Privacy Policy:";
-    case 7:
-      return "https://sites.google.com/view/darts101-privacy-policy";
-    default:
-      return "";
-  }
-}
-
-String gGetInformationSection(int section) {
-  switch (section) {
-    case 1:
-      return "This app was created for :\nThe LGGDS Darts League\nStoneham-et-Tewkesbury, Québec\nCanada";
-    case 2:
-      return "1. First deployment\n";
-    case 3:
-      return "Some artworks in this app are used with a license I bought from openart.ai !\n"
-          "The rest of artworks were created by me.";
-    default:
-      return "";
-  }
-}
-
 // Returns a retro arcade Text widget with a hard pixel drop shadow.
 TextStyle gBuildArcadeTextStyle(
   double gFontSize, {
@@ -74,13 +35,13 @@ TextStyle gBuildArcadeTextStyle(
 Widget gBuildArcadeActionBanner({
   required String gLeadingText,
   required String gTrailingText,
-  required FormMode gFormMode,
+  required GlobalFormMode gFormMode,
   required VoidCallback gOnTap,
 }) {
   final double responsiveTile = GlobalAppDisplay.safeHeight * 0.6;
   final double responsiveFontSize = (responsiveTile * 0.035).clamp(10.0, 40.0);
 
-  final String svgAssetPath = (gFormMode == FormMode.formAdd)
+  final String svgAssetPath = (gFormMode == GlobalFormMode.formAdd)
       ? 'assets/svg/ui_buttons/player_team_add.svg'
       : 'assets/svg/ui_buttons/player_team_save.svg';
 
@@ -941,9 +902,9 @@ PreferredSizeWidget gBuildAppBar({
             ),
           ),
         ),
-
-        ?gRightPopupMenu,
       ],
+
+      ?gRightPopupMenu,
     ],
   );
 }

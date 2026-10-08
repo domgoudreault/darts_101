@@ -70,7 +70,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
       MaterialPageRoute(
         // The modify_add_team.dart page will be created and shown
         builder: (context) => ModifyAddTeamForm(
-          enuFormMode: FormMode.formAdd,
+          enuFormMode: GlobalFormMode.formAdd,
           enuSettingType: widget.enuSettingType,
         ),
       ),
@@ -101,7 +101,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
       MaterialPageRoute(
         // The modify_add_team.dart page will be created and shown
         builder: (context) => ModifyAddTeamForm(
-          enuFormMode: FormMode.formModify,
+          enuFormMode: GlobalFormMode.formModify,
           modifyTeam: team,
           enuSettingType: widget.enuSettingType,
         ),
@@ -234,7 +234,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                           child: gBuildArcadeActionBanner(
                             gLeadingText: 'ADD NEW',
                             gTrailingText: 'TEAM',
-                            gFormMode: FormMode.formAdd,
+                            gFormMode: GlobalFormMode.formAdd,
                             gOnTap: () => _addTeam(context, cardWidth),
                           ),
                         ),
