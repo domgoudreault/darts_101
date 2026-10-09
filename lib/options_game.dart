@@ -291,7 +291,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                 child: AbsorbPointer(
                   absorbing: !_upDownBull, // Blocks touches when upDownBull is false
                   child: _buildSwitchOption(
-                    label: 'Middle with two Bullseyes',
+                    label: '                                          Middle with two Bullseyes',
                     value: _midDoubleBull,
                     onChanged: (val) => setState(() => _midDoubleBull = val),
                     safeHeight: safeHeight,

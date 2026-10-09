@@ -19,6 +19,7 @@ import 'package:darts_101/helpers_database.dart';
 // UI Screens
 import 'package:darts_101/game_half_it.dart';
 import 'package:darts_101/game_7_darts.dart';
+import 'package:darts_101/game_around_clock.dart';
 
 class RostersSelection extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
@@ -111,6 +112,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     switch (widget.enuGameType) {
       case GlobalGameType.halfIt:
       case GlobalGameType.sevenDarts:
+      case GlobalGameType.aroundClock:
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -1907,6 +1909,11 @@ class _GameMatchupScreenState extends State<GameMatchupScreen> {
             resumeMode: widget.resumeMode,
           );
           break;
+        case GlobalGameType.aroundClock:
+          gameScreen = GameAroundClockScreen(
+            game: widget.game, 
+            resumeMode: widget.resumeMode
+          );
         default:
           return;
       }

@@ -72,10 +72,21 @@ String gGetGameRulesSection(GlobalGameType gameType) {
           "       you earn a bonus equal to the score of your previous successful hit added to your current target score!\n\n"
           "6 • The player or team with the highest score at the end of of all rounds wins!";
     case GlobalGameType.aroundClock:
-      return "Around the Clock Rules:\n\n"
-          "1. Players must hit numbers 1 through 20 in sequential order.\n"
-          "2. You can skip numbers or advance faster depending on your variant settings.\n"
-          "3. The first player to successfully hit the final target wins.";
+      return "Around the Clock (skip the numbers) Rules:\n\n"
+          "1 • Players take turns throwing 3 darts at specific targets\n"
+          "       in a set sequence (1 through 20 and finishing with one Bullseye to close it out)\n\n"
+          "2. • You can skip numbers by hitting doubles or triples that let you advance faster\n\n"
+          "Start & End Bullseye Options: (can be changed in options of the game)\n"
+          "   • 1 Bullseye: Requires hitting one Bullseye before starting the 1 to 20 sequence and one Bullseye to close it out\n"
+          "   • 2 Bullseyes: Requires hitting two Bullseyes to start and two Bullseyes to close it out\n\n"
+          "Up and Down Variant with Middle Bullseye: (can be changed in options of the game)\n"
+          "   • The game goes up from 1 to 20, requires hitting one middle Bullseye milestone\n"
+          "     and then counts back down from 20 to 1 and 1 Bullseye to close it out\n"
+          "   • You can configure the middle milestone to require two Bullseyes (can be changed in options of the game)\n\n"
+          "No Skip on Bullseyes Option: (can be changed in options of the game)\n"
+          "   • Prevents players from bypassing Bullseyes using high-value multipliers,\n"
+          "     even if a massive score or multiplier would normally let you skip numbers or Bulleye(s),\n"
+          "     you must explicitly hit the required Bullseye(s) without skipping";
     case GlobalGameType.allFives:
       return "All Fives Rules:\n\n"
           "1. Each dart thrown must result in a total score that is divisible by 5 to score points.\n"
