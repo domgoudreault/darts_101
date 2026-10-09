@@ -51,16 +51,26 @@ String gGetGameRulesSection(GlobalGameType gameType) {
   switch (gameType) {
     case GlobalGameType.halfIt:
       return "Half-It Rules:\n\n"
-          "1 • Each player or team starts with a minimum score \n       (25 points per player by default, can be changed in options of the game) \n\n"
-          "2 • Players take turns throwing 3 darts at specific targets \n       in a set sequence (10 through 20 and finishing with Bullseye)\n"
-          "3 • Only successful hits on the designated target for the \n       current round score points (Singles = face value, Doubles = double, Triples = triple)\n"
-          "4 • If you fail to hit the designated target at least once \n       with all 3 darts, your total accumulated score is HALVED!\n"
-          "5 • The player or team with the highest score at the end of all rounds wins.";
+          "1 • Each player or team starts with a minimum score\n"
+          "       (25 points per player by default, can be changed in options of the game)\n\n"
+          "2 • Players take turns throwing 3 darts at specific targets\n"
+          "       in a set sequence (10 through 20 and finishing with Bullseye)\n\n"
+          "3 • Only successful hits on the designated target score points (Singles, Doubles and Triples)\n\n"
+          "4 • If you fail to hit the designated target at least once\n"
+          "       with all 3 darts, your total accumulated score is HALVED!\n\n"
+          "5 • The player or team with the highest score at the end of all rounds wins!";
     case GlobalGameType.sevenDarts:
       return "7 Darts Rules:\n\n"
-          "1. Players are given 7 darts to achieve specific target objectives.\n"
-          "2. Precision and matching required multipliers are key to racking up points.\n"
-          "3. The highest cumulative score after all rounds wins the match.";
+          "1 • Players take turns throwing 7 completely different darts\n"
+          "       with each dart contributed by a different player if possible!\n\n"
+          "2 • Since every darts vary in weight, grip, barrels, and flights, adaptability is key!\n\n"
+          "3 • The game consists of 3 rounds hitting 7 different target each time\n"
+          "       (3 rounds by default, can be changed in options of the game)\n\n"
+          "4 • Each round consists of throwing one dart per target\n"
+          "       in descending order: 20 through 15 and finishing with Bullseye.\n\n"
+          "5 • If you successfully hit a target and then hit the next target in the sequence consecutively\n"
+          "       you earn a bonus equal to the score of your previous successful hit added to your current target score!\n\n"
+          "6 • The player or team with the highest score at the end of of all rounds wins!";
     case GlobalGameType.aroundClock:
       return "Around the Clock Rules:\n\n"
           "1. Players must hit numbers 1 through 20 in sequential order.\n"
@@ -449,6 +459,7 @@ void gShowPrivacyDialog(BuildContext context) {
 void gShowGameRulesDialog(BuildContext context, GlobalGameType gameType) {
   final double safeHeight = GlobalAppDisplay.safeHeight;
   final double safeWidth = GlobalAppDisplay.safeWidth;
+  final ScrollController scrollController = ScrollController();
 
   showDialog(
     context: context,
@@ -473,14 +484,28 @@ void gShowGameRulesDialog(BuildContext context, GlobalGameType gameType) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    gGetGameRulesSection(gameType),
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: safeWidth * 0.012,
+                child: RawScrollbar(
+                  controller: scrollController,
+                    thumbColor: Colors.amber.withAlpha(180),
+                    thickness: safeHeight * 0.018,
+                    radius: Radius.circular(safeHeight * 0.016),
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Row(
+                      children: [
+                        Text(
+                          gGetGameRulesSection(gameType),
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: safeHeight * 0.023,
+                          ),
+                          textAlign: TextAlign.left
+                        ),
+
+                        //SizedBox(width: safeHeight * 0.002),
+                      ],
                     ),
-                    textAlign: TextAlign.left
                   ),
                 ),
               ),

@@ -11,6 +11,7 @@ import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
 import 'package:darts_101/database/tbl_game_options.dart';
 import 'package:darts_101/database/tbl_game_score.dart';
+import 'package:darts_101/database/enum_game_type.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
@@ -18,6 +19,7 @@ import 'package:darts_101/helpers_ui.dart';
 import 'package:darts_101/helpers_database.dart';
 import 'package:darts_101/helpers_dartboard.dart';
 import 'package:darts_101/helpers_standings.dart';
+import 'package:darts_101/helpers_menus.dart';
 
 class GameHalfItScreen extends StatefulWidget {
   final TblGame game;
@@ -502,7 +504,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
         gAppBarColorBg: _gameConfig.fldGameType.tileColor,
         gCallFromMainScreen: false,
         gOnPressed: null,
-        gRightPopupMenu: null,
+        gRightPopupMenu: GameHalfItPopupMenu(enuGameType: _gameConfig.fldGameType),
       ),
 
       body: SafeArea(
@@ -3139,6 +3141,46 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
           ),
         );
       },
+    );
+  }
+}
+
+class GameHalfItPopupMenu extends StatelessWidget {
+  final GlobalGameType enuGameType;
+
+  const GameHalfItPopupMenu({super.key, required this.enuGameType});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      color: Colors.grey.shade700,
+      iconColor: Colors.white,
+      onSelected: (String value) {
+        switch (value) {
+          case 'ghi_pop_menu_rules':
+            gShowGameRulesDialog(context, enuGameType);
+            break;
+          case 'ghi_pop_menu_info':
+            gShowInformationDialog(context);
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMenuItem('ghi_pop_menu_info', 'Information'),
+        _buildMenuItem('ghi_pop_menu_rules', 'Game Rules'),        
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
     );
   }
 }
