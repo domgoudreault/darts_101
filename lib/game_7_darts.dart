@@ -9,7 +9,6 @@ import 'package:darts_101/database/tbl_team.dart';
 import 'package:darts_101/database/tbl_game.dart';
 import 'package:darts_101/database/tbl_game_options.dart';
 import 'package:darts_101/database/tbl_game_score.dart';
-import 'package:darts_101/database/enum_game_type.dart';
 
 // Backend Logic
 import 'package:darts_101/global_be.dart';
@@ -18,6 +17,9 @@ import 'package:darts_101/helpers_database.dart';
 import 'package:darts_101/helpers_dartboard.dart';
 import 'package:darts_101/helpers_standings.dart';
 import 'package:darts_101/helpers_menus.dart';
+import 'package:darts_101/helpers_scoreboards.dart';
+import 'package:darts_101/helpers_rankings.dart';
+import 'package:darts_101/helpers_stats.dart';
 
 class Game7DartsScreen extends StatefulWidget {
   final TblGame game;
@@ -36,7 +38,6 @@ class Game7DartsScreen extends StatefulWidget {
 class _Game7DartsScreenState extends State<Game7DartsScreen>
     with TickerProviderStateMixin {
   // Define all responsive height and width of the rosters selection UI
-  double get _safeWidth => GlobalAppDisplay.safeWidth;
   double get _safeHeight => GlobalAppDisplay.safeHeight;
   double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
   double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 6);
@@ -436,7 +437,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
         gAppBarColorBg: _gameConfig.fldGameType.tileColor,
         gCallFromMainScreen: false,
         gOnPressed: null,
-        gRightPopupMenu: Game7DartsPopupMenu(enuGameType: _gameConfig.fldGameType),
+        gRightPopupMenu: GlobalGame7DartsPopupMenu(enuGameType: _gameConfig.fldGameType),
       ),
 
       body: SafeArea(
@@ -654,7 +655,17 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                         elevation: 4,
                                       ),
                                       onPressed: () =>
-                                          _showFullScoreboardDialog(context),
+                                        gShowGame7DartsScoreboardDialog(
+                                          context: context,
+                                          gameConfig: _gameConfig,
+                                          gameOptions: _gameOptions,
+                                          gamesScoresBox: gamesScoresBox,
+                                          gamePlayers: _gamePlayers,
+                                          gameTeams: _gameTeams,
+                                          isPlayerMode: _isPlayerMode,
+                                          responsiveTile: _responsiveTile,
+                                          responsiveFontSize: _responsiveFontSize,
+                                        ),
                                       child: Center(
                                         child: Stack(
                                           children: [
@@ -865,13 +876,18 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                         elevation: 4,
                                       ),
                                       onPressed: _hasGamePreviousPlayer
-                                          ? () => _showPlayerStatsDialog(
-                                              context,
-                                              _previousPlayer,
-                                              _isPlayerMode
+                                          ? () => gShowPlayerStatsGame7DartsDialog(
+                                              context: context,
+                                              player: _previousPlayer,
+                                              playerColor: _isPlayerMode
                                                   ? _previousPlayerColor
                                                   : _previousTeamColor,
-                                              _progress.previousSeatIdx,
+                                              seatIndex: _progress.previousSeatIdx,
+                                              responsiveTile: _responsiveTile,
+                                              responsiveFontSize: _responsiveFontSize,
+                                              gameConfig: _gameConfig,
+                                              gamesScoresBox: gamesScoresBox,
+                                              gameOptions: _gameOptions,
                                             )
                                           : null,
                                       child: Center(
@@ -954,13 +970,18 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                         padding: EdgeInsets.zero,
                                         elevation: 4,
                                       ),
-                                      onPressed: () => _showPlayerStatsDialog(
-                                        context,
-                                        _activePlayer,
-                                        _isPlayerMode
+                                      onPressed: () => gShowPlayerStatsGame7DartsDialog(
+                                        context: context,
+                                        player: _activePlayer,
+                                        playerColor: _isPlayerMode
                                             ? _activePlayerColor
                                             : _activeTeamColor,
-                                        _progress.activeSeatIdx,
+                                        seatIndex: _progress.activeSeatIdx,
+                                        responsiveTile: _responsiveTile,
+                                        responsiveFontSize: _responsiveFontSize,
+                                        gameConfig: _gameConfig,
+                                        gamesScoresBox: gamesScoresBox,
+                                        gameOptions: _gameOptions,
                                       ),
                                       child: Center(
                                         child: Stack(
@@ -1102,7 +1123,15 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                                   child: SizedBox(
                                                     width: double.infinity,
                                                     child:
-                                                        _buildRankingWidget(),
+                                                      gBuildGame7DartsRankingWidget(
+                                                        gameConfig: _gameConfig,
+                                                        gameOptions: _gameOptions,
+                                                        gamesScoresBox: gamesScoresBox,
+                                                        gamePlayers: _gamePlayers,
+                                                        gameTeams: _gameTeams,
+                                                        isPlayerMode: _isPlayerMode,
+                                                        responsiveTile: _responsiveTile,
+                                                      ),
                                                   ),
                                                 ),
                                               ],
@@ -1564,13 +1593,18 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                         elevation: 4,
                                       ),
                                       onPressed: _hasGameNextPlayer
-                                          ? () => _showPlayerStatsDialog(
-                                              context,
-                                              _nextPlayer,
-                                              _isPlayerMode
+                                          ? () => gShowPlayerStatsGame7DartsDialog(
+                                              context: context,
+                                              player: _nextPlayer,
+                                              playerColor: _isPlayerMode
                                                   ? _nextPlayerColor
                                                   : _nextTeamColor,
-                                              _progress.nextSeatIdx,
+                                              seatIndex: _progress.nextSeatIdx,
+                                              responsiveTile: _responsiveTile,
+                                              responsiveFontSize: _responsiveFontSize,
+                                              gameConfig: _gameConfig,
+                                              gamesScoresBox: gamesScoresBox,
+                                              gameOptions: _gameOptions,
                                             )
                                           : null,
                                       child: Center(
@@ -1638,58 +1672,6 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
           ],
         ),
       ),
-    );
-  }
-
-  void _showPlayerStatsDialog(
-    BuildContext context,
-    TblPlayer player,
-    Color playerColor,
-    int seatIndex,
-  ) {
-    gClearAllArcadeOverlays();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey.shade500,
-          title: Text(
-            "${player.fldNickName}'s Stats",
-            style: gBuildArcadeTextStyle(
-              _responsiveFontSize,
-              gFontWeight: FontWeight.bold,
-              gTextColor: playerColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          content: SizedBox(
-            width: _safeWidth * 0.9,
-            height: _safeHeight * 0.9,
-            child: _buildPlayerStatsTable(
-              player: player,
-              playerColor: playerColor,
-              seatIdx: seatIndex,
-            ),
-          ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.grey.shade800, // Works directly here
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "Close",
-                style: gBuildArcadeTextStyle(
-                  _responsiveFontSize * 0.8,
-                  gFontWeight: FontWeight.bold,
-                  gTextColor: Colors.amber,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -1923,1023 +1905,6 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlayerStatsTable({
-    required TblPlayer player,
-    required Color playerColor,
-    required int seatIdx,
-  }) {
-    return Column(
-      children: [
-        // Table Header Row
-        Container(
-          padding: EdgeInsets.only(
-            top: _responsiveTile * 0.011,
-            bottom: _responsiveTile * 0.011,
-            left: _responsiveTile * 0.007,
-            right: _responsiveTile * 0.014,
-          ),
-          decoration: BoxDecoration(
-            color: playerColor,
-            border: Border(
-              bottom: BorderSide(
-                color: playerColor,
-                width: _responsiveTile * 0.003,
-              ),
-            ),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(_responsiveTile * 0.02),
-              topRight: Radius.circular(_responsiveTile * 0.02),
-            ),
-          ),
-          child: Column (
-            children: [
-              Row (
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      ' ',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 21,
-                    child: Column(
-                      children: [
-                        Text(
-                          'Targets',
-                          textAlign: TextAlign.center,
-                          style: gBuildArcadeTextStyle(
-                            _responsiveFontSize * 0.53,
-                            gFontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const Divider(color: Colors.white),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: Text(
-                      ' ',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              //const Divider(color: Colors.white),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'Round',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      '20',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      '19',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      '18',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      '17',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      '16',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      '15',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'BULL',
-                      textAlign: TextAlign.center,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: Text(
-                      _isPlayerMode ? 'Total' : 'Player/Team',
-                      textAlign: TextAlign.end,
-                      style: gBuildArcadeTextStyle(
-                        _responsiveFontSize * 0.53,
-                        gFontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        // Scrollable Rows
-        Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: _gameOptions.fldNbrRounds,
-            itemBuilder: (context, roundIdx) {
-              final roundRecords = gamesScoresBox.values
-                .where(
-                  (s) =>
-                      s.fldGame == _gameConfig &&
-                      s.fldPlayer == player &&
-                      s.fldSeatIndex == seatIdx &&
-                      s.fldRound == roundIdx,
-                )
-                .toList();
-
-              final allPlayerRecords = gamesScoresBox.values
-                  .where(
-                    (s) =>
-                        s.fldGame == _gameConfig &&
-                        s.fldPlayer == player &&
-                        s.fldSeatIndex == seatIdx &&
-                        s.fldRound >= 0,
-                  )
-                  .toList();
-
-              final int? lastThrownRound = allPlayerRecords.isNotEmpty
-                  ? allPlayerRecords
-                        .map((s) => s.fldRound)
-                        .reduce((a, b) => a > b ? a : b)
-                  : null;
-
-              final bool isLastThrownRound =
-                  (lastThrownRound != null && roundIdx == lastThrownRound);
-
-              final bool isPlayed = roundRecords.isNotEmpty;
-
-              // Map dart index (0 to 6) to points earned on that throw
-              Map<int, int> dartPoints = {};
-              int? roundFinalScore;
-              int? teamRoundFinalScore;
-
-              for (var record in roundRecords) {
-                int points = record.fldTargetValue * record.fldHits;
-                dartPoints[record.fldDartIndex] = points;
-                roundFinalScore = record.fldScorePlayerSnapshot;
-                teamRoundFinalScore = record.fldScoreTeamSnapshot;
-              }
-
-              // Team score calculation if applicable
-              if (!_isPlayerMode && _gameConfig.fldTeams != null) {
-                final int totalTeams = _gameConfig.fldTeams!.length;
-                final int teamIdx = seatIdx % totalTeams;
-                final teamRoundRecords = gamesScoresBox.values
-                    .where(
-                      (s) =>
-                          s.fldGame == _gameConfig &&
-                          s.fldRound == roundIdx &&
-                          (s.fldSeatIndex % totalTeams) == teamIdx,
-                    )
-                    .toList();
-
-                if (teamRoundRecords.isNotEmpty) {
-                  teamRoundFinalScore = teamRoundRecords.last.fldScoreTeamSnapshot;
-                }
-              }
-
-              return Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: _responsiveTile * 0.010,
-                  horizontal: _responsiveTile * 0.014,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: playerColor.withAlpha(200),
-                    width: _responsiveTile * 0.002,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Round Number Column
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        '${roundIdx + 1}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: _responsiveFontSize,
-                          color: isLastThrownRound ? Colors.amber : Colors.black,
-                        ),
-                      ),
-                    ),
-                    // 7 Target Columns (Dart Index 0 to 6)
-                    ...List.generate(7, (dartIdx) {
-                      final record = roundRecords.where((s) => s.fldDartIndex == dartIdx).firstOrNull;
-                      final prevRecord = dartIdx > 0 
-                          ? roundRecords.where((s) => s.fldDartIndex == dartIdx - 1).firstOrNull 
-                          : null;
-
-                      return Expanded(
-                        flex: 3,
-                        child: _buildDartScoreCell(record, prevRecord, isLastThrownRound),
-                      );
-                    }),
-                    // Total Column
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        isPlayed
-                            ? (_isPlayerMode
-                                ? '${roundFinalScore ?? '-'}'
-                                : '${roundFinalScore ?? '-'} / ${teamRoundFinalScore ?? '-'}')
-                            : '-',
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: _responsiveFontSize,
-                          color: isLastThrownRound ? Colors.amber : Colors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDartScoreCell(TblGameScore? record, TblGameScore? prevRecord, bool isLastThrownRound) {
-    final Color textColor = isLastThrownRound ? Colors.amber : Colors.black;
-    
-    if (record == null) {
-      return Text(
-        '-',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-      );
-    }
-
-    int currentHits = record.fldHits;
-    int currentPoints = record.fldTargetValue * currentHits;
-
-    // If there is a previous record in the sequence, show the sequence (+ previous)
-    if (prevRecord != null && prevRecord.fldHits > 0 && record.fldHits > 0) {
-      int prevHits = prevRecord.fldHits;
-      int prevPoints = prevRecord.fldTargetValue * prevHits;
-
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHitPillWithScore(currentHits, currentPoints, textColor),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2),
-            child: Text(' + ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black)),
-          ),
-          _buildHitPillWithScore(prevHits, prevPoints, textColor),
-        ],
-      );
-    }
-
-    // Otherwise, just show the single target throw pill and score
-    return Center(
-      child: _buildHitPillWithScore(currentHits, currentPoints, textColor),
-    );
-  }
-
-  Widget _buildHitPillWithScore(int hits, int points, Color textColor) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Pill container only around the hits number
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: _responsiveTile * 0.003,
-            vertical: _responsiveTile * 0.002,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.amber,
-            borderRadius: BorderRadius.circular(
-              _responsiveTile * 0.012,
-            ),
-            border: Border.all(
-              color: Colors.black,
-              width: _responsiveTile * 0.002,
-            ),
-          ),
-          child: Text(
-            '$hits',
-            style: TextStyle(
-              color: const Color.fromARGB(255, 207, 20, 17),
-              fontWeight: FontWeight.bold,
-              fontSize: _responsiveFontSize * 0.75,
-            ),
-          ),
-        ),
-        Icon(
-          Icons.arrow_right_alt,
-          color: Colors.black, // Adjusted for clear visibility against the row background
-          size: _responsiveFontSize * 0.9,
-        ),
-        Text(
-          '$points',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-            fontSize: _responsiveFontSize * 0.8,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRankingWidget() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: _responsiveTile * 0.012,
-        vertical: _responsiveTile * 0.010,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade800.withAlpha(150),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(_responsiveTile * 0.03),
-          bottomRight: Radius.circular(_responsiveTile * 0.03),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: _isPlayerMode
-                ? _buildPlayersRankingList()
-                : _buildTeamsRankingList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlayersRankingList() {
-    // Gather latest score for each player
-    final List<({TblPlayer player, int score, Color color, int originalIdx})>
-    playerScores = [];
-
-    for (var entry in _gamePlayers) {
-      final pRecords = gamesScoresBox.values
-          .where((s) => s.fldGame == _gameConfig && s.fldPlayer == entry.player)
-          .toList();
-
-      final score = pRecords.isNotEmpty
-          ? pRecords.last.fldScorePlayerSnapshot
-          : _startingScore;
-      playerScores.add((
-        player: entry.player,
-        score: score,
-        color: entry.playerColor,
-        originalIdx: entry.originalIndex,
-      ));
-    }
-
-    // Sort descending by score
-    playerScores.sort((a, b) => b.score.compareTo(a.score));
-
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      itemCount: playerScores.length,
-      itemBuilder: (context, index) {
-        final item = playerScores[index];
-        return Container(
-          padding: EdgeInsets.symmetric(
-            vertical: _responsiveTile * 0.010,
-            horizontal: _responsiveTile * 0.015,
-          ),
-          margin: EdgeInsets.only(bottom: _responsiveTile * 0.013),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade800.withAlpha(170),
-            borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  index == 0
-                      ? Text(
-                          "${index + 1}.",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber,
-                            fontSize: _responsiveTile * 0.0425,
-                          ),
-                        )
-                      : Text(
-                          "${index + 1}.",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: _responsiveTile * 0.04,
-                          ),
-                        ),
-
-                  SizedBox(width: _responsiveTile * 0.005),
-
-                  index == 0
-                      ? Text(
-                          item.player.fldNickName,
-                          style: TextStyle(
-                            color: Colors.amber,
-                            fontWeight: FontWeight.bold,
-                            fontSize: _responsiveTile * 0.0425,
-                          ),
-                        )
-                      : Text(
-                          item.player.fldNickName,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            fontSize: _responsiveTile * 0.04,
-                          ),
-                        ),
-                ],
-              ),
-
-              index == 0
-                  ? Text(
-                      "${item.score}",
-                      style: TextStyle(
-                        color: Colors.amber,
-                        fontWeight: FontWeight.bold,
-                        fontSize: _responsiveTile * 0.0425,
-                      ),
-                    )
-                  : Text(
-                      "${item.score}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: _responsiveTile * 0.04,
-                      ),
-                    ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTeamsRankingList() {
-    if (_gameTeams.isEmpty) return const SizedBox.shrink();
-
-    final List<({TblTeam team, int score, Color color})> teamScores = [];
-
-    for (var entry in _gameTeams) {
-      final teamPlayerNames = entry.team.fldPlayers
-          .map((p) => p.fldNickName)
-          .toSet();
-      final tRecords = gamesScoresBox.values
-          .where(
-            (s) =>
-                s.fldGame == _gameConfig &&
-                teamPlayerNames.contains(s.fldPlayer.fldNickName),
-          )
-          .toList();
-
-      final score = tRecords.isNotEmpty
-          ? (tRecords.last.fldScoreTeamSnapshot ?? _startingScore)
-          : _startingScore;
-      teamScores.add((team: entry.team, score: score, color: entry.teamColor));
-    }
-
-    // Sort descending by score
-    teamScores.sort((a, b) => b.score.compareTo(a.score));
-
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      itemCount: teamScores.length,
-      itemBuilder: (context, index) {
-        final item = teamScores[index];
-        // Combine player nicknames with " & "
-        final teamNamesString = item.team.fldPlayers
-            .map((p) => p.fldNickName)
-            .join(' & ');
-
-        return Container(
-          padding: EdgeInsets.symmetric(
-            vertical: _responsiveTile * 0.010,
-            horizontal: _responsiveTile * 0.015,
-          ),
-          margin: EdgeInsets.only(bottom: _responsiveTile * 0.015),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade800.withAlpha(150),
-            borderRadius: BorderRadius.circular(_responsiveTile * 0.015),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  index == 0
-                      ? Text(
-                          "${index + 1}.",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber,
-                            fontSize: _responsiveTile * 0.04,
-                          ),
-                        )
-                      : Text(
-                          "${index + 1}.",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: _responsiveTile * 0.0325,
-                          ),
-                        ),
-
-                  SizedBox(width: _responsiveTile * 0.010),
-
-                  index == 0
-                      ? Text(
-                          teamNamesString,
-                          style: TextStyle(
-                            color: Colors.amber,
-                            fontWeight: FontWeight.bold,
-                            fontSize: _responsiveTile * 0.04,
-                          ),
-                        )
-                      : Text(
-                          teamNamesString,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            fontSize: _responsiveTile * 0.0325,
-                          ),
-                        ),
-                ],
-              ),
-
-              index == 0
-                  ? Text(
-                      "${item.score}",
-                      style: TextStyle(
-                        color: Colors.amber,
-                        fontWeight: FontWeight.bold,
-                        fontSize: _responsiveTile * 0.04,
-                      ),
-                    )
-                  : Text(
-                      "${item.score}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: _responsiveTile * 0.0325,
-                      ),
-                    ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showFullScoreboardDialog(BuildContext context) {
-    gClearAllArcadeOverlays();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        MediaQuery.sizeOf(context);
-
-        return AlertDialog(
-          backgroundColor: Colors.grey.shade800,
-          title: Text(
-            _isPlayerMode ? "Players Full Scoreboard" : "Teams Full Scoreboard",
-            style: gBuildArcadeTextStyle(
-              _responsiveFontSize,
-              gFontWeight: FontWeight.bold,
-              gTextColor: Colors.amber,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          content: SizedBox(
-            width: GlobalAppDisplay.safeWidth * 0.9,
-            height: _safeHeight * 0.8,
-            child: _buildFullScoreboardTable(),
-          ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.grey.shade900,
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "Close",
-                style: gBuildArcadeTextStyle(
-                  _responsiveFontSize * 0.8,
-                  gFontWeight: FontWeight.bold,
-                  gTextColor: Colors.amber,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  
-
-  Widget _buildFullScoreboardTable() {
-    final totalColumns = _gamePlayers.length + 1;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double calculatedPlayerColWidth =
-            (_isPlayerMode && _gamePlayers.length > 5)
-            ? (constraints.maxWidth / (_gamePlayers.length + 1)).clamp(
-                85.0,
-                115.0,
-              )
-            : 115.0;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade900,
-            borderRadius: BorderRadius.circular(_responsiveTile * 0.02),
-            border: Border.all(
-              color: Colors.amber,
-              width: _responsiveTile * 0.003,
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(_responsiveTile * 0.02),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: Table(
-                    border: TableBorder(
-                      horizontalInside: BorderSide(
-                        color: Colors.grey.shade700,
-                        width: 1,
-                      ),
-                      verticalInside: BorderSide(
-                        color: Colors.grey.shade700,
-                        width: 1,
-                      ),
-                      bottom: BorderSide(color: Colors.grey.shade700, width: 1),
-                    ),
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    columnWidths: {
-                      0: const FixedColumnWidth(
-                        90.0,
-                      ), // Compact Targets column width
-                      for (int i = 1; i < totalColumns; i++)
-                        i: FixedColumnWidth(
-                          calculatedPlayerColWidth,
-                        ), // Responsive player column width
-                    },
-                    children: [
-                      // --- HEADER ROW ---
-                      TableRow(
-                        decoration: BoxDecoration(color: Colors.grey.shade800),
-                        children: [
-                          // Targets Header
-                          SizedBox(
-                            height: _responsiveTile * 0.1,
-                            child: Center(
-                              child: Text(
-                                'Rounds',
-                                style: TextStyle(
-                                  color: Colors.amber,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: _responsiveFontSize * 0.75,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Player Headers
-                          if (_isPlayerMode)
-                            ..._gamePlayers.map(
-                              (gp) => SizedBox(
-                                height: _responsiveTile * 0.1,
-                                child: Center(
-                                  child: Container(
-                                    margin: EdgeInsets.symmetric(horizontal: 2),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: _responsiveTile * 0.008,
-                                      vertical: _responsiveTile * 0.004,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: gp.playerColor,
-                                      borderRadius: BorderRadius.circular(
-                                        _responsiveTile * 0.01,
-                                      ),
-                                      border: Border.all(
-                                        color: Colors.white24,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      gp.player.fldNickName,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: _responsiveFontSize * 0.7,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          else
-                            ..._gamePlayers.map((gp) {
-                              final teamEntry = _gameTeams.firstWhere(
-                                (gt) => gt.team.fldPlayers.contains(gp.player),
-                              );
-                              return SizedBox(
-                                height: _responsiveTile * 0.1,
-                                child: Center(
-                                  child: Container(
-                                    margin: EdgeInsets.symmetric(horizontal: 2),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: _responsiveTile * 0.008,
-                                      vertical: _responsiveTile * 0.004,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: teamEntry.teamColor,
-                                      borderRadius: BorderRadius.circular(
-                                        _responsiveTile * 0.01,
-                                      ),
-                                      border: Border.all(
-                                        color: Colors.white24,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      gp.player.fldNickName,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: _responsiveFontSize * 0.7,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                        ],
-                      ),
-
-                      // --- ROUND ROWS ---
-                      ...List.generate(_gameOptions.fldNbrRounds, (roundIdx) {
-                        return TableRow(
-                          children: [
-                            SizedBox(
-                              height: _responsiveTile * 0.09,
-                              child: Center(
-                                child: Text(
-                                  '${roundIdx + 1}',
-                                  style: TextStyle(
-                                    color: Colors.amber,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: _responsiveFontSize * 0.7,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (_isPlayerMode)
-                              ..._gamePlayers.map((gp) {
-                                final records = gamesScoresBox.values
-                                    .where(
-                                      (s) =>
-                                          s.fldGame == _gameConfig &&
-                                          s.fldPlayer == gp.player &&
-                                          s.fldRound == roundIdx &&
-                                          s.fldDartIndex >= 0,
-                                    )
-                                    .toList();
-
-                                final hasCompletedRound = records.any(
-                                  (s) => s.fldDartIndex == 6,
-                                );
-                                final latestRecord = records.isNotEmpty
-                                    ? records.last
-                                    : null;
-                                
-                                final scoreStr = latestRecord != null
-                                    ? '${latestRecord.fldScorePlayerSnapshot}'
-                                    : '-';
-
-                                return SizedBox(
-                                  height: _responsiveTile * 0.09,
-                                  child: Center(
-                                    child: hasCompletedRound
-                                      ? Text(
-                                          scoreStr,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight:
-                                                FontWeight.bold,
-                                            fontSize:
-                                                _responsiveFontSize *
-                                                0.7,
-                                          ),
-                                        )
-                                      : Text(
-                                          '-',
-                                          style: TextStyle(
-                                            color: Colors.grey.shade500,
-                                            fontSize:
-                                                _responsiveFontSize * 0.7,
-                                          ),
-                                        ),
-                                  ),
-                                );
-                              })
-                            else
-                              ..._gamePlayers.map((gp) {
-                                final records = gamesScoresBox.values
-                                    .where(
-                                      (s) =>
-                                          s.fldGame == _gameConfig &&
-                                          s.fldPlayer == gp.player &&
-                                          s.fldRound == roundIdx &&
-                                          s.fldDartIndex >= 0,
-                                    )
-                                    .toList();
-
-                                final hasCompletedRound = records.any(
-                                  (s) => s.fldDartIndex == 6,
-                                );
-                                final latestRecord = records.isNotEmpty
-                                    ? records.last
-                                    : null;
-
-                                if (latestRecord != null && hasCompletedRound) {
-                                  final pScore =
-                                      latestRecord.fldScorePlayerSnapshot;
-                                  final tScore =
-                                      latestRecord.fldScoreTeamSnapshot ?? '-';
-                                  final scoreDisplay =
-                                      '$pScore / $tScore'; // Added proper spacing around the slash
-
-                                  return SizedBox(
-                                    height: _responsiveTile * 0.09,
-                                    child: Center(
-                                      child: Text(
-                                          scoreDisplay,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize:
-                                                _responsiveFontSize *
-                                                0.65,
-                                          ),
-                                        ),
-                                    ),
-                                  );
-                                }
-
-                                return SizedBox(
-                                  height: _responsiveTile * 0.09,
-                                  child: Center(
-                                    child: Text(
-                                      '-',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade500,
-                                        fontSize: _responsiveFontSize * 0.7,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                          ],
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class Game7DartsPopupMenu extends StatelessWidget {
-  final GlobalGameType enuGameType;
-
-  const Game7DartsPopupMenu({super.key, required this.enuGameType});
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      color: Colors.grey.shade700,
-      iconColor: Colors.white,
-      onSelected: (String value) {
-        switch (value) {
-          case 'gsd_pop_menu_rules':
-            gShowGameRulesDialog(context, enuGameType);
-            break;
-          case 'gsd_pop_menu_info':
-            gShowInformationDialog(context);
-            break;
-        }
-      },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        _buildMenuItem('gsd_pop_menu_info', 'Information'),
-        _buildMenuItem('gsd_pop_menu_rules', 'Game Rules'),        
-      ],
-    );
-  }
-
-  PopupMenuItem<String> _buildMenuItem(String value, String text) {
-    return PopupMenuItem<String>(
-      value: value,
-      child: Text(
-        text,
-        style: gBuildArcadeTextStyle(
-          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
-        ),
       ),
     );
   }

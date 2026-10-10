@@ -555,3 +555,123 @@ void gShowGameRulesDialog(BuildContext context, GlobalGameType gameType) {
     },
   );
 }
+
+class GlobalGameHalfItPopupMenu extends StatelessWidget {
+  final GlobalGameType enuGameType;
+
+  const GlobalGameHalfItPopupMenu({super.key, required this.enuGameType});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      color: Colors.grey.shade700,
+      iconColor: Colors.white,
+      onSelected: (String value) {
+        switch (value) {
+          case 'ghi_pop_menu_rules':
+            gShowGameRulesDialog(context, enuGameType);
+            break;
+          case 'ghi_pop_menu_info':
+            gShowInformationDialog(context);
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMenuItem('ghi_pop_menu_info', 'Information'),
+        _buildMenuItem('ghi_pop_menu_rules', 'Game Rules'),        
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
+    );
+  }
+}
+
+class GlobalGame7DartsPopupMenu extends StatelessWidget {
+  final GlobalGameType enuGameType;
+
+  const GlobalGame7DartsPopupMenu({super.key, required this.enuGameType});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      color: Colors.grey.shade700,
+      iconColor: Colors.white,
+      onSelected: (String value) {
+        switch (value) {
+          case 'gsd_pop_menu_rules':
+            gShowGameRulesDialog(context, enuGameType);
+            break;
+          case 'gsd_pop_menu_info':
+            gShowInformationDialog(context);
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMenuItem('gsd_pop_menu_info', 'Information'),
+        _buildMenuItem('gsd_pop_menu_rules', 'Game Rules'),        
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
+    );
+  }
+}
+
+class GlobalGameAroundClockPopupMenu extends StatelessWidget {
+  final GlobalGameType enuGameType;
+
+  const GlobalGameAroundClockPopupMenu({super.key, required this.enuGameType});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      color: Colors.grey.shade700,
+      iconColor: Colors.white,
+      onSelected: (String value) {
+        switch (value) {
+          case 'gac_pop_menu_rules':
+            gShowGameRulesDialog(context, enuGameType);
+            break;
+          case 'gac_pop_menu_info':
+            gShowInformationDialog(context);
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMenuItem('gac_pop_menu_info', 'Information'),
+        _buildMenuItem('gac_pop_menu_rules', 'Game Rules'),        
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
+    );
+  }
+}
