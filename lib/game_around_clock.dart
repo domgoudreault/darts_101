@@ -1,8 +1,6 @@
 // Flutter basics
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
-import 'package:lottie/lottie.dart';
 import 'package:gif_view/gif_view.dart';
 
 // Database Models
@@ -57,8 +55,6 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   double get _cardSlicedHeight => _cardWidth * 0.305;
   double get _cardSlicedHeightOuterSize => _cardSlicedHeight * 1.12;
 
-  late AnimationController _slashController;
-  bool _showSlash = false;
   // flags for animation HitsBadge
   bool _previousHitsBadgeAnime = false;
   bool _activeHitsBadgeAnime = false;
@@ -67,7 +63,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   late Box<TblPlayer> playersBox;
   late Box<TblTeam> teamsBox;
 
-  GameProgressStateHalf _progress = GameProgressStateHalf();
+  GameProgressStateAC _progress = GameProgressStateAC();
 
   double get _responsiveTile => _safeHeight * 0.67;
   double get _responsiveFontSize => (_responsiveTile * 0.035).clamp(8.0, 60.0);
@@ -132,6 +128,31 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
         )
         .fldScorePlayerSnapshot;
   }
+  String get _activePlayerActiveTargetLabel {
+    if (_hasGameStarted) {
+      // Use where().lastOrNull to safely return null if no matching score is found
+      final scoresBox = gamesScoresBox.values.where(
+        (gamesScores) =>
+            gamesScores.fldGame == _gameConfig &&
+            gamesScores.fldPlayer == _activePlayer &&
+            gamesScores.fldSeatIndex == _progress.activeSeatIdx,
+      ).lastOrNull;
+
+      if (scoresBox == null) {
+        return _activeTargetValue.toString();
+      }
+
+      final targetIndex = scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
+      final targets = gGetTargetsForGame(_gameConfig);
+
+      // Ensure the index is within bounds of the targets list
+      if (targetIndex >= 0 && targetIndex < targets.length) {
+        return targets[targetIndex].label;
+      }
+    }
+    
+    return _activeTargetValue.toString();
+  }
 
   TblPlayer get _previousPlayer =>
       _gamePlayers[_progress.previousSeatIdx].player;
@@ -148,6 +169,32 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
               gamesScores.fldSeatIndex == _progress.previousSeatIdx,
         )
         .fldScorePlayerSnapshot;
+  }
+
+  String get _previousPlayerActiveTargetLabel {
+    if (_hasGameStarted) {
+      // Use where().lastOrNull to safely return null if no matching score is found
+      final scoresBox = gamesScoresBox.values.where(
+        (gamesScores) =>
+            gamesScores.fldGame == _gameConfig &&
+            gamesScores.fldPlayer == _previousPlayer &&
+            gamesScores.fldSeatIndex == _progress.previousSeatIdx,
+      ).lastOrNull;
+
+      if (scoresBox == null) {
+        return '-';
+      }
+
+      final targetIndex = scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
+      final targets = gGetTargetsForGame(_gameConfig);
+      
+      // Ensure the index is within bounds of the targets list as well
+      if (targetIndex >= 0 && targetIndex < targets.length) {
+        return targets[targetIndex].label;
+      }
+    }
+    
+    return '-';
   }
 
   TblPlayer get _nextPlayer => _gamePlayers[_progress.nextSeatIdx].player;
@@ -199,8 +246,8 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   Color get _nextTeamColor =>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
-  int get _activeTargetValue => gTargetsHalf[_progress.activeTargetIdx].value;
-  int get _nextTargetValue => gTargetsHalf[_progress.nextTargetIdx].value;
+  int get _activeTargetValue => gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
+  int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
@@ -235,39 +282,17 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
 
     // Handle resume mode vs fresh game initialization using the helper
     if (widget.resumeMode) {
-      _progress = gStepGameStateHalf(
-        currentState: GameProgressStateHalf(),
+      _progress = gStepGameStateAC(
+        currentState: GameProgressStateAC(),
         gameState: GlobalGameState.backwardState,
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
     } else {
-      _progress = GameProgressStateHalf();
+      _progress = GameProgressStateAC();
     }
-
-    _slashController = AnimationController(
-      vsync: this,
-      duration: kIsWeb
-          ? Duration(seconds: 30)
-          : Duration(seconds: 2), // Fast like a sword
-    );
-
-    // Hide the animation overlay when it finishes playing
-    _slashController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() {
-          _showSlash = false;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _slashController.dispose(); // Always clean up
-    super.dispose();
   }
 
   // --- LOGIC: GAME OVER ---
@@ -334,32 +359,21 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   }
 
   bool get _hasGamePreviousPlayer {
-    return gamesScoresBox.values.any(
+    /* return gamesScoresBox.values.any(
       (s) => s.fldGame == _gameConfig && s.fldRound >= 0 && s.fldDartIndex >= 2,
+    ); */
+
+    return gamesScoresBox.values.any(
+      (s) => s.fldGame == _gameConfig && s.fldSeatIndex != _progress.activeSeatIdx && s.fldRound >= 0,
     );
   }
 
   bool get _hasGameNextPlayer {
-    final isLastRound = _progress.activeRoundIdx >= gTargetsHalf.length - 1;
+    final isLastRound = _progress.activeRoundIdx >= gGetTargetsForGame(_gameConfig).length - 1;
     final isLastPlayer = _progress.activeSeatIdx >= _gamePlayers.length - 1;
 
     // There is no next player if we are on the final player of the final round
     return !(isLastRound && isLastPlayer);
-  }
-
-  bool _checkIfHalfIt() {
-    final previousDartsThisRound = gamesScoresBox.values
-        .where(
-          (s) =>
-              s.fldGame == _gameConfig &&
-              s.fldPlayer == _activePlayer &&
-              s.fldRound == _progress.activeRoundIdx &&
-              s.fldDartIndex < 2,
-        )
-        .toList();
-
-    return previousDartsThisRound.length == 2 &&
-        previousDartsThisRound.every((d) => d.fldIsMiss);
   }
 
   void _processThrow(int hits) {
@@ -384,13 +398,14 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
 
       // 3. Advance the state machine pointers for the next turn
       // Step state forward using the global helper function
-      _progress = gStepGameStateHalf(
+      _progress = gStepGameStateAC(
         currentState: _progress,
         gameState: GlobalGameState.forwardState,
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        targetsList: gGetTargetsForGame(_gameConfig),
+        hits: hits,
       );
 
       if (_progress.endGame == true) {
@@ -407,37 +422,14 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     bool isDouble = (hits == 2);
     bool isTriple = (hits == 3);
 
-    bool isHalfIt = false;
-    if (_progress.activeDartIdx == 2 && isMiss) {
-      isHalfIt = _checkIfHalfIt();
-    }
-
-    // Trigger slash effect if Half-It penalty occurs
-    if (isHalfIt) {
-      setState(() {
-        _showSlash = true;
-      });
-      _slashController.reset();
-      _slashController.forward();
-    }
-
     int newPlayerScore;
     int? newTeamScore;
 
     if (_isPlayerMode) {
-      if (isHalfIt) {
-        newPlayerScore = (_activePlayerLastScore / 2).round();
-      } else {
-        newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits);
-      }
+      newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits);
     } else {
-      if (isHalfIt) {
-        newPlayerScore = (_activePlayerLastScore / 2).round();
-        newTeamScore = (_activeTeamLastScore / 2).round();
-      } else {
-        newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits);
-        newTeamScore = _activeTeamLastScore + (_activeTargetValue * hits);
-      }
+      newPlayerScore = _activePlayerLastScore + (_activeTargetValue * hits);
+      newTeamScore = _activeTeamLastScore + (_activeTargetValue * hits);
     }
 
     final scoreRecord = TblGameScore(
@@ -448,18 +440,18 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       fldRound: _progress.activeRoundIdx,
       fldTargetIndex: _progress.activeTargetIdx,
       fldTargetValue: _activeTargetValue,
-      fldNextTargetIndex: _progress.activeTargetIdx == _progress.nextTargetIdx 
+      fldNextTargetIndex: (_progress.activeTargetIdx + hits >= gGetTargetsForGame(_gameConfig).length - 1)
         ? null
-        : _progress.nextTargetIdx,
-      fldNextTargetValue: _activeTargetValue == _nextTargetValue
+        : _progress.activeTargetIdx + hits,
+      fldNextTargetValue: (_progress.activeTargetIdx + hits >= gGetTargetsForGame(_gameConfig).length - 1)
         ? null
-        : _nextTargetValue,
+        : gGetTargetsForGame(_gameConfig)[(_progress.activeTargetIdx + hits)].value,
       fldIsSingle: isSingle,
       fldIsDouble: isDouble,
       fldIsTriple: isTriple,
       fldIsMiss: isMiss,
       fldHits: hits,
-      fldIsHalfIt: isHalfIt,
+      fldIsHalfIt: false,
       fldScorePlayerSnapshot: newPlayerScore,
       fldScoreTeamSnapshot: newTeamScore,
     );
@@ -482,13 +474,13 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       gamesScoresBox.delete(gameRecords.last.key);
 
       // 3. Step the state machine backward
-      _progress = gStepGameStateHalf(
+      _progress = gStepGameStateAC(
         currentState: _progress,
         gameState: GlobalGameState.backwardState,
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
     });
   }
@@ -1231,9 +1223,9 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
                                             Expanded(
                                               child: gBuildDartboardInputZone(
                                                 gActiveTargetIdx:
-                                                    _progress.activeRoundIdx,
-                                                gGametype:
-                                                    _gameConfig.fldGameType,
+                                                    _progress.activeTargetIdx,
+                                                gGame:
+                                                    _gameConfig,
                                                 gOnTap: (leap) {
                                                   _processThrow(leap);
                                                 },
@@ -1291,22 +1283,15 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
 
                                                     // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
                                                     ...List.generate(3, (dIdx) {
-                                                      bool isThrown =
-                                                          dIdx <
-                                                          _progress
-                                                              .activeDartIdx;
+                                                      bool isThrown = dIdx < (_progress.activeDartIdx % 3);
                                                       return Padding(
                                                         padding:
                                                             EdgeInsets.symmetric(
-                                                              horizontal:
-                                                                  _responsiveTile *
-                                                                  0.004,
+                                                              horizontal: _responsiveTile * 0.004,
                                                             ),
                                                         child: Icon(
                                                           Icons.circle,
-                                                          size:
-                                                              _responsiveFontSize *
-                                                              2.5,
+                                                          size: _responsiveFontSize * 2.5,
                                                           color: isThrown
                                                               ? Colors
                                                                     .yellowAccent
@@ -1741,27 +1726,6 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
                 ),
               ],
             ),
-
-            // Samurai Slash Overlay Animation Layer
-            if (_showSlash)
-              IgnorePointer(
-                child: Center(
-                  child: Lottie.asset(
-                    'assets/lottie/magic-sword.json',
-                    controller: _slashController,
-                    width: GlobalAppDisplay.safeWidth,
-                    height: _safeHeight,
-                    onLoaded: kIsWeb
-                        ? (composition) {
-                            _slashController.duration =
-                                composition.duration * 20;
-                          }
-                        : (composition) {
-                            _slashController.duration = composition.duration;
-                          },
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -1891,7 +1855,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       child: Column(
         children: [
           Text(
-            "SCORE",
+            "TARGET",
             style: gBuildArcadeTextStyle(
               _responsiveFontSize,
               gFontWeight: FontWeight.bold,
@@ -1903,9 +1867,9 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
             Text(
               isPreviousPlayer
                   ? _hasGamePreviousPlayer
-                        ? _previousPlayerLastScore.toString()
+                        ? _previousPlayerActiveTargetLabel
                         : '-'
-                  : _activePlayerLastScore.toString(),
+                  : _activePlayerActiveTargetLabel,
               style: TextStyle(
                 fontSize: _responsiveFontSize * 2.6,
                 fontWeight: FontWeight.bold,

@@ -154,7 +154,7 @@ Widget buildPlayerStatsGameHalfItTable({
       Expanded(
         child: ListView.builder(
           padding: EdgeInsets.zero,
-          itemCount: gTargetsHalf.length + 1,
+          itemCount: gGetTargetsForGame(gameConfig).length + 1,
           itemBuilder: (context, index) {
             if (index == 0) {
               final startPlayerScore = gameOptions.fldStartingScore;
@@ -219,7 +219,7 @@ Widget buildPlayerStatsGameHalfItTable({
             }
 
             final rIdx = index - 1;
-            final target = gTargetsHalf[rIdx];
+            final target = gGetTargetsForGame(gameConfig)[rIdx];
 
             final roundRecords = gamesScoresBox.values
                 .where(
@@ -959,24 +959,42 @@ Widget buildPlayerStatsGameAroundClockTable({
   required Box<TblGameScore> gamesScoresBox,
   required TblGameOptions gameOptions,
 }) {
+  final targets = gGetTargetsForGame(gameConfig);
+  final ScrollController scrollController = ScrollController();
+
+  // Gather all records for this player in this game
+  final playerRecords = gamesScoresBox.values
+      .where((s) => s.fldGame == gameConfig && s.fldPlayer == player && s.fldSeatIndex == seatIdx)
+      .toList();
+
+  // Find the highest target index currently reached to determine default scroll position
+  int maxTargetIdxReached = 0;
+  for (var r in playerRecords) {
+    final nextTarget = r.fldNextTargetIndex ?? 0;
+    if (nextTarget > maxTargetIdxReached) {
+      maxTargetIdxReached = nextTarget;
+    }
+  }
+
+  // Automatically scroll down to the active/current target after layout
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (scrollController.hasClients) {
+      // Approximate height per row to scroll nicely to the active target
+      final targetOffset = (maxTargetIdxReached * (responsiveTile * 0.05)).clamp(0.0, scrollController.position.maxScrollExtent);
+      scrollController.jumpTo(targetOffset);
+    }
+  });
+
   return Column(
     children: [
       // Table Header Row
       Container(
-        padding: EdgeInsets.only(
-          top: responsiveTile * 0.011,
-          bottom: responsiveTile * 0.011,
-          left: responsiveTile * 0.007,
-          right: responsiveTile * 0.014,
+        padding: EdgeInsets.symmetric(
+          vertical: responsiveTile * 0.011,
+          horizontal: responsiveTile * 0.014,
         ),
         decoration: BoxDecoration(
           color: playerColor,
-          border: Border(
-            bottom: BorderSide(
-              color: playerColor,
-              width: responsiveTile * 0.003,
-            ),
-          ),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(responsiveTile * 0.02),
             topRight: Radius.circular(responsiveTile * 0.02),
@@ -990,203 +1008,72 @@ Widget buildPlayerStatsGameAroundClockTable({
               child: Text(
                 'Target',
                 textAlign: TextAlign.center,
-                style: gBuildArcadeTextStyle(
-                  responsiveFontSize * 0.53,
-                  gFontWeight: FontWeight.bold,
-                ),
+                style: gBuildArcadeTextStyle(responsiveFontSize * 0.53, gFontWeight: FontWeight.bold),
               ),
             ),
             Expanded(
               flex: 3,
               child: Text(
-                'Round',
+                'Round / Status',
                 textAlign: TextAlign.center,
-                style: gBuildArcadeTextStyle(
-                  responsiveFontSize * 0.53,
-                  gFontWeight: FontWeight.bold,
-                ),
+                style: gBuildArcadeTextStyle(responsiveFontSize * 0.53, gFontWeight: FontWeight.bold),
               ),
             ),
             Expanded(
-              flex: 4,
+              flex: 3,
               child: Text(
-                gameConfig.fldPlayersGM ? 'Total' : 'Player/Team',
+                'Hits',
                 textAlign: TextAlign.end,
-                style: gBuildArcadeTextStyle(
-                  responsiveFontSize * 0.53,
-                  gFontWeight: FontWeight.bold,
-                ),
+                style: gBuildArcadeTextStyle(responsiveFontSize * 0.53, gFontWeight: FontWeight.bold),
               ),
             ),
           ],
         ),
       ),
-      // Scrollable Rows
+      // Scrollable Rows for each target in the clock
       Expanded(
         child: ListView.builder(
+          controller: scrollController,
           padding: EdgeInsets.zero,
-          itemCount: gTargetsHalf.length + 1,
+          itemCount: targets.length,
           itemBuilder: (context, index) {
-            if (index == 0) {
-              final startPlayerScore = gameOptions.fldStartingScore;
-              final startTeamScore = gameOptions.fldStartingScore * 2;
-
-              return Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: responsiveTile * 0.005,
-                  horizontal: responsiveTile * 0.014,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade800.withAlpha(120),
-                  border: Border.all(
-                    color: playerColor.withAlpha(200),
-                    width: responsiveTile * 0.002,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        "Start",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: responsiveFontSize,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        "-",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: responsiveFontSize,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        gameConfig.fldPlayersGM
-                            ? '$startPlayerScore'
-                            : '$startPlayerScore / $startTeamScore',
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: responsiveFontSize,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            final rIdx = index - 1;
-            final target = gTargetsHalf[rIdx];
-
-            final roundRecords = gamesScoresBox.values
-                .where(
-                  (s) =>
-                      s.fldGame == gameConfig &&
-                      s.fldPlayer == player &&
-                      s.fldSeatIndex == seatIdx &&
-                      s.fldRound == rIdx &&
-                      (isActivePlayer ? true : s.fldDartIndex >= 2),
-                )
-                .toList();
-
-            final record = roundRecords.isNotEmpty ? roundRecords.last : null;
-            final playerScore = record?.fldScorePlayerSnapshot;
-            final isPenalized = record?.fldIsHalfIt ?? false;
-
-            final allPlayerRecords = gamesScoresBox.values
-                .where(
-                  (s) =>
-                      s.fldGame == gameConfig &&
-                      s.fldPlayer == player &&
-                      s.fldSeatIndex == seatIdx &&
-                      s.fldRound >= 0,
-                )
-                .toList();
-
-            final int? lastThrownRound = allPlayerRecords.isNotEmpty
-                ? allPlayerRecords
-                      .map((s) => s.fldRound)
-                      .reduce((a, b) => a > b ? a : b)
-                : null;
-
-            final bool isLastThrownRound =
-                (lastThrownRound != null && rIdx == lastThrownRound);
-
-            int? teamScore;
-            if (!gameConfig.fldPlayersGM && gameConfig.fldTeams != null) {
-              final int totalTeams = gameConfig.fldTeams!.length;
-              final int teamIdx = seatIdx % totalTeams;
-
-              final roundAllRecords = gamesScoresBox.values
-                  .where(
-                    (s) =>
-                        s.fldGame == gameConfig &&
-                        s.fldRound == rIdx &&
-                        (isActivePlayer ? true : s.fldDartIndex >= 2),
-                  )
-                  .toList();
-
-              final teamRoundRecords = roundAllRecords
-                  .where((s) => (s.fldSeatIndex % totalTeams) == teamIdx)
-                  .toList();
-
-              if (teamRoundRecords.isNotEmpty) {
-                teamScore = teamRoundRecords.last.fldScoreTeamSnapshot;
+            final target = targets[index];
+            
+            // Look for a record where this target was the active target being shot at
+            final matchingRecord = playerRecords.where((s) => s.fldTargetIndex == target.value || s.fldTargetIndex == index + 1).lastOrNull;
+            
+            // Check if this target was bypassed/skipped based on player progression
+            bool isSkipped = false;
+            if (matchingRecord == null) {
+              // If the player's max reached target index is past this target, but no record targeted it directly, it was skipped
+              if (maxTargetIdxReached > index + 1) {
+                isSkipped = true;
               }
             }
 
-            String roundScoreStr = "-";
-            if (record != null) {
-              if (isPenalized) {
-                roundScoreStr = "(Half-It)";
+            String roundStr = "-";
+            String hitsStr = "-";
+            Color rowColor = Colors.transparent;
+
+            if (matchingRecord != null) {
+              roundStr = "Round ${matchingRecord.fldRound + 1}";
+              final hits = matchingRecord.fldHits;
+              if (hits == 1) {
+                hitsStr = "Single (1)";
+              } else if (hits == 2) {
+                hitsStr = "Double (2)";
+              } else if (hits >= 3) {
+                hitsStr = "Triple ($hits)";
               } else {
-                int previousRunningScore;
-                if (rIdx == 0) {
-                  final baselineRecords = gamesScoresBox.values
-                      .where(
-                        (s) =>
-                            s.fldGame == gameConfig &&
-                            s.fldPlayer == player &&
-                            s.fldRound == -1,
-                      )
-                      .toList();
-                  previousRunningScore = baselineRecords.isNotEmpty
-                      ? baselineRecords.last.fldScorePlayerSnapshot
-                      : (gameConfig.fldPlayersGM
-                            ? gameOptions.fldStartingScore
-                            : (gameOptions.fldStartingScore / 2).round());
-                } else {
-                  final prevRoundRecords = gamesScoresBox.values
-                      .where(
-                        (s) =>
-                            s.fldGame == gameConfig &&
-                            s.fldPlayer == player &&
-                            s.fldRound == rIdx - 1,
-                      )
-                      .toList();
-                  previousRunningScore = prevRoundRecords.isNotEmpty
-                      ? prevRoundRecords.last.fldScorePlayerSnapshot
-                      : 0;
-                }
-
-                final int diff = playerScore! - previousRunningScore;
-                roundScoreStr = diff >= 0 ? "+ $diff" : "$diff";
+                hitsStr = "$hits Hit(s)";
               }
+            } else if (isSkipped) {
+              roundStr = "Skipped";
+              hitsStr = "-";
+              rowColor = Colors.grey.shade700.withAlpha(80);
             }
+
+            final bool isCurrentTarget = (index + 1) == maxTargetIdxReached;
 
             return Container(
               padding: EdgeInsets.symmetric(
@@ -1194,14 +1081,9 @@ Widget buildPlayerStatsGameAroundClockTable({
                 horizontal: responsiveTile * 0.014,
               ),
               decoration: BoxDecoration(
-                color: isPenalized
-                    ? Colors.red.shade100
-                    : (isLastThrownRound
-                          ? Colors.grey.shade800.withAlpha(120)
-                          : null),
-                border: Border.all(
-                  color: playerColor.withAlpha(200),
-                  width: responsiveTile * 0.002,
+                color: isCurrentTarget ? Colors.amber.shade900.withAlpha(50) : rowColor,
+                border: Border(
+                  bottom: BorderSide(color: playerColor.withAlpha(100), width: 1),
                 ),
               ),
               child: Row(
@@ -1215,45 +1097,31 @@ Widget buildPlayerStatsGameAroundClockTable({
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: responsiveFontSize,
-                        color: isPenalized
-                            ? Colors.red.shade900
-                            : (isLastThrownRound
-                                  ? Colors.amber
-                                  : Colors.black),
+                        color: isCurrentTarget ? Colors.amber : Colors.black,
                       ),
                     ),
                   ),
                   Expanded(
                     flex: 3,
                     child: Text(
-                      roundScoreStr,
+                      roundStr,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: responsiveFontSize,
-                        color: isPenalized
-                            ? Colors.red.shade900
-                            : (isLastThrownRound
-                                  ? Colors.amber
-                                  : Colors.black),
+                        fontWeight: isSkipped ? FontWeight.normal : FontWeight.bold,
+                        fontSize: responsiveFontSize * 0.9,
+                        color: isSkipped ? Colors.grey.shade400 : Colors.black,
                       ),
                     ),
                   ),
                   Expanded(
-                    flex: 4,
+                    flex: 3,
                     child: Text(
-                      gameConfig.fldPlayersGM
-                          ? '${playerScore ?? '-'}'
-                          : '${playerScore ?? '-'} / ${teamScore ?? '-'}',
+                      hitsStr,
                       textAlign: TextAlign.end,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: responsiveFontSize,
-                        color: isPenalized
-                            ? Colors.red.shade900
-                            : (isLastThrownRound
-                                  ? Colors.amber
-                                  : Colors.black),
+                        fontSize: responsiveFontSize * 0.9,
+                        color: isSkipped ? Colors.grey.shade400 : Colors.black,
                       ),
                     ),
                   ),

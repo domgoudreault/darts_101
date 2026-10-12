@@ -472,10 +472,10 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartEndBull: false,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: false,
-      fldUpDownBull: false,
-      fldShowOptUpDownBull: false,
-      fldMidDoubleBull: false,
-      fldShowOptMidDoubleBull: false,
+      fldUpDownMidBull: false,
+      fldShowOptUpDownMidBull: false,
+      fldUpDownMidDoubleBull: false,
+      fldShowOptUpDownMidDoubleBull: false,
       fldNoSkipWhenBull: false,
       fldShowOptNoSkipWhenBull: false,
     ),
@@ -491,15 +491,15 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartingScore: false,
       fldNbrRounds: 0,
       fldShowOptNbrRounds: false,
-      fldStartEndBull: true,
+      fldStartEndBull: false, //true,
       fldShowOptStartEndBull: true,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: true,
-      fldUpDownBull: true,
-      fldShowOptUpDownBull: true,
-      fldMidDoubleBull: true,
-      fldShowOptMidDoubleBull: true,
-      fldNoSkipWhenBull: true,
+      fldUpDownMidBull: false, //true,
+      fldShowOptUpDownMidBull: true,
+      fldUpDownMidDoubleBull: false, //true,
+      fldShowOptUpDownMidDoubleBull: true,
+      fldNoSkipWhenBull: false, //true,
       fldShowOptNoSkipWhenBull: true,
     ),
     TblGameOptions(
@@ -518,10 +518,10 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartEndBull: false,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: false, 
-      fldUpDownBull: false,
-      fldShowOptUpDownBull: false,
-      fldMidDoubleBull: false,
-      fldShowOptMidDoubleBull: false,
+      fldUpDownMidBull: false,
+      fldShowOptUpDownMidBull: false,
+      fldUpDownMidDoubleBull: false,
+      fldShowOptUpDownMidDoubleBull: false,
       fldNoSkipWhenBull: false,
       fldShowOptNoSkipWhenBull: false,
     ),
@@ -541,10 +541,10 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartEndBull: false,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: false, 
-      fldUpDownBull: false,
-      fldShowOptUpDownBull: false,
-      fldMidDoubleBull: false,
-      fldShowOptMidDoubleBull: false,
+      fldUpDownMidBull: false,
+      fldShowOptUpDownMidBull: false,
+      fldUpDownMidDoubleBull: false,
+      fldShowOptUpDownMidDoubleBull: false,
       fldNoSkipWhenBull: false,
       fldShowOptNoSkipWhenBull: false,
     ),
@@ -564,10 +564,10 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartEndBull: false,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: false, 
-      fldUpDownBull: false,
-      fldShowOptUpDownBull: false,
-      fldMidDoubleBull: false,
-      fldShowOptMidDoubleBull: false,
+      fldUpDownMidBull: false,
+      fldShowOptUpDownMidBull: false,
+      fldUpDownMidDoubleBull: false,
+      fldShowOptUpDownMidDoubleBull: false,
       fldNoSkipWhenBull: false,
       fldShowOptNoSkipWhenBull: false,
     ),
@@ -587,10 +587,10 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartEndBull: false,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: false, 
-      fldUpDownBull: false,
-      fldShowOptUpDownBull: false,
-      fldMidDoubleBull: false,
-      fldShowOptMidDoubleBull: false,
+      fldUpDownMidBull: false,
+      fldShowOptUpDownMidBull: false,
+      fldUpDownMidDoubleBull: false,
+      fldShowOptUpDownMidDoubleBull: false,
       fldNoSkipWhenBull: false,
       fldShowOptNoSkipWhenBull: false,
     ),
@@ -610,10 +610,10 @@ Future<void> gSeedHiveGameOptions(Box<TblGameOptions> optionsBox) async {
       fldShowOptStartEndBull: false,
       fldStartEndDoubleBull: false,
       fldShowOptStartEndDoubleBull: false, 
-      fldUpDownBull: false,
-      fldShowOptUpDownBull: false,
-      fldMidDoubleBull: false,
-      fldShowOptMidDoubleBull: false,
+      fldUpDownMidBull: false,
+      fldShowOptUpDownMidBull: false,
+      fldUpDownMidDoubleBull: false,
+      fldShowOptUpDownMidDoubleBull: false,
       fldNoSkipWhenBull: false,
       fldShowOptNoSkipWhenBull: false,
     ),
@@ -639,6 +639,7 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
     fldPlayersGM: true,
     fldPlayers: gamePlayers,
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -671,16 +672,16 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
   final random = Random();
 
   // Seed throws across targets
-  for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
-    final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
-        ? gTargetsHalf[rIdx + 1].value
+  for (int rIdx = 0; rIdx < gGetTargetsForGame(game).length; rIdx++) {
+    final targetValue = gGetTargetsForGame(game)[rIdx].value;
+    final nextTargetValue = (rIdx < gGetTargetsForGame(game).length - 1)
+        ? gGetTargetsForGame(game)[rIdx + 1].value
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
-          (rIdx == gTargetsHalf.length - 1 &&
+          (rIdx == gGetTargetsForGame(game).length - 1 &&
           seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
@@ -694,13 +695,13 @@ Future<void> gSeedHiveGameHalfItPlayerWinner() async {
 
         int hits;
         if (seatIdx == 0) {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             hits = 3; // Triples every round for a decisive winner
           } else {
             hits = 2; // Doubles on the last round to win
           }
         } else {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             // Randomize between 1 and 3 so there are no misses/half-its
             hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
           } else {
@@ -751,6 +752,7 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
     fldPlayersGM: true,
     fldPlayers: gamePlayers,
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -783,16 +785,16 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
   final random = Random();
 
   // Seed throws across targets ensuring Seat 0, Seat 1 and Seat 2 tie on points
-  for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
-    final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
-        ? gTargetsHalf[rIdx + 1].value
+  for (int rIdx = 0; rIdx < gGetTargetsForGame(game).length; rIdx++) {
+    final targetValue = gGetTargetsForGame(game)[rIdx].value;
+    final nextTargetValue = (rIdx < gGetTargetsForGame(game).length - 1)
+        ? gGetTargetsForGame(game)[rIdx + 1].value
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
-          (rIdx == gTargetsHalf.length - 1 &&
+          (rIdx == gGetTargetsForGame(game).length - 1 &&
           seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
@@ -807,13 +809,13 @@ Future<void> gSeedHiveGameHalfItPlayerTie() async {
 
         int hits;
         if (seatIdx == 0 || seatIdx == 1 || seatIdx == 2) {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             hits = 3; // Triples every round for a decisive winner
           } else {
             hits = 2; // Doubles on the last round to win
           }
         } else {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             // Randomize between 1 and 3 so there are no misses/half-its
             hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
           } else {
@@ -907,6 +909,7 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
     fldPlayers: gamePlayers,
     fldTeams: List<TblTeam>.from(gameTeams),
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -939,16 +942,16 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
   final random = Random();
 
   // Seed throws across targets
-  for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
-    final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
-        ? gTargetsHalf[rIdx + 1].value
+  for (int rIdx = 0; rIdx < gGetTargetsForGame(game).length; rIdx++) {
+    final targetValue = gGetTargetsForGame(game)[rIdx].value;
+    final nextTargetValue = (rIdx < gGetTargetsForGame(game).length - 1)
+        ? gGetTargetsForGame(game)[rIdx + 1].value
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
-          (rIdx == gTargetsHalf.length - 1 &&
+          (rIdx == gGetTargetsForGame(game).length - 1 &&
           seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
@@ -973,13 +976,13 @@ Future<void> gSeedHiveGameHalfItTeamWinner() async {
 
         int hits;
         if (seatIdx == 0) {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             hits = 3; // Triples every round for a decisive winner
           } else {
             hits = 2; // Doubles on the last round to win
           }
         } else {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             // Randomize between 1 and 3 so there are no misses/half-its
             hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
           } else {
@@ -1073,6 +1076,7 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
     fldPlayers: gamePlayers,
     fldTeams: List<TblTeam>.from(gameTeams),
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -1105,16 +1109,16 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
   final random = Random();
 
   // Seed throws across targets
-  for (int rIdx = 0; rIdx < gTargetsHalf.length; rIdx++) {
-    final targetValue = gTargetsHalf[rIdx].value;
-    final nextTargetValue = (rIdx < gTargetsHalf.length - 1)
-        ? gTargetsHalf[rIdx + 1].value
+  for (int rIdx = 0; rIdx < gGetTargetsForGame(game).length; rIdx++) {
+    final targetValue = gGetTargetsForGame(game)[rIdx].value;
+    final nextTargetValue = (rIdx < gGetTargetsForGame(game).length - 1)
+        ? gGetTargetsForGame(game)[rIdx + 1].value
         : 0;
 
     for (int seatIdx = 0; seatIdx < gamePlayers.length; seatIdx++) {
       // Check if this is the very last player on the final round
       bool isLastPlayerFinalRound =
-          (rIdx == gTargetsHalf.length - 1 &&
+          (rIdx == gGetTargetsForGame(game).length - 1 &&
           seatIdx == gamePlayers.length - 1);
       int dartsToThrow = isLastPlayerFinalRound ? 2 : 3;
 
@@ -1141,13 +1145,13 @@ Future<void> gSeedHiveGameHalfItTeamTie() async {
         if (seatIdx == 0 || seatIdx == 1 ||
             seatIdx == 2 || seatIdx == 6 ||
             seatIdx == 7 || seatIdx == 8) {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             hits = 3; // Triples every round for a decisive winner
           } else {
             hits = 2; // Doubles on the last round to win
           }
         } else {
-          if (rIdx != gTargetsHalf.length - 1) {
+          if (rIdx != gGetTargetsForGame(game).length - 1) {
             // Randomize between 1 and 3 so there are no misses/half-its
             hits = random.nextInt(3) + 1; // Gives 1, 2, or 3
           } else {
@@ -1200,6 +1204,7 @@ Future<void> gSeedHiveGame7DartsPlayerWinner() async {
     fldPlayersGM: true,
     fldPlayers: gamePlayers,
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -1269,9 +1274,9 @@ Future<void> gSeedHiveGame7DartsPlayerWinner() async {
           lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
         }
 
-        final targetValue = gTargets7Darts[dIdx].value;
-        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
-          ? gTargets7Darts[dIdx + 1].value
+        final targetValue = gGetTargetsForGame(game)[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gGetTargetsForGame(game).length
+          ? gGetTargetsForGame(game)[dIdx + 1].value
           : 0;
 
         final player = gamePlayers[seatIdx];
@@ -1323,6 +1328,7 @@ Future<void> gSeedHiveGame7DartsPlayerTie() async {
     fldPlayersGM: true,
     fldPlayers: gamePlayers,
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -1392,9 +1398,9 @@ Future<void> gSeedHiveGame7DartsPlayerTie() async {
           lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
         }
 
-        final targetValue = gTargets7Darts[dIdx].value;
-        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
-          ? gTargets7Darts[dIdx + 1].value
+        final targetValue = gGetTargetsForGame(game)[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gGetTargetsForGame(game).length
+          ? gGetTargetsForGame(game)[dIdx + 1].value
           : 0;
 
         final player = gamePlayers[seatIdx];
@@ -1487,6 +1493,7 @@ Future<void> gSeedHiveGame7DartsTeamWinner() async {
     fldPlayers: gamePlayers,
     fldTeams: List<TblTeam>.from(gameTeams),
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -1556,9 +1563,9 @@ Future<void> gSeedHiveGame7DartsTeamWinner() async {
           lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
         }
 
-        final targetValue = gTargets7Darts[dIdx].value;
-        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
-          ? gTargets7Darts[dIdx + 1].value
+        final targetValue = gGetTargetsForGame(game)[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gGetTargetsForGame(game).length
+          ? gGetTargetsForGame(game)[dIdx + 1].value
           : 0;
       
         final player = gamePlayers[seatIdx];
@@ -1664,6 +1671,7 @@ Future<void> gSeedHiveGame7DartsTeamTie() async {
     fldPlayers: gamePlayers,
     fldTeams: List<TblTeam>.from(gameTeams),
     fldIsEnded: false,
+    fldAroundClockMode: 0,
   );
   await gamesBox.add(game);
 
@@ -1735,9 +1743,9 @@ Future<void> gSeedHiveGame7DartsTeamTie() async {
           lastDartPoints = prevDart.fldTargetValue * prevDart.fldHits; // First dart of the turn has no preceding dart
         }
 
-        final targetValue = gTargets7Darts[dIdx].value;
-        final nextTargetValue = dIdx + 1 < gTargets7Darts.length
-          ? gTargets7Darts[dIdx + 1].value
+        final targetValue = gGetTargetsForGame(game)[dIdx].value;
+        final nextTargetValue = dIdx + 1 < gGetTargetsForGame(game).length
+          ? gGetTargetsForGame(game)[dIdx + 1].value
           : 0;
       
         final player = gamePlayers[seatIdx];

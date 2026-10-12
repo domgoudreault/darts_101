@@ -91,6 +91,37 @@ class _RostersSelectionState extends State<RostersSelection> {
       return [...firstHalf, ...secondHalf];
     }
 
+    // Setting the aroundClockMode
+    int aroundClockMode = 0;
+
+    if (widget.enuGameType == GlobalGameType.aroundClock) {
+      // Sets 0 (none), 1 (one bull), or 2 (two bulls) for start/end
+      // bits 1-2 = 00 = 0
+      // bits 1-2 = 01(fldStartEndBull) = 1
+      // bits 1-2 = 10(fldStartEndDoubleBull) = 2
+      if (_gameOptions.fldStartEndDoubleBull) {
+        aroundClockMode |= 2; // bits 0-1 = 10
+      } else if (_gameOptions.fldStartEndBull) {
+        aroundClockMode |= 1; // bits 0-1 = 01
+      }
+
+      // Returns 0 (none), 1 (one middle bull), or 2 (two middle bulls) for up & down
+      // bits 3-4 = 0000 = 0
+      // bits 3-4 = 0100(fldUpDownMidBull) = 1
+      // bits 3-4 = 1000(fldUpDownMidDoubleBull) = 2
+      if (_gameOptions.fldUpDownMidDoubleBull) {
+        aroundClockMode |= (2 << 2); // bits 2-3 = 1000
+      } else if (_gameOptions.fldUpDownMidBull) {
+        aroundClockMode |= (1 << 2); // bits 2-3 = 0100
+      }
+
+      // Sets true if players cannot skip over bullseyes
+      // bit 5 = 10000(fldNoSkipWhenBull)
+      if (_gameOptions.fldNoSkipWhenBull) {
+        aroundClockMode |= 0x10; // bit 4 = 10000
+      }
+    }
+
     // 1. Instantiate the new TblGame using your model fields
     final newGame = TblGame(
       fldGameType: widget.enuGameType,
@@ -100,6 +131,7 @@ class _RostersSelectionState extends State<RostersSelection> {
           ? List<TblTeam>.from(_selectedTeams)
           : null,
       fldIsEnded: false,
+      fldAroundClockMode: aroundClockMode,
     );
 
     // 2. Save it to the games Hive box right away
@@ -147,6 +179,7 @@ class _RostersSelectionState extends State<RostersSelection> {
     switch (widget.enuGameType) {
       case GlobalGameType.halfIt:
       case GlobalGameType.sevenDarts:
+      case GlobalGameType.aroundClock:
         await Navigator.push(
           context,
           MaterialPageRoute(

@@ -171,8 +171,8 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
   int get _nextTeamIndex => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].originalIndex;
   Color get _nextTeamColor => _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
-  int get _activeTargetValue => gTargets7Darts[_progress.activeTargetIdx].value;
-  int get _nextTargetValue => gTargets7Darts[_progress.nextTargetIdx].value;
+  int get _activeTargetValue => gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
+  int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
@@ -212,7 +212,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
         totalRounds: _gameOptions.fldNbrRounds,
-        targetsList: gTargets7Darts,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
     } else {
       _progress = GameProgressState7Darts();
@@ -324,7 +324,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
         totalRounds: _gameOptions.fldNbrRounds,
-        targetsList: gTargets7Darts,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
 
       if (_progress.endGame == true) {
@@ -419,7 +419,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
         totalRounds: _gameOptions.fldNbrRounds,
-        targetsList: gTargets7Darts,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
     });
   }
@@ -1161,8 +1161,8 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
                                               child: gBuildDartboardInputZone(
                                                 gActiveTargetIdx:
                                                     _progress.activeTargetIdx,
-                                                gGametype:
-                                                    _gameConfig.fldGameType,
+                                                gGame:
+                                                    _gameConfig,
                                                 gOnTap: (leap) {
                                                   _processThrow(leap);
                                                 },

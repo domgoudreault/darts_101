@@ -199,8 +199,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
   Color get _nextTeamColor =>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
-  int get _activeTargetValue => gTargetsHalf[_progress.activeTargetIdx].value;
-  int get _nextTargetValue => gTargetsHalf[_progress.nextTargetIdx].value;
+  int get _activeTargetValue => gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
+  int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
@@ -241,7 +241,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
     } else {
       _progress = GameProgressStateHalf();
@@ -340,7 +340,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
   }
 
   bool get _hasGameNextPlayer {
-    final isLastRound = _progress.activeRoundIdx >= gTargetsHalf.length - 1;
+    final isLastRound = _progress.activeRoundIdx >= gGetTargetsForGame(_gameConfig).length - 1;
     final isLastPlayer = _progress.activeSeatIdx >= _gamePlayers.length - 1;
 
     // There is no next player if we are on the final player of the final round
@@ -390,7 +390,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
 
       if (_progress.endGame == true) {
@@ -488,7 +488,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
         gameConfig: _gameConfig,
         gamesScoresBox: gamesScoresBox,
         totalPlayers: _gamePlayers.length,
-        targetsList: gTargetsHalf,
+        targetsList: gGetTargetsForGame(_gameConfig),
       );
     });
   }
@@ -1232,8 +1232,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                                               child: gBuildDartboardInputZone(
                                                 gActiveTargetIdx:
                                                     _progress.activeRoundIdx,
-                                                gGametype:
-                                                    _gameConfig.fldGameType,
+                                                gGame:
+                                                    _gameConfig,
                                                 gOnTap: (leap) {
                                                   _processThrow(leap);
                                                 },

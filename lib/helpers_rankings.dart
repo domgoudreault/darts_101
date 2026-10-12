@@ -8,6 +8,7 @@ import 'package:darts_101/database/tbl_game_score.dart';
 import 'package:darts_101/database/tbl_game_options.dart';
 import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
+import 'package:darts_101/helpers_dartboard.dart';
 
 Widget gBuildGameHalfItRankingWidget({
   required TblGame gameConfig,
@@ -621,34 +622,48 @@ Widget buildGameAroundClockPlayersRankingList({
   required List<({int originalIndex, TblPlayer player, Color playerColor})> gamePlayers,
   required double responsiveTile,
 }) {
-  // Gather latest score for each player
-  final List<({TblPlayer player, int score, Color color, int originalIdx})>
-  playerScores = [];
+  final targets = gGetTargetsForGame(gameConfig);
+
+  // Gather latest target index for each player
+  final List<({TblPlayer player, int targetIndex, String targetLabel, Color color, int originalIdx})>
+  playerRankings = [];
 
   for (var entry in gamePlayers) {
     final pRecords = gamesScoresBox.values
         .where((s) => s.fldGame == gameConfig && s.fldPlayer == entry.player)
         .toList();
 
-    final score = pRecords.isNotEmpty
-        ? pRecords.last.fldScorePlayerSnapshot
-        : gameOptions.fldStartingScore;
-    playerScores.add((
+    final lastRecord = pRecords.isNotEmpty ? pRecords.last : null;
+    
+    // Get the next target index (fallback to 0 if no records yet)
+    final targetIndex = lastRecord != null 
+        ? (lastRecord.fldNextTargetIndex ?? lastRecord.fldTargetIndex) 
+        : 0;
+
+    // Get the target label safely
+    final targetLabel = (targetIndex >= 0 && targetIndex < targets.length)
+        ? targets[targetIndex].label
+        : '-';
+
+    playerRankings.add((
       player: entry.player,
-      score: score,
+      targetIndex: targetIndex,
+      targetLabel: targetLabel,
       color: entry.playerColor,
       originalIdx: entry.originalIndex,
     ));
   }
 
-  // Sort descending by score
-  playerScores.sort((a, b) => b.score.compareTo(a.score));
+  // Sort descending by targetIndex so the player furthest along the clock is #1
+  playerRankings.sort((a, b) => b.targetIndex.compareTo(a.targetIndex));
 
   return ListView.builder(
     padding: EdgeInsets.zero,
-    itemCount: playerScores.length,
+    itemCount: playerRankings.length,
     itemBuilder: (context, index) {
-      final item = playerScores[index];
+      final item = playerRankings[index];
+      final isLeader = index == 0;
+
       return Container(
         padding: EdgeInsets.symmetric(
           vertical: responsiveTile * 0.010,
@@ -662,63 +677,37 @@ Widget buildGameAroundClockPlayersRankingList({
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // Left side: Rank number & Player nickname
             Row(
               children: [
-                index == 0
-                    ? Text(
-                        "${index + 1}.",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                          fontSize: responsiveTile * 0.0425,
-                        ),
-                      )
-                    : Text(
-                        "${index + 1}.",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: responsiveTile * 0.04,
-                        ),
-                      ),
-
+                Text(
+                  "${index + 1}.",
+                  style: TextStyle(
+                    fontWeight: isLeader ? FontWeight.bold : FontWeight.normal,
+                    color: isLeader ? Colors.amber : Colors.white,
+                    fontSize: responsiveTile * (isLeader ? 0.0425 : 0.04),
+                  ),
+                ),
                 SizedBox(width: responsiveTile * 0.005),
-
-                index == 0
-                    ? Text(
-                        item.player.fldNickName,
-                        style: TextStyle(
-                          color: Colors.amber,
-                          fontWeight: FontWeight.bold,
-                          fontSize: responsiveTile * 0.0425,
-                        ),
-                      )
-                    : Text(
-                        item.player.fldNickName,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: responsiveTile * 0.04,
-                        ),
-                      ),
+                Text(
+                  item.player.fldNickName,
+                  style: TextStyle(
+                    color: isLeader ? Colors.amber : Colors.white,
+                    fontWeight: isLeader ? FontWeight.bold : FontWeight.w500,
+                    fontSize: responsiveTile * (isLeader ? 0.0425 : 0.04),
+                  ),
+                ),
               ],
             ),
-
-            index == 0
-                ? Text(
-                    "${item.score}",
-                    style: TextStyle(
-                      color: Colors.amber,
-                      fontWeight: FontWeight.bold,
-                      fontSize: responsiveTile * 0.0425,
-                    ),
-                  )
-                : Text(
-                    "${item.score}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: responsiveTile * 0.04,
-                    ),
-                  ),
+            // Right side: Player's current target label
+            Text(
+              item.targetLabel,
+              style: TextStyle(
+                color: isLeader ? Colors.amber : Colors.white,
+                fontWeight: isLeader ? FontWeight.bold : FontWeight.normal,
+                fontSize: responsiveTile * (isLeader ? 0.0425 : 0.04),
+              ),
+            ),
           ],
         ),
       );

@@ -26,8 +26,8 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
   late int _nbrLives;
   late bool _startEndBull;
   late bool _startEndDoubleBull;
-  late bool _upDownBull;
-  late bool _midDoubleBull;
+  late bool _upDownMidBull;
+  late bool _upDownMidDoubleBull;
   late bool _noSkipWhenBull;
 
   @override
@@ -44,8 +44,8 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     _nbrLives = _options.fldNbrLives;
     _startEndBull = _options.fldStartEndBull;
     _startEndDoubleBull = _options.fldStartEndDoubleBull;
-    _upDownBull = _options.fldUpDownBull;
-    _midDoubleBull = _options.fldMidDoubleBull;
+    _upDownMidBull = _options.fldUpDownMidBull;
+    _upDownMidDoubleBull = _options.fldUpDownMidDoubleBull;
     _noSkipWhenBull = _options.fldNoSkipWhenBull;
   }
 
@@ -55,8 +55,8 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     _options.fldNbrLives = _nbrLives;
     _options.fldStartEndBull = _startEndBull;
     _options.fldStartEndDoubleBull = _startEndDoubleBull;
-    _options.fldUpDownBull = _upDownBull;
-    _options.fldMidDoubleBull = _midDoubleBull;
+    _options.fldUpDownMidBull = _upDownMidBull;
+    _options.fldUpDownMidDoubleBull = _upDownMidDoubleBull;
     _options.fldNoSkipWhenBull = _noSkipWhenBull;
     
     await _options.save(); // Save changes to Hive
@@ -269,15 +269,15 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
               ),
 
             // Up/Down Bull Option (if visible)
-            if (_options.fldShowOptUpDownBull)
+            if (_options.fldShowOptUpDownMidBull)
               _buildSwitchOption(
                 label: 'Game goes Up with one Middle Bullseye and Down',
-                value: _upDownBull,
+                value: _upDownMidBull,
                 onChanged: (val) {
                   setState(() {
-                    _upDownBull = val;
-                    if (!_upDownBull) {
-                      _midDoubleBull = false; // Force false and disable when upDownBull is false
+                    _upDownMidBull = val;
+                    if (!_upDownMidBull) {
+                      _upDownMidDoubleBull = false; // Force false and disable when upDownBull is false
                     }
                   });
                 },
@@ -285,15 +285,15 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
               ),
 
             // Mid Double Bull Option (if visible)
-            if (_options.fldShowOptMidDoubleBull)
+            if (_options.fldShowOptUpDownMidDoubleBull)
               Opacity(
-                opacity: _upDownBull ? 1.0 : 0.4, // Visual cue that it's disabled
+                opacity: _upDownMidBull ? 1.0 : 0.4, // Visual cue that it's disabled
                 child: AbsorbPointer(
-                  absorbing: !_upDownBull, // Blocks touches when upDownBull is false
+                  absorbing: !_upDownMidBull, // Blocks touches when upDownBull is false
                   child: _buildSwitchOption(
                     label: '                                          Middle with two Bullseyes',
-                    value: _midDoubleBull,
-                    onChanged: (val) => setState(() => _midDoubleBull = val),
+                    value: _upDownMidDoubleBull,
+                    onChanged: (val) => setState(() => _upDownMidDoubleBull = val),
                     safeHeight: safeHeight,
                   ),
                 ),

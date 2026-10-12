@@ -641,8 +641,8 @@ Widget buildGameHalfItScoreboardTable({
                       ),
 
                       // --- TARGET ROWS ---
-                      ...List.generate(gTargetsHalf.length, (rowIndex) {
-                        final target = gTargetsHalf[rowIndex];
+                      ...List.generate(gGetTargetsForGame(gameConfig).length, (rowIndex) {
+                        final target = gGetTargetsForGame(gameConfig)[rowIndex];
                         final rIdx = rowIndex;
 
                         return TableRow(
@@ -1237,8 +1237,8 @@ Widget buildGameAroundClockScoreboardTable({
                     ),
 
                     // --- TARGET ROWS ---
-                    ...List.generate(gTargetsHalf.length, (rowIndex) {
-                      final target = gTargetsHalf[rowIndex];
+                    ...List.generate(gGetTargetsForGame(gameConfig).length, (rowIndex) {
+                      final target = gGetTargetsForGame(gameConfig)[rowIndex];
                       final rIdx = rowIndex;
 
                       return TableRow(

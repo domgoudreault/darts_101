@@ -54,16 +54,16 @@ class TblGameOptions extends HiveObject {
   bool fldShowOptStartEndDoubleBull;
 
   @HiveField(15, defaultValue: false)
-  bool fldUpDownBull;
+  bool fldUpDownMidBull;
 
   @HiveField(16, defaultValue: false)
-  bool fldShowOptUpDownBull;
+  bool fldShowOptUpDownMidBull;
 
   @HiveField(17, defaultValue: false)
-  bool fldMidDoubleBull;
+  bool fldUpDownMidDoubleBull;
 
   @HiveField(18, defaultValue: false)
-  bool fldShowOptMidDoubleBull;
+  bool fldShowOptUpDownMidDoubleBull;
 
   @HiveField(19, defaultValue: false)
   bool fldNoSkipWhenBull;
@@ -88,10 +88,10 @@ class TblGameOptions extends HiveObject {
     this.fldShowOptStartEndBull = false,
     required this.fldStartEndDoubleBull,
     this.fldShowOptStartEndDoubleBull = false,
-    required this.fldUpDownBull,
-    this.fldShowOptUpDownBull = false,
-    required this.fldMidDoubleBull,
-    this.fldShowOptMidDoubleBull = false,
+    required this.fldUpDownMidBull,
+    this.fldShowOptUpDownMidBull = false,
+    required this.fldUpDownMidDoubleBull,
+    this.fldShowOptUpDownMidDoubleBull = false,
     required this.fldNoSkipWhenBull,
     this.fldShowOptNoSkipWhenBull = false,
   });
@@ -102,8 +102,8 @@ class TblGameOptions extends HiveObject {
            fldShowOptNbrRounds || 
            fldShowOptStartEndBull || 
            fldShowOptStartEndDoubleBull || 
-           fldShowOptUpDownBull || 
-           fldShowOptMidDoubleBull || 
+           fldShowOptUpDownMidBull || 
+           fldShowOptUpDownMidDoubleBull || 
            fldShowOptNoSkipWhenBull;
   }
 }
