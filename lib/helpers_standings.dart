@@ -9,7 +9,9 @@ import 'package:darts_101/database/tbl_player.dart';
 import 'package:darts_101/database/tbl_team.dart';
 
 // Backend Logic
+import 'package:darts_101/database/enum_game_type.dart';
 import 'package:darts_101/global_be.dart';
+import 'package:darts_101/helpers_dartboard.dart';
 import 'package:darts_101/helpers_ui.dart';
 
 class GameResultRecord<objRef> {
@@ -23,6 +25,7 @@ class GameResultRecord<objRef> {
   final int triplesCount;
   final int doublesCount;
   final int hitsBull;
+  final String? nextTargetLabel;
   int ranking;
 
   GameResultRecord({
@@ -36,8 +39,26 @@ class GameResultRecord<objRef> {
     this.triplesCount = 0,
     this.doublesCount = 0,
     this.hitsBull = 0,
+    this.nextTargetLabel,
     this.ranking = 999,
   });
+}
+
+// Around the Clock progress: (rank value, label). The winner has no next target left.
+({int progress, String label}) _acProgress(
+  TblGame gameConfig,
+  Iterable<TblGameScore> scores,
+) {
+  final targets = gGetTargetsForGame(gameConfig);
+  final played = scores.where((s) => s.fldRound >= 0).toList();
+  if (played.isEmpty) return (progress: 0, label: targets.first.label);
+
+  final last = played.last;
+  if (last.fldNextTargetIndex == null) {
+    return (progress: targets.length, label: 'WIN');
+  }
+  final idx = last.fldNextTargetIndex!;
+  return (progress: idx, label: targets[idx].label);
 }
 
 List<GameResultRecord> gComputeGameResults({
@@ -56,7 +77,9 @@ List<GameResultRecord> gComputeGameResults({
         (s) => s.fldGame == gameConfig && s.fldPlayer == gamePlayer.player,
       );
 
-      final lastScore = playerScores.last.fldScorePlayerSnapshot;
+      final isAC = gameConfig.fldGameType == GlobalGameType.aroundClock;
+      final ac = isAC ? _acProgress(gameConfig, playerScores) : null;
+      final lastScore = ac?.progress ?? playerScores.last.fldScorePlayerSnapshot;
 
       int triples = 0;
       int doubles = 0;
@@ -79,6 +102,7 @@ List<GameResultRecord> gComputeGameResults({
           triplesCount: triples,
           doublesCount: doubles,
           hitsBull: hitsBull,
+          nextTargetLabel: ac?.label,
         ),
       );
     }
@@ -90,7 +114,9 @@ List<GameResultRecord> gComputeGameResults({
         (s) => s.fldGame == gameConfig && teamPlayers.contains(s.fldPlayer),
       );
 
-      final lastScore = teamScores.last.fldScoreTeamSnapshot!;
+      final isAC = gameConfig.fldGameType == GlobalGameType.aroundClock;
+      final ac = isAC ? _acProgress(gameConfig, teamScores) : null;
+      final lastScore = ac?.progress ?? teamScores.last.fldScoreTeamSnapshot!;
 
       int triples = 0;
       int doubles = 0;
@@ -133,16 +159,19 @@ List<GameResultRecord> gComputeGameResults({
           triplesCount: triples,
           doublesCount: doubles,
           hitsBull: hitsBull,
+          nextTargetLabel: ac?.label,
         ),
       );
     }
   }
 
-  // 2. Sort results (Highest score first)
+  // 2. Sort results (Highest score first; Around the Clock ranks on progress only)
+  final bool progressOnly = gameConfig.fldGameType == GlobalGameType.aroundClock;
   finalResults.sort((a, b) {
     if (b.lastScore != a.lastScore) {
       return b.lastScore.compareTo(a.lastScore);
     }
+    if (progressOnly) return 0;
     if (b.triplesCount != a.triplesCount) {
       return b.triplesCount.compareTo(a.triplesCount);
     }
@@ -160,9 +189,10 @@ List<GameResultRecord> gComputeGameResults({
       final curr = finalResults[i];
       bool isIdentical =
           (curr.lastScore == prev.lastScore &&
-          curr.triplesCount == prev.triplesCount &&
-          curr.doublesCount == prev.doublesCount &&
-          curr.hitsBull == prev.hitsBull);
+          (progressOnly ||
+              (curr.triplesCount == prev.triplesCount &&
+                  curr.doublesCount == prev.doublesCount &&
+                  curr.hitsBull == prev.hitsBull)));
       if (!isIdentical) {
         currentRank = i + 1;
       }
@@ -193,15 +223,17 @@ void gshowStandingsDialog({
   final isPlayerMode = gameConfig.fldPlayersGM;
   
   // 1. Extract top record & collect all winners (handles ties)
+  final bool isAC = gameConfig.fldGameType == GlobalGameType.aroundClock;
   final topScore = finalResults.first;
 
   final List<GameResultRecord> winners = finalResults
     .where(
       (result) =>
           result.lastScore == topScore.lastScore &&
-          result.triplesCount == topScore.triplesCount &&
-          result.doublesCount == topScore.doublesCount &&
-          result.hitsBull == topScore.hitsBull,
+          (isAC ||
+              (result.triplesCount == topScore.triplesCount &&
+                  result.doublesCount == topScore.doublesCount &&
+                  result.hitsBull == topScore.hitsBull)),
     )
     .toList();
 
@@ -509,7 +541,7 @@ void gshowStandingsDialog({
           buildStandingsData(headerFlex, "${res.triplesCount}", TextAlign.center, isWinner, isTie, false),
           buildStandingsData(headerFlex, "${res.doublesCount}", TextAlign.center, isWinner, isTie, false),
           buildStandingsData(headerFlex, "${res.hitsBull}", TextAlign.center, isWinner, isTie, false),
-          buildStandingsData(headerFlex, "${res.lastScore}", TextAlign.right, isWinner, isTie, false),
+          buildStandingsData(headerFlex, res.nextTargetLabel ?? "${res.lastScore}", TextAlign.right, isWinner, isTie, false),
         ],
       ),
     );
@@ -628,7 +660,7 @@ void gshowStandingsDialog({
                                       buildStandingsHeader(headerFlex, isPlayerMode ? "TRIPLES" : isTie ? "TRIPLES" : "TRP", TextAlign.center, isTie),
                                       buildStandingsHeader(headerFlex, isPlayerMode ? "DOUBLES" : isTie ? "DOUBLES" : "DBL", TextAlign.center, isTie),
                                       buildStandingsHeader(headerFlex, "BULLS", TextAlign.center, isTie),
-                                      buildStandingsHeader(headerFlex, isPlayerMode ? "POINTS" : isTie ? "POINTS" : "PTS", TextAlign.right, isTie),
+                                      buildStandingsHeader(headerFlex, isAC ? "TARGET" : isPlayerMode ? "POINTS" : isTie ? "POINTS" : "PTS", TextAlign.right, isTie),
                                     ],
                                   ),
 

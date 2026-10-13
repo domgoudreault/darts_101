@@ -967,12 +967,16 @@ Widget buildPlayerStatsGameAroundClockTable({
       .where((s) => s.fldGame == gameConfig && s.fldPlayer == player && s.fldSeatIndex == seatIdx)
       .toList();
 
-  // Find the highest target index currently reached to determine default scroll position
-  int maxTargetIdxReached = 0;
-  for (var r in playerRecords) {
-    final nextTarget = r.fldNextTargetIndex ?? 0;
-    if (nextTarget > maxTargetIdxReached) {
-      maxTargetIdxReached = nextTarget;
+  // Current target = where the player's last throw left them (null next index = finished)
+  final int maxTargetIdxReached = playerRecords.isEmpty
+      ? 0
+      : (playerRecords.last.fldNextTargetIndex ?? targets.length);
+
+  // Targets jumped over by a multi-hit (e.g. a double on target i skips i + 1)
+  final Set<int> skippedIdx = {};
+  for (final r in playerRecords) {
+    for (int k = r.fldTargetIndex + 1; k < r.fldTargetIndex + r.fldHits; k++) {
+      skippedIdx.add(k);
     }
   }
 
@@ -1039,17 +1043,10 @@ Widget buildPlayerStatsGameAroundClockTable({
           itemBuilder: (context, index) {
             final target = targets[index];
             
-            // Look for a record where this target was the active target being shot at
-            final matchingRecord = playerRecords.where((s) => s.fldTargetIndex == target.value || s.fldTargetIndex == index + 1).lastOrNull;
-            
-            // Check if this target was bypassed/skipped based on player progression
-            bool isSkipped = false;
-            if (matchingRecord == null) {
-              // If the player's max reached target index is past this target, but no record targeted it directly, it was skipped
-              if (maxTargetIdxReached > index + 1) {
-                isSkipped = true;
-              }
-            }
+            // Records thrown at this target; only a throw with hits > 0 actually hit it
+            final targetRecords = playerRecords.where((s) => s.fldTargetIndex == index).toList();
+            final matchingRecord = targetRecords.where((s) => s.fldHits > 0).lastOrNull;
+            final bool isSkipped = matchingRecord == null && skippedIdx.contains(index);
 
             String roundStr = "-";
             String hitsStr = "-";
@@ -1071,9 +1068,12 @@ Widget buildPlayerStatsGameAroundClockTable({
               roundStr = "Skipped";
               hitsStr = "-";
               rowColor = Colors.grey.shade700.withAlpha(80);
+            } else if (targetRecords.isNotEmpty) {
+              roundStr = "Round ${targetRecords.last.fldRound + 1}";
+              hitsStr = "${targetRecords.length} Miss";
             }
 
-            final bool isCurrentTarget = (index + 1) == maxTargetIdxReached;
+            final bool isCurrentTarget = index == maxTargetIdxReached;
 
             return Container(
               padding: EdgeInsets.symmetric(

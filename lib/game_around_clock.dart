@@ -247,7 +247,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
   int get _activeTargetValue => gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
-  int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
+  //int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
   int get _activePlayerCurrentRoundHits {
@@ -440,10 +440,10 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       fldRound: _progress.activeRoundIdx,
       fldTargetIndex: _progress.activeTargetIdx,
       fldTargetValue: _activeTargetValue,
-      fldNextTargetIndex: (_progress.activeTargetIdx + hits >= gGetTargetsForGame(_gameConfig).length - 1)
+      fldNextTargetIndex: (_progress.activeTargetIdx + hits > gGetTargetsForGame(_gameConfig).length - 1)
         ? null
         : _progress.activeTargetIdx + hits,
-      fldNextTargetValue: (_progress.activeTargetIdx + hits >= gGetTargetsForGame(_gameConfig).length - 1)
+      fldNextTargetValue: (_progress.activeTargetIdx + hits > gGetTargetsForGame(_gameConfig).length - 1)
         ? null
         : gGetTargetsForGame(_gameConfig)[(_progress.activeTargetIdx + hits)].value,
       fldIsSingle: isSingle,

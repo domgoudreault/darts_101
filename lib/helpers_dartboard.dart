@@ -852,16 +852,12 @@ GameProgressStateAC gStepGameStateAC({
       } else {
         currentState.activeRoundIdx = lastRec.fldRound;
       }
-      // Reset dart index count for the new player's turn batch
-      currentState.activeDartIdx = 0;
     } else if (turnCompleted && !hasMissed) {
       // Hit all 3 successfully -> player takes back darts and continues in the same seat
       currentState.previousSeatIdx = lastRec.fldSeatIndex;
       currentState.activeSeatIdx = lastRec.fldSeatIndex;
       currentState.previousRoundIdx = lastRec.fldRound;
       currentState.activeRoundIdx = lastRec.fldRound;
-      // Reset dart index count for the next 3-dart batch in the same seat
-      currentState.activeDartIdx = 0;
     } else {
       // Mid-turn (e.g. dart index 1 or 2 of 3)
       currentState.previousSeatIdx = lastRec.fldSeatIndex;
@@ -888,18 +884,19 @@ GameProgressStateAC gStepGameStateAC({
       currentState.nextTargetIdx = targetsList.length - 1;
     }
 
-    // 4. Set previous context pointers from the record before lastRec if available
-    if (updatedRecords.length > 1) {
-      final prevRecord = updatedRecords[updatedRecords.length - 2];
-      currentState.previousSeatIdx = prevRecord.fldSeatIndex;
-      currentState.previousDartIdx = prevRecord.fldDartIndex;
-      currentState.previousRoundIdx = prevRecord.fldRound;
-      currentState.previousTargetIdx = prevRecord.fldTargetIndex;
+    // 4. Previous pointers: the last throw is lastRec (same as forward), and the
+    // previous player's round must match the previous seat (the seat just before the active one)
+    currentState.previousDartIdx = lastRec.fldDartIndex;
+    currentState.previousTargetIdx = lastRec.fldTargetIndex;
+    // Like the forward path, the previous player is the last one who played before the active seat
+    final otherSeatRecords =
+        updatedRecords.where((s) => s.fldSeatIndex != currentState.activeSeatIdx);
+    if (otherSeatRecords.isNotEmpty) {
+      currentState.previousSeatIdx = otherSeatRecords.last.fldSeatIndex;
+      currentState.previousRoundIdx = otherSeatRecords.last.fldRound;
     } else {
       currentState.previousSeatIdx = currentState.activeSeatIdx;
-      currentState.previousDartIdx = lastRec.fldDartIndex;
       currentState.previousRoundIdx = lastRec.fldRound;
-      currentState.previousTargetIdx = lastRec.fldTargetIndex;
     }
   }
 
