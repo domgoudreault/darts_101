@@ -537,7 +537,7 @@ void gshowStandingsDialog({
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           buildStandingsData(headerFlex, "${res.ranking}.", TextAlign.center, isWinner, isTie, false),
-          buildStandingsData(5, res.displayName, TextAlign.left, isWinner, isTie, true),
+          buildStandingsData(isPlayerMode ? 5 : isTie ? 5 : 4, res.displayName, TextAlign.left, isWinner, isTie, true),
           buildStandingsData(headerFlex, "${res.triplesCount}", TextAlign.center, isWinner, isTie, false),
           buildStandingsData(headerFlex, "${res.doublesCount}", TextAlign.center, isWinner, isTie, false),
           buildStandingsData(headerFlex, "${res.hitsBull}", TextAlign.center, isWinner, isTie, false),
@@ -656,7 +656,7 @@ void gshowStandingsDialog({
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       buildStandingsHeader(headerFlex,"RANK", TextAlign.center, isTie),
-                                      buildStandingsHeader(5, !isPlayerMode ? "TEAMS" : "PLAYERS", TextAlign.left, isTie),
+                                      buildStandingsHeader(isPlayerMode ? 5 : isTie ? 5 : 4, !isPlayerMode ? "TEAMS" : "PLAYERS", TextAlign.left, isTie),
                                       buildStandingsHeader(headerFlex, isPlayerMode ? "TRIPLES" : isTie ? "TRIPLES" : "TRP", TextAlign.center, isTie),
                                       buildStandingsHeader(headerFlex, isPlayerMode ? "DOUBLES" : isTie ? "DOUBLES" : "DBL", TextAlign.center, isTie),
                                       buildStandingsHeader(headerFlex, "BULLS", TextAlign.center, isTie),

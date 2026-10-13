@@ -725,28 +725,37 @@ Widget buildGameAroundClockTeamsRankingList({
 }) {
   if (gameTeams.isEmpty) return const SizedBox.shrink();
 
-  final List<({TblTeam team, int score, Color color})> teamScores = [];
+  final targets = gGetTargetsForGame(gameConfig);
+  // "score" holds the next target label displayed; "idx" is the progress used for sorting
+  final List<({TblTeam team, String score, int idx, Color color})> teamScores = [];
 
   for (var entry in gameTeams) {
-    final teamPlayerNames = entry.team.fldPlayers
-        .map((p) => p.fldNickName)
-        .toSet();
-    final tRecords = gamesScoresBox.values
+    // Seats are interleaved by team: team = seat % number of teams
+    final lastRecord = gamesScoresBox.values
         .where(
           (s) =>
               s.fldGame == gameConfig &&
-              teamPlayerNames.contains(s.fldPlayer.fldNickName),
+              s.fldRound >= 0 &&
+              s.fldSeatIndex % gameTeams.length == entry.originalIndex,
         )
-        .toList();
+        .lastOrNull;
 
-    final score = tRecords.isNotEmpty
-        ? (tRecords.last.fldScoreTeamSnapshot ?? gameOptions.fldStartingScore)
-        : gameOptions.fldStartingScore;
-    teamScores.add((team: entry.team, score: score, color: entry.teamColor));
+    final targetIndex = lastRecord != null
+        ? (lastRecord.fldNextTargetIndex ?? lastRecord.fldTargetIndex)
+        : 0;
+    final label = (targetIndex >= 0 && targetIndex < targets.length)
+        ? targets[targetIndex].label
+        : '-';
+    teamScores.add((
+      team: entry.team,
+      score: label,
+      idx: targetIndex,
+      color: entry.teamColor,
+    ));
   }
 
-  // Sort descending by score
-  teamScores.sort((a, b) => b.score.compareTo(a.score));
+  // Sort descending by progress so the team furthest along the clock is #1
+  teamScores.sort((a, b) => b.idx.compareTo(a.idx));
 
   return ListView.builder(
     padding: EdgeInsets.zero,
@@ -814,7 +823,7 @@ Widget buildGameAroundClockTeamsRankingList({
 
             index == 0
                 ? Text(
-                    "${item.score}",
+                    item.score,
                     style: TextStyle(
                       color: Colors.amber,
                       fontWeight: FontWeight.bold,
@@ -822,7 +831,7 @@ Widget buildGameAroundClockTeamsRankingList({
                     ),
                   )
                 : Text(
-                    "${item.score}",
+                    item.score,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: responsiveTile * 0.0325,

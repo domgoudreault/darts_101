@@ -139,7 +139,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       ).lastOrNull;
 
       if (scoresBox == null) {
-        return _activeTargetValue.toString();
+        return _activeTargetLabel;
       }
 
       final targetIndex = scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
@@ -151,7 +151,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       }
     }
     
-    return _activeTargetValue.toString();
+    return _activeTargetLabel;
   }
 
   TblPlayer get _previousPlayer =>
@@ -160,17 +160,6 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       _gamePlayers[_progress.previousSeatIdx].originalIndex;
   Color get _previousPlayerColor =>
       _gamePlayers[_progress.previousSeatIdx].playerColor;
-  int get _previousPlayerLastScore {
-    return gamesScoresBox.values
-        .lastWhere(
-          (gamesScores) =>
-              gamesScores.fldGame == _gameConfig &&
-              gamesScores.fldPlayer == _previousPlayer &&
-              gamesScores.fldSeatIndex == _progress.previousSeatIdx,
-        )
-        .fldScorePlayerSnapshot;
-  }
-
   String get _previousPlayerActiveTargetLabel {
     if (_hasGameStarted) {
       // Use where().lastOrNull to safely return null if no matching score is found
@@ -195,6 +184,23 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     }
     
     return '-';
+  }
+
+  String _teamTargetLabelForSeat(int seatIdx, String fallback) {
+    final teamCount = _gameTeams.length;
+    if (!_hasGameStarted || teamCount == 0) return fallback;
+    final last = gamesScoresBox.values
+        .where(
+          (s) =>
+              s.fldGame == _gameConfig &&
+              s.fldRound >= 0 &&
+              s.fldSeatIndex % teamCount == seatIdx % teamCount,
+        )
+        .lastOrNull;
+    if (last == null) return fallback;
+    final targets = gGetTargetsForGame(_gameConfig);
+    final idx = last.fldNextTargetIndex ?? last.fldTargetIndex;
+    return (idx >= 0 && idx < targets.length) ? targets[idx].label : fallback;
   }
 
   TblPlayer get _nextPlayer => _gamePlayers[_progress.nextSeatIdx].player;
@@ -226,19 +232,6 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       _gameTeams[_progress.previousSeatIdx % _gameTeams.length].originalIndex;
   Color get _previousTeamColor =>
       _gameTeams[_progress.previousSeatIdx % _gameTeams.length].teamColor;
-  int get _previousTeamLastScore {
-    final teamScores = gamesScoresBox.values.where(
-      (gamesScores) =>
-          gamesScores.fldGame == _gameConfig &&
-          _gameTeams.any(
-            (gameTeams) =>
-                gameTeams.team == _previousTeam &&
-                gameTeams.team.fldPlayers.contains(gamesScores.fldPlayer),
-          ),
-    );
-    return teamScores.last.fldScoreTeamSnapshot!;
-  }
-
   TblTeam get _nextTeam =>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].team;
   int get _nextTeamIndex =>
@@ -247,6 +240,8 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
   int get _activeTargetValue => gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
+  String get _activeTargetLabel =>
+      gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].label;
   //int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
 
   // Get total hits for the active player in their current round and specific seat index so far
@@ -376,7 +371,22 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     return !(isLastRound && isLastPlayer);
   }
 
-  void _processThrow(int hits) {
+  // With "no skip on bullseye", a dart can't jump over a bull and a bull dart
+  // can't jump over a number: hits are capped to the run of same-kind targets.
+  int _capHitsForNoSkip(int hits) {
+    if (!_gameConfig.getACModeisNoSkip || hits <= 1) return hits;
+    final targets = gGetTargetsForGame(_gameConfig);
+    final isBull = targets[_progress.activeTargetIdx].value == 25;
+    int run = 0;
+    for (int i = _progress.activeTargetIdx; i < targets.length; i++) {
+      if ((targets[i].value == 25) != isBull) break;
+      run++;
+    }
+    return hits < run ? hits : run;
+  }
+
+  void _processThrow(int requestedHits) {
+    final hits = _capHitsForNoSkip(requestedHits);
     setState(() {
       bool isMiss = (hits == 0);
 
@@ -1863,104 +1873,39 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
             textAlign: TextAlign.center,
           ),
 
-          if (_isPlayerMode) ...[
-            Text(
-              isPreviousPlayer
-                  ? _hasGamePreviousPlayer
-                        ? _previousPlayerActiveTargetLabel
-                        : '-'
-                  : _activePlayerActiveTargetLabel,
-              style: TextStyle(
-                fontSize: _responsiveFontSize * 2.6,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
-                  Shadow(
-                    offset: Offset(
-                      -(_responsiveFontSize * 0.12),
-                      _responsiveFontSize * 0.12,
-                    ),
-                    color: Colors.black,
-                    blurRadius: 0.5,
+          Text(
+            isPreviousPlayer
+                ? _hasGamePreviousPlayer
+                      ? (_isPlayerMode
+                            ? _previousPlayerActiveTargetLabel
+                            : _teamTargetLabelForSeat(
+                                _progress.previousSeatIdx,
+                                '-',
+                              ))
+                      : '-'
+                : (_isPlayerMode
+                      ? _activePlayerActiveTargetLabel
+                      : _teamTargetLabelForSeat(
+                          _progress.activeSeatIdx,
+                          _activeTargetLabel,
+                        )),
+            style: TextStyle(
+              fontSize: _responsiveFontSize * 2.6,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  offset: Offset(
+                    -(_responsiveFontSize * 0.12),
+                    _responsiveFontSize * 0.12,
                   ),
-                ],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ] else ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  isPreviousPlayer
-                      ? _hasGamePreviousPlayer
-                            ? _previousPlayerLastScore.toString()
-                            : '-'
-                      : _activePlayerLastScore.toString(),
-                  style: TextStyle(
-                    fontSize: _responsiveFontSize * 2.2,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(
-                          -(_responsiveFontSize * 0.12),
-                          _responsiveFontSize * 0.12,
-                        ),
-                        color: Colors.black,
-                        blurRadius: 0.5,
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                Text(
-                  '/',
-                  style: TextStyle(
-                    fontSize: _responsiveFontSize * 2.4,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.yellowAccent,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(
-                          -(_responsiveFontSize * 0.12),
-                          _responsiveFontSize * 0.12,
-                        ),
-                        color: Colors.black,
-                        blurRadius: 0.5,
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                Text(
-                  isPreviousPlayer
-                      ? _hasGamePreviousPlayer
-                            ? _previousTeamLastScore.toString()
-                            : '-'
-                      : _activeTeamLastScore.toString(),
-                  style: TextStyle(
-                    fontSize: _responsiveFontSize * 2.2,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(
-                          -(_responsiveFontSize * 0.12),
-                          _responsiveFontSize * 0.12,
-                        ),
-                        color: Colors.black,
-                        blurRadius: 0.5,
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
+                  color: Colors.black,
+                  blurRadius: 0.5,
                 ),
               ],
             ),
-          ],
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );

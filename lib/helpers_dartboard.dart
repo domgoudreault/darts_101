@@ -724,6 +724,28 @@ class GameProgressStateAC {
   });
 }
 
+// Target a seat resumes from. In team mode every player shares the progression
+// of his team (seats are interleaved: team = seat % number of teams).
+int _gAcResumeTargetIdx(
+  TblGame gameConfig,
+  Box<TblGameScore> gamesScoresBox,
+  int seatIdx,
+) {
+  final teamCount = gameConfig.fldPlayersGM ? 0 : (gameConfig.fldTeams?.length ?? 0);
+  final last = gamesScoresBox.values
+      .where(
+        (s) =>
+            s.fldGame == gameConfig &&
+            s.fldRound >= 0 &&
+            (teamCount > 0
+                ? s.fldSeatIndex % teamCount == seatIdx % teamCount
+                : s.fldSeatIndex == seatIdx),
+      )
+      .lastOrNull;
+  if (last == null) return 0;
+  return last.fldNextTargetIndex ?? last.fldTargetIndex;
+}
+
 GameProgressStateAC gStepGameStateAC({
   required GameProgressStateAC currentState,
   required GlobalGameState gameState,
@@ -786,19 +808,11 @@ GameProgressStateAC gStepGameStateAC({
           currentState.activeRoundIdx++;
         }
 
-        // If this is not the first round
-        if (currentState.activeRoundIdx != 0) {
-          // Directly grab the next player's last recorded state from the database
-          final lastPlayerRec = gamesScoresBox.values
-              .lastWhere((s) => s.fldGame == gameConfig && s.fldSeatIndex == currentState.activeSeatIdx);
-
-          // Resume from where they left off using their last recorded next target index
-          currentState.activeTargetIdx = lastPlayerRec.fldNextTargetIndex ?? lastPlayerRec.fldTargetIndex;
-        // If it's the first round, default values ... because it will get -1 from the database
-        } else {
-          currentState.activeTargetIdx = 0;
-          currentState.nextTargetIdx = 1;
-        }
+        currentState.activeTargetIdx = _gAcResumeTargetIdx(
+          gameConfig,
+          gamesScoresBox,
+          currentState.activeSeatIdx,
+        );
         
         if (currentState.activeTargetIdx < targetsList.length - 1) {
           currentState.nextTargetIdx = currentState.activeTargetIdx + 1;
@@ -867,16 +881,11 @@ GameProgressStateAC gStepGameStateAC({
     }
 
     // 3. Restore the correct target index for the active player/seat from their latest snapshot
-    final activeSeatRecords = updatedRecords
-        .where((s) => s.fldSeatIndex == currentState.activeSeatIdx)
-        .toList();
-
-    if (activeSeatRecords.isNotEmpty) {
-      final lastSeatRec = activeSeatRecords.last;
-      currentState.activeTargetIdx = lastSeatRec.fldNextTargetIndex ?? lastSeatRec.fldTargetIndex;
-    } else {
-      currentState.activeTargetIdx = 0;
-    }
+    currentState.activeTargetIdx = _gAcResumeTargetIdx(
+      gameConfig,
+      gamesScoresBox,
+      currentState.activeSeatIdx,
+    );
 
     if (currentState.activeTargetIdx < targetsList.length - 1) {
       currentState.nextTargetIdx = currentState.activeTargetIdx + 1;
