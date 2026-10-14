@@ -186,6 +186,24 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     return '-';
   }
 
+  // Current target index of a seat (shared by the whole team in team mode)
+  int _seatTargetIdx(int seatIdx) {
+    final teamCount = _isPlayerMode ? 0 : _gameTeams.length;
+    final last = gamesScoresBox.values
+        .where(
+          (s) =>
+              s.fldGame == _gameConfig &&
+              s.fldRound >= 0 &&
+              (teamCount > 0
+                  ? s.fldSeatIndex % teamCount == seatIdx % teamCount
+                  : s.fldSeatIndex == seatIdx),
+        )
+        .lastOrNull;
+    if (last == null) return 0;
+    final idx = last.fldNextTargetIndex ?? last.fldTargetIndex;
+    return idx < 0 ? 0 : idx;
+  }
+
   String _teamTargetLabelForSeat(int seatIdx, String fallback) {
     final teamCount = _gameTeams.length;
     if (!_hasGameStarted || teamCount == 0) return fallback;
@@ -1873,38 +1891,85 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
             textAlign: TextAlign.center,
           ),
 
-          Text(
-            isPreviousPlayer
-                ? _hasGamePreviousPlayer
-                      ? (_isPlayerMode
-                            ? _previousPlayerActiveTargetLabel
-                            : _teamTargetLabelForSeat(
-                                _progress.previousSeatIdx,
-                                '-',
-                              ))
-                      : '-'
-                : (_isPlayerMode
-                      ? _activePlayerActiveTargetLabel
-                      : _teamTargetLabelForSeat(
-                          _progress.activeSeatIdx,
-                          _activeTargetLabel,
-                        )),
-            style: TextStyle(
-              fontSize: _responsiveFontSize * 2.6,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  offset: Offset(
-                    -(_responsiveFontSize * 0.12),
-                    _responsiveFontSize * 0.12,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (!(isPreviousPlayer && !_hasGamePreviousPlayer) &&
+                  gAcIsGoingDown(
+                        _gameConfig,
+                        _seatTargetIdx(
+                          isPreviousPlayer
+                              ? _progress.previousSeatIdx
+                              : _progress.activeSeatIdx,
+                        ),
+                      ) !=
+                      null)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
                   ),
-                  color: Colors.black,
-                  blurRadius: 0.5,
+                  child: Icon(
+                    gAcIsGoingDown(
+                          _gameConfig,
+                          _seatTargetIdx(
+                            isPreviousPlayer
+                                ? _progress.previousSeatIdx
+                                : _progress.activeSeatIdx,
+                          ),
+                        )!
+                        ? Icons.arrow_downward
+                        : Icons.arrow_upward,
+                    color: gAcIsGoingDown(
+                              _gameConfig,
+                              _seatTargetIdx(
+                                isPreviousPlayer
+                                    ? _progress.previousSeatIdx
+                                    : _progress.activeSeatIdx,
+                              ),
+                            )!
+                            ? Colors.red.shade700
+                            : Colors.green.shade700,
+                    
+                    size: _responsiveFontSize * 2.2,
+                  ),
                 ),
-              ],
-            ),
-            textAlign: TextAlign.center,
+                SizedBox(width: _responsiveTile * 0.02),
+              Text(
+                isPreviousPlayer
+                    ? _hasGamePreviousPlayer
+                          ? (_isPlayerMode
+                                ? _previousPlayerActiveTargetLabel
+                                : _teamTargetLabelForSeat(
+                                    _progress.previousSeatIdx,
+                                    '-',
+                                  ))
+                          : '-'
+                    : (_isPlayerMode
+                          ? _activePlayerActiveTargetLabel
+                          : _teamTargetLabelForSeat(
+                              _progress.activeSeatIdx,
+                              _activeTargetLabel,
+                            )),
+                style: TextStyle(
+                  fontSize: _responsiveFontSize * 2.6,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(
+                        -(_responsiveFontSize * 0.12),
+                        _responsiveFontSize * 0.12,
+                      ),
+                      color: Colors.black,
+                      blurRadius: 0.5,
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ],
       ),

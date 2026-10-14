@@ -700,13 +700,35 @@ Widget buildGameAroundClockPlayersRankingList({
               ],
             ),
             // Right side: Player's current target label
-            Text(
-              item.targetLabel,
-              style: TextStyle(
-                color: isLeader ? Colors.amber : Colors.white,
-                fontWeight: isLeader ? FontWeight.bold : FontWeight.normal,
-                fontSize: responsiveTile * (isLeader ? 0.0425 : 0.04),
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (gAcIsGoingDown(gameConfig, item.targetIndex) != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      gAcIsGoingDown(gameConfig, item.targetIndex)!
+                          ? Icons.arrow_downward
+                          : Icons.arrow_upward,
+                      color: gAcIsGoingDown(gameConfig, item.targetIndex)!
+                          ? Colors.red.shade700
+                          : Colors.green.shade700,
+                      size: responsiveTile * (isLeader ? 0.0425 : 0.04),
+                    ),
+                  ),
+                  SizedBox(width: responsiveTile * 0.01),
+                Text(
+                  item.targetLabel,
+                  style: TextStyle(
+                    color: isLeader ? Colors.amber : Colors.white,
+                    fontWeight: isLeader ? FontWeight.bold : FontWeight.normal,
+                    fontSize: responsiveTile * (isLeader ? 0.0425 : 0.04),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -821,22 +843,27 @@ Widget buildGameAroundClockTeamsRankingList({
               ],
             ),
 
-            index == 0
-                ? Text(
-                    item.score,
-                    style: TextStyle(
-                      color: Colors.amber,
-                      fontWeight: FontWeight.bold,
-                      fontSize: responsiveTile * 0.04,
-                    ),
-                  )
-                : Text(
-                    item.score,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: responsiveTile * 0.0325,
-                    ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (gAcIsGoingDown(gameConfig, item.idx) != null)
+                  Icon(
+                    gAcIsGoingDown(gameConfig, item.idx)!
+                        ? Icons.arrow_downward
+                        : Icons.arrow_upward,
+                    color: index == 0 ? Colors.amber : Colors.white,
+                    size: responsiveTile * (index == 0 ? 0.04 : 0.0325),
                   ),
+                Text(
+                  item.score,
+                  style: TextStyle(
+                    color: index == 0 ? Colors.amber : Colors.white,
+                    fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal,
+                    fontSize: responsiveTile * (index == 0 ? 0.04 : 0.0325),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       );

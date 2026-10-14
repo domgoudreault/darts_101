@@ -12,7 +12,7 @@ import 'package:darts_101/global_be.dart';
 
 class GameOptionsDialog extends StatefulWidget {
   final GlobalGameType enuGameType;
-  
+
   const GameOptionsDialog({super.key, required this.enuGameType});
 
   @override
@@ -37,7 +37,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     _options = optionsBox.values.firstWhere(
       (opt) => opt.fldGameType == widget.enuGameType,
     );
-    
+
     // Initialize local state from database record
     _startingScore = _options.fldStartingScore;
     _nbrRounds = _options.fldNbrRounds;
@@ -58,39 +58,66 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     _options.fldUpDownMidBull = _upDownMidBull;
     _options.fldUpDownMidDoubleBull = _upDownMidDoubleBull;
     _options.fldNoSkipWhenBull = _noSkipWhenBull;
-    
+
     await _options.save(); // Save changes to Hive
     if (mounted) Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final safeHeight = GlobalAppDisplay.safeHeight;
+    // Subscribe to window resizes so the dialog rebuilds, and refresh the globals
+    GlobalAppDisplay.globalEnumDisplayMode(context);
+    // Floor the scale so fonts/buttons stay usable in very small windows
+    // (the content scrolls instead of shrinking to unreadable sizes).
+    final safeHeight = GlobalAppDisplay.safeHeight < 600
+        ? 600.0
+        : GlobalAppDisplay.safeHeight;
     final safeWidth = GlobalAppDisplay.safeWidth;
+    final maxContentHeight = MediaQuery.sizeOf(context).height * 0.6;
 
     return AlertDialog(
       backgroundColor: widget.enuGameType.tileColor, // Colors.grey.shade900,
-      
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: safeWidth * 0.05,
+        vertical: MediaQuery.sizeOf(context).height * 0.03,
+      ),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: safeWidth * 0.02,
+        vertical: safeHeight * 0.01,
+      ),
+      actionsPadding: EdgeInsets.symmetric(
+        horizontal: safeWidth * 0.02,
+        vertical: safeHeight * 0.015,
+      ),
+
       title: Center(
         child: Text(
           'Options',
-          style: gBuildArcadeTextStyle(safeHeight * 0.025, gFontWeight: FontWeight.bold),
+          style: gBuildArcadeTextStyle(
+            safeHeight * 0.025,
+            gFontWeight: FontWeight.bold,
+          ),
         ),
       ),
       content: SizedBox(
-        width: safeWidth * 0.35,
+        width: safeWidth * 0.6,
+        height: maxContentHeight,
+        child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               widget.enuGameType.tileDisplayName,
-              style: gBuildArcadeTextStyle(safeHeight * 0.025, gFontWeight: FontWeight.bold),
+              style: gBuildArcadeTextStyle(
+                safeHeight * 0.025,
+                gFontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
 
             SizedBox(height: safeHeight * 0.02),
-            
+
             // Starting Score Option (if visible)
             if (_options.fldShowOptStartingScore)
               Padding(
@@ -99,44 +126,56 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Starting Score', 
+                      'Starting Score',
                       style: TextStyle(
-                        fontSize: safeHeight * 0.025, 
-                        fontWeight: FontWeight.w500, 
-                        color: Colors.white
+                        fontSize: safeHeight * 0.025,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
                     ),
                     Row(
                       children: [
-                        _buildPillButton(safeHeight, 
+                        _buildPillButton(
+                          safeHeight,
                           Icon(
                             Icons.remove,
                             color: Color.fromARGB(255, 207, 20, 17),
                             size: safeHeight * 0.025,
                           ),
-                          () => setState(() => _startingScore = (_startingScore - 25).clamp(25, 200))
-                        ),
-
-                        SizedBox(width: safeHeight * 0.01),
-                        
-                        Text(
-                          '$_startingScore', 
-                          style: TextStyle(
-                            fontSize: safeHeight * 0.025,
-                            fontWeight: FontWeight.w500, 
-                            color: Colors.white
+                          () => setState(
+                            () => _startingScore = (_startingScore - 25).clamp(
+                              25,
+                              200,
+                            ),
                           ),
                         ),
 
                         SizedBox(width: safeHeight * 0.01),
 
-                        _buildPillButton(safeHeight, 
+                        Text(
+                          '$_startingScore',
+                          style: TextStyle(
+                            fontSize: safeHeight * 0.025,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        SizedBox(width: safeHeight * 0.01),
+
+                        _buildPillButton(
+                          safeHeight,
                           Icon(
                             Icons.add,
                             color: Color.fromARGB(255, 207, 20, 17),
                             size: safeHeight * 0.025,
                           ),
-                          () => setState(() => _startingScore = (_startingScore + 25).clamp(25, 200))
+                          () => setState(
+                            () => _startingScore = (_startingScore + 25).clamp(
+                              25,
+                              200,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -152,44 +191,50 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Number of Rounds', 
+                      'Number of Rounds',
                       style: TextStyle(
-                        fontSize: safeHeight * 0.025, 
-                        fontWeight: FontWeight.w500, 
-                        color: Colors.white
+                        fontSize: safeHeight * 0.025,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
                     ),
                     Row(
                       children: [
-                        _buildPillButton(safeHeight, 
+                        _buildPillButton(
+                          safeHeight,
                           Icon(
                             Icons.remove,
                             color: Color.fromARGB(255, 207, 20, 17),
                             size: safeHeight * 0.025,
                           ),
-                          () => setState(() => _nbrRounds = (_nbrRounds - 1).clamp(3, 7))
-                        ),
-
-                        SizedBox(width: safeHeight * 0.01),
-                        
-                        Text(
-                          '$_nbrRounds', 
-                          style: TextStyle(
-                            fontSize: safeHeight * 0.025,
-                            fontWeight: FontWeight.w500, 
-                            color: Colors.white
+                          () => setState(
+                            () => _nbrRounds = (_nbrRounds - 1).clamp(3, 7),
                           ),
                         ),
 
                         SizedBox(width: safeHeight * 0.01),
 
-                        _buildPillButton(safeHeight, 
+                        Text(
+                          '$_nbrRounds',
+                          style: TextStyle(
+                            fontSize: safeHeight * 0.025,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        SizedBox(width: safeHeight * 0.01),
+
+                        _buildPillButton(
+                          safeHeight,
                           Icon(
                             Icons.add,
                             color: Color.fromARGB(255, 207, 20, 17),
                             size: safeHeight * 0.025,
                           ),
-                          () => setState(() => _nbrRounds = (_nbrRounds + 1).clamp(3, 7))
+                          () => setState(
+                            () => _nbrRounds = (_nbrRounds + 1).clamp(3, 7),
+                          ),
                         ),
                       ],
                     ),
@@ -205,58 +250,64 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Number of Lives', 
+                      'Number of Lives',
                       style: TextStyle(
-                        fontSize: safeHeight * 0.025, 
-                        fontWeight: FontWeight.w500, 
-                        color: Colors.white
+                        fontSize: safeHeight * 0.025,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
                     ),
                     Row(
                       children: [
-                        _buildPillButton(safeHeight, 
+                        _buildPillButton(
+                          safeHeight,
                           Icon(
                             Icons.remove,
                             color: Color.fromARGB(255, 207, 20, 17),
                             size: safeHeight * 0.025,
                           ),
-                          () => setState(() => _nbrLives = (_nbrLives - 1).clamp(3, 9))
-                        ),
-
-                        SizedBox(width: safeHeight * 0.01),
-                        
-                        Text(
-                          '$_nbrLives', 
-                          style: TextStyle(
-                            fontSize: safeHeight * 0.025,
-                            fontWeight: FontWeight.w500, 
-                            color: Colors.white
+                          () => setState(
+                            () => _nbrLives = (_nbrLives - 1).clamp(3, 9),
                           ),
                         ),
 
                         SizedBox(width: safeHeight * 0.01),
 
-                        _buildPillButton(safeHeight, 
+                        Text(
+                          '$_nbrLives',
+                          style: TextStyle(
+                            fontSize: safeHeight * 0.025,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        SizedBox(width: safeHeight * 0.01),
+
+                        _buildPillButton(
+                          safeHeight,
                           Icon(
                             Icons.add,
                             color: Color.fromARGB(255, 207, 20, 17),
                             size: safeHeight * 0.025,
                           ),
-                          () => setState(() => _nbrLives = (_nbrLives + 1).clamp(3, 9))
+                          () => setState(
+                            () => _nbrLives = (_nbrLives + 1).clamp(3, 9),
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-            
+
             // Start/End Bull Option (if visible)
             if (_options.fldShowOptStartEndBull)
               _buildSwitchOption(
                 label: 'Start and End the game with one Bullseye',
                 value: _startEndBull,
                 onChanged: (val) => setState(() => _startEndBull = val),
-                safeHeight: safeHeight
+                safeHeight: safeHeight,
               ),
 
             // Start/End Double Bull Option (if visible)
@@ -265,7 +316,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                 label: 'Start and End the game with two Bullseyes',
                 value: _startEndDoubleBull,
                 onChanged: (val) => setState(() => _startEndDoubleBull = val),
-                safeHeight: safeHeight
+                safeHeight: safeHeight,
               ),
 
             // Up/Down Bull Option (if visible)
@@ -277,23 +328,29 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                   setState(() {
                     _upDownMidBull = val;
                     if (!_upDownMidBull) {
-                      _upDownMidDoubleBull = false; // Force false and disable when upDownBull is false
+                      _upDownMidDoubleBull =
+                          false; // Force false and disable when upDownBull is false
                     }
                   });
                 },
-                safeHeight: safeHeight
+                safeHeight: safeHeight,
               ),
 
             // Mid Double Bull Option (if visible)
             if (_options.fldShowOptUpDownMidDoubleBull)
               Opacity(
-                opacity: _upDownMidBull ? 1.0 : 0.4, // Visual cue that it's disabled
+                opacity: _upDownMidBull
+                    ? 1.0
+                    : 0.4, // Visual cue that it's disabled
                 child: AbsorbPointer(
-                  absorbing: !_upDownMidBull, // Blocks touches when upDownBull is false
+                  absorbing:
+                      !_upDownMidBull, // Blocks touches when upDownBull is false
                   child: _buildSwitchOption(
-                    label: '                                          Middle with two Bullseyes',
+                    label: 'Middle with two Bullseyes',
+                    indent: true,
                     value: _upDownMidDoubleBull,
-                    onChanged: (val) => setState(() => _upDownMidDoubleBull = val),
+                    onChanged: (val) =>
+                        setState(() => _upDownMidDoubleBull = val),
                     safeHeight: safeHeight,
                   ),
                 ),
@@ -310,30 +367,45 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
               ),
           ],
         ),
+        ),
       ),
       actions: [
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Color.fromARGB(255, 207, 20, 17)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromARGB(255, 207, 20, 17),
+            minimumSize: Size(safeWidth * 0.12, safeHeight * 0.06),
+            padding: EdgeInsets.symmetric(
+              horizontal: safeWidth * 0.02,
+              vertical: safeHeight * 0.01,
+            ),
+          ),
           onPressed: () => Navigator.pop(context),
           child: Text(
-            'Cancel', 
+            'Cancel',
             style: TextStyle(
-              fontSize: safeHeight * 0.025, 
+              fontSize: safeHeight * 0.025,
               fontWeight: FontWeight.w500,
-              color: Colors.white
+              color: Colors.white,
             ),
           ),
         ),
-        
+
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.amber,
+            minimumSize: Size(safeWidth * 0.12, safeHeight * 0.06),
+            padding: EdgeInsets.symmetric(
+              horizontal: safeWidth * 0.02,
+              vertical: safeHeight * 0.01,
+            ),
+          ),
           onPressed: _saveOptions,
           child: Text(
-            'Save', 
+            'Save',
             style: TextStyle(
-              fontSize: safeHeight * 0.025, 
+              fontSize: safeHeight * 0.025,
               fontWeight: FontWeight.w500,
-              color: Colors.black
+              color: Colors.black,
             ),
           ),
         ),
@@ -341,7 +413,11 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     );
   }
 
-  Widget _buildPillButton(double safeHeight, Icon pillIcon, VoidCallback onTap){
+  Widget _buildPillButton(
+    double safeHeight,
+    Icon pillIcon,
+    VoidCallback onTap,
+  ) {
     // Pill container around the "+" button
     return SizedBox(
       width: safeHeight * 0.03,
@@ -349,22 +425,15 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.amber,
-          borderRadius: BorderRadius.circular(
-            safeHeight * 0.012,
-          ),
-          border: Border.all(
-            color: Colors.black,
-            width: safeHeight * 0.0015,
-          ),
+          borderRadius: BorderRadius.circular(safeHeight * 0.012),
+          border: Border.all(color: Colors.black, width: safeHeight * 0.0015),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(safeHeight * 0.016),
             onTap: onTap,
-            child: Center(
-              child: pillIcon,
-            ),
+            child: Center(child: pillIcon),
           ),
         ),
       ),
@@ -377,23 +446,29 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
     required ValueChanged<bool> onChanged,
     required double safeHeight,
     bool hasInfo = false,
+    bool indent = false,
   }) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: safeHeight * 0.005),
+      padding: EdgeInsets.only(
+        top: safeHeight * 0.005,
+        bottom: safeHeight * 0.005,
+        left: indent ? GlobalAppDisplay.safeWidth * 0.08 : 0,
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            hasInfo ? '$label ' : label,
-            style: TextStyle(
-              fontSize: safeHeight * 0.02,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: safeHeight * 0.02,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
             ),
           ),
           if (hasInfo) ...[
             _buildPillButton(
-              safeHeight, 
+              safeHeight,
               Icon(
                 Icons.question_mark, // or Icons.info_outline
                 color: Color.fromARGB(255, 207, 20, 17),
@@ -406,17 +481,35 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                     backgroundColor: widget.enuGameType.tileColor,
                     title: Text(
                       'No Skip on Bullseye',
-                      style: gBuildArcadeTextStyle(safeHeight * 0.025, gFontWeight: FontWeight.bold),
+                      style: gBuildArcadeTextStyle(
+                        safeHeight * 0.025,
+                        gFontWeight: FontWeight.bold,
+                      ),
                     ),
                     content: Text(
                       'No Skipping when arriving to Bullseyes or after hitting them',
-                      style: TextStyle(fontSize: safeHeight * 0.02, color: Colors.white),
+                      style: TextStyle(
+                        fontSize: safeHeight * 0.02,
+                        color: Colors.white,
+                      ),
                     ),
                     actions: [
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          minimumSize: Size(
+                            GlobalAppDisplay.safeWidth * 0.12,
+                            safeHeight * 0.06,
+                          ),
+                        ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Got it', style: TextStyle(color: Colors.black)),
+                        child: Text(
+                          'Got it',
+                          style: TextStyle(
+                            fontSize: safeHeight * 0.025,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -424,13 +517,18 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
               },
             ),
 
-            const Spacer(),
           ],
 
-          Switch(
-            value: value,
-            activeThumbColor: Colors.amber,
-            onChanged: onChanged,
+          // Scale the switch with the screen (default Switch is fixed size)
+          SizedBox(
+            height: safeHeight * 0.06,
+            child: FittedBox(
+              child: Switch(
+                value: value,
+                activeThumbColor: Colors.amber,
+                onChanged: onChanged,
+              ),
+            ),
           ),
         ],
       ),

@@ -419,6 +419,26 @@ final List<({int value, String label})> gTargetsACUpDown2Start2 = [
   (value: 25, label: 'BULL'),
 ];
 
+// Up/down mode only: true when the target index is on the way down (after the
+// middle bull run), false when going up, null when the game has no middle bull.
+bool? gAcIsGoingDown(TblGame game, int targetIdx) {
+  if (game.fldGameType != GlobalGameType.aroundClock ||
+      game.getACModeNbrMiddleBulls == 0) {
+    return null;
+  }
+  final targets = gGetTargetsForGame(game);
+  for (int i = 1; i < targets.length; i++) {
+    if (targets[i].value == 25 && targets[i - 1].value != 25) {
+      int j = i;
+      while (j + 1 < targets.length && targets[j + 1].value == 25) {
+        j++;
+      }
+      if (j < targets.length - 1) return targetIdx > j;
+    }
+  }
+  return null;
+}
+
 List<({int value, String label})> gGetTargetsForGame(TblGame game) {
   switch (game.fldGameType) {
     case GlobalGameType.halfIt:

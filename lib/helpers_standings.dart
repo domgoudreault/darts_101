@@ -79,7 +79,8 @@ List<GameResultRecord> gComputeGameResults({
 
       final isAC = gameConfig.fldGameType == GlobalGameType.aroundClock;
       final ac = isAC ? _acProgress(gameConfig, playerScores) : null;
-      final lastScore = ac?.progress ?? playerScores.last.fldScorePlayerSnapshot;
+      final lastScore =
+          ac?.progress ?? playerScores.last.fldScorePlayerSnapshot;
 
       int triples = 0;
       int doubles = 0;
@@ -166,7 +167,8 @@ List<GameResultRecord> gComputeGameResults({
   }
 
   // 2. Sort results (Highest score first; Around the Clock ranks on progress only)
-  final bool progressOnly = gameConfig.fldGameType == GlobalGameType.aroundClock;
+  final bool progressOnly =
+      gameConfig.fldGameType == GlobalGameType.aroundClock;
   finalResults.sort((a, b) {
     if (b.lastScore != a.lastScore) {
       return b.lastScore.compareTo(a.lastScore);
@@ -221,21 +223,21 @@ void gshowStandingsDialog({
   required double cardSlicedHeightOuterSize,
 }) {
   final isPlayerMode = gameConfig.fldPlayersGM;
-  
+
   // 1. Extract top record & collect all winners (handles ties)
   final bool isAC = gameConfig.fldGameType == GlobalGameType.aroundClock;
   final topScore = finalResults.first;
 
   final List<GameResultRecord> winners = finalResults
-    .where(
-      (result) =>
-          result.lastScore == topScore.lastScore &&
-          (isAC ||
-              (result.triplesCount == topScore.triplesCount &&
-                  result.doublesCount == topScore.doublesCount &&
-                  result.hitsBull == topScore.hitsBull)),
-    )
-    .toList();
+      .where(
+        (result) =>
+            result.lastScore == topScore.lastScore &&
+            (isAC ||
+                (result.triplesCount == topScore.triplesCount &&
+                    result.doublesCount == topScore.doublesCount &&
+                    result.hitsBull == topScore.hitsBull)),
+      )
+      .toList();
 
   final bool isTie = winners.length > 1;
 
@@ -351,9 +353,7 @@ void gshowStandingsDialog({
                   ),
                   decoration: BoxDecoration(
                     color: (winners[0].color).withAlpha(220),
-                    borderRadius: BorderRadius.circular(
-                      responsiveTile * 0.015,
-                    ),
+                    borderRadius: BorderRadius.circular(responsiveTile * 0.015),
                   ),
                   child: Text(
                     isTie
@@ -487,24 +487,33 @@ void gshowStandingsDialog({
     );
   }
 
-  Widget buildStandingsHeader(int headerFlex, String headerText, TextAlign headerAlign, bool isTie) {
+  Widget buildStandingsHeader(
+    int headerFlex,
+    String headerText,
+    TextAlign headerAlign,
+    bool isTie,
+  ) {
     return Expanded(
       flex: headerFlex,
       child: Text(
         headerText,
         textAlign: headerAlign,
         style: gBuildArcadeTextStyle(
-          (responsiveFontSize * 0.6).clamp(
-            responsiveFontSize * 0.5,
-            60,
-          ),
+          (responsiveFontSize * 0.6).clamp(responsiveFontSize * 0.5, 60),
           gFontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget buildStandingsData(int dataFlex, String dataText, TextAlign dataAlign, bool isWinner, bool isTie, bool isOverflow) {
+  Widget buildStandingsData(
+    int dataFlex,
+    String dataText,
+    TextAlign dataAlign,
+    bool isWinner,
+    bool isTie,
+    bool isOverflow,
+  ) {
     return Expanded(
       flex: dataFlex,
       child: Text(
@@ -520,8 +529,16 @@ void gshowStandingsDialog({
     );
   }
 
-  Widget buildCreateListResults(GameResultRecord<dynamic> res, bool isWinner, bool isTie) {
-    final int headerFlex = isPlayerMode ? 2 : isTie ? 2 : 1;
+  Widget buildCreateListResults(
+    GameResultRecord<dynamic> res,
+    bool isWinner,
+    bool isTie,
+  ) {
+    final int headerFlex = isPlayerMode
+        ? 2
+        : isTie
+        ? 2
+        : 1;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -536,18 +553,68 @@ void gshowStandingsDialog({
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          buildStandingsData(headerFlex, "${res.ranking}.", TextAlign.center, isWinner, isTie, false),
-          buildStandingsData(isPlayerMode ? 5 : isTie ? 5 : 4, res.displayName, TextAlign.left, isWinner, isTie, true),
-          buildStandingsData(headerFlex, "${res.triplesCount}", TextAlign.center, isWinner, isTie, false),
-          buildStandingsData(headerFlex, "${res.doublesCount}", TextAlign.center, isWinner, isTie, false),
-          buildStandingsData(headerFlex, "${res.hitsBull}", TextAlign.center, isWinner, isTie, false),
-          buildStandingsData(headerFlex, res.nextTargetLabel ?? "${res.lastScore}", TextAlign.right, isWinner, isTie, false),
+          buildStandingsData(
+            headerFlex,
+            "${res.ranking}.",
+            TextAlign.center,
+            isWinner,
+            isTie,
+            false,
+          ),
+          buildStandingsData(
+            isPlayerMode
+                ? 5
+                : isTie
+                ? 5
+                : 4,
+            res.displayName,
+            TextAlign.left,
+            isWinner,
+            isTie,
+            true,
+          ),
+          buildStandingsData(
+            headerFlex,
+            "${res.triplesCount}",
+            TextAlign.center,
+            isWinner,
+            isTie,
+            false,
+          ),
+          buildStandingsData(
+            headerFlex,
+            "${res.doublesCount}",
+            TextAlign.center,
+            isWinner,
+            isTie,
+            false,
+          ),
+          buildStandingsData(
+            headerFlex,
+            "${res.hitsBull}",
+            TextAlign.center,
+            isWinner,
+            isTie,
+            false,
+          ),
+          buildStandingsData(
+            headerFlex,
+            res.nextTargetLabel ?? "${res.lastScore}",
+            TextAlign.right,
+            isWinner,
+            isTie,
+            false,
+          ),
         ],
       ),
     );
   }
-  
-  final int headerFlex = isPlayerMode ? 2 : isTie ? 2 : 1;
+
+  final int headerFlex = isPlayerMode
+      ? 2
+      : isTie
+      ? 2
+      : 1;
 
   showDialog(
     context: context,
@@ -586,7 +653,8 @@ void gshowStandingsDialog({
                               avatarHeight: avatarHeight,
                               avatarHeightOuterSize: avatarHeightOuterSize,
                               avatarSlicedWidth: avatarSlicedWidth,
-                              avatarSlicedWidthOuterSize: avatarSlicedWidthOuterSize,
+                              avatarSlicedWidthOuterSize:
+                                  avatarSlicedWidthOuterSize,
                               slotBgColor: winners[0].color,
                               playerPosition: winners[0].playerPosition1,
                               responsiveTile: responsiveTile,
@@ -625,9 +693,13 @@ void gshowStandingsDialog({
                         ),
                         child: Column(
                           children: [
-                            SingleChildScrollView(
-                              padding: EdgeInsets.all(
+                            // Fixed part: title + header
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
                                 responsiveTile * 0.005,
+                                responsiveTile * 0.005,
+                                responsiveTile * 0.005,
+                                0,
                               ),
                               child: Column(
                                 children: [
@@ -635,17 +707,24 @@ void gshowStandingsDialog({
                                   Container(
                                     width: double.infinity,
                                     alignment: Alignment.center,
-                                    padding: EdgeInsets.symmetric(vertical: responsiveTile * 0.01),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: responsiveTile * 0.01,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: (winners[0].color).withAlpha(220),
                                       borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(responsiveTile * 0.025),
+                                        top: Radius.circular(
+                                          responsiveTile * 0.025,
+                                        ),
                                         bottom: Radius.zero,
                                       ),
                                     ),
                                     child: Text(
                                       "FINAL STANDINGS",
-                                      style: gBuildArcadeTextStyle(responsiveFontSize, gFontWeight: FontWeight.bold),
+                                      style: gBuildArcadeTextStyle(
+                                        responsiveFontSize,
+                                        gFontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
 
@@ -655,28 +734,87 @@ void gshowStandingsDialog({
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      buildStandingsHeader(headerFlex,"RANK", TextAlign.center, isTie),
-                                      buildStandingsHeader(isPlayerMode ? 5 : isTie ? 5 : 4, !isPlayerMode ? "TEAMS" : "PLAYERS", TextAlign.left, isTie),
-                                      buildStandingsHeader(headerFlex, isPlayerMode ? "TRIPLES" : isTie ? "TRIPLES" : "TRP", TextAlign.center, isTie),
-                                      buildStandingsHeader(headerFlex, isPlayerMode ? "DOUBLES" : isTie ? "DOUBLES" : "DBL", TextAlign.center, isTie),
-                                      buildStandingsHeader(headerFlex, "BULLS", TextAlign.center, isTie),
-                                      buildStandingsHeader(headerFlex, isAC ? "TARGET" : isPlayerMode ? "POINTS" : isTie ? "POINTS" : "PTS", TextAlign.right, isTie),
+                                      buildStandingsHeader(
+                                        headerFlex,
+                                        "RANK",
+                                        TextAlign.center,
+                                        isTie,
+                                      ),
+                                      buildStandingsHeader(
+                                        isPlayerMode
+                                            ? 5
+                                            : isTie
+                                            ? 5
+                                            : 4,
+                                        !isPlayerMode ? "TEAMS" : "PLAYERS",
+                                        TextAlign.left,
+                                        isTie,
+                                      ),
+                                      buildStandingsHeader(
+                                        headerFlex,
+                                        isPlayerMode
+                                            ? "TRIPLES"
+                                            : isTie
+                                            ? "TRIPLES"
+                                            : "TRP",
+                                        TextAlign.center,
+                                        isTie,
+                                      ),
+                                      buildStandingsHeader(
+                                        headerFlex,
+                                        isPlayerMode
+                                            ? "DOUBLES"
+                                            : isTie
+                                            ? "DOUBLES"
+                                            : "DBL",
+                                        TextAlign.center,
+                                        isTie,
+                                      ),
+                                      buildStandingsHeader(
+                                        headerFlex,
+                                        "BULLS",
+                                        TextAlign.center,
+                                        isTie,
+                                      ),
+                                      buildStandingsHeader(
+                                        headerFlex,
+                                        isAC
+                                            ? "TARGET"
+                                            : isPlayerMode
+                                            ? "POINTS"
+                                            : isTie
+                                            ? "POINTS"
+                                            : "PTS",
+                                        TextAlign.right,
+                                        isTie,
+                                      ),
                                     ],
                                   ),
 
                                   const Divider(color: Colors.white),
-
-                                  // Map the results directly into the column
-                                  ...finalResults.map((res) {
-                                    final bool isWinner = res.ranking == 1;
-
-                                    return buildCreateListResults(
-                                      res,
-                                      isWinner,
-                                      isTie,
-                                    );
-                                  }),
                                 ],
+                              ),
+                            ),
+
+                            // Scrollable part: takes the remaining height
+                            Expanded(
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: responsiveTile * 0.005,
+                                ),
+                                child: Column(
+                                  children: [
+                                    ...finalResults.map((res) {
+                                      final bool isWinner = res.ranking == 1;
+
+                                      return buildCreateListResults(
+                                        res,
+                                        isWinner,
+                                        isTie,
+                                      );
+                                    }),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
