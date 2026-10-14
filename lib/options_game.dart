@@ -370,7 +370,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
         ),
       ),
       actions: [
-        ElevatedButton(
+        ElevatedButton( 
           style: ElevatedButton.styleFrom(
             backgroundColor: Color.fromARGB(255, 207, 20, 17),
             minimumSize: Size(safeWidth * 0.12, safeHeight * 0.06),
