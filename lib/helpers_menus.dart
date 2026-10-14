@@ -85,7 +85,7 @@ String gGetGameRulesSection(GlobalGameType gameType) {
           "   • You can configure the middle milestone to require two Bullseyes (can be changed in options of the game)\n\n"
           "No Skip on Bullseyes Option: (can be changed in options of the game)\n"
           "   • Prevents players from bypassing Bullseyes using high-value multipliers,\n"
-          "     even if a massive score or multiplier would normally let you skip numbers or Bulleye(s),\n"
+          "     even if a massive score or multiplier would normally let you skip numbers or Bullseye(s),\n"
           "     you must explicitly hit the required Bullseye(s) without skipping";
     case GlobalGameType.allFives:
       return "All Fives Rules:\n\n"
@@ -103,8 +103,18 @@ String gGetGameRulesSection(GlobalGameType gameType) {
           "2. Precision under pressure decides the ultimate survivor.";
     case GlobalGameType.buildUp:
       return "Team Build-up Rules:\n\n"
-          "1. Teams collaborate to build up scores across shared target sectors.\n"
-          "2. Strategic coordination between team members maximizes total points per round.";
+          "1 • Players take turns in their lane throwing 3 darts at specific targets\n"
+          "       in a set sequence (10 through 20 and finishing with one Bullseye to close it out)\n\n"
+          "2. • You can skip numbers by hitting doubles or triples that let you advance faster\n\n"
+          "No Skip on Bullseye Option by default\n"
+          "   • Prevents players from bypassing the final Bullseye using high-value multipliers,\n"
+          "     even if a massive score or multiplier would normally let you skip numbers or Bullseye,\n"
+          "     you must explicitly hit the required Bullseye without skipping\n\n"
+          "3. • Teams will be constructed at the end of the game based on the final standings\n"
+          "       The winner will be playing with the lowest-ranked player and so on, forming balanced\n"
+          "       teams based on the final standings.  If there is an uneven number of players, the winner\n"
+          "       could decide to play alone in dummy mode in all the games or let the mid player of the final\n"
+          "       standings to play alone in dummy mode";
   }
 }
 
@@ -659,6 +669,46 @@ class GlobalGameAroundClockPopupMenu extends StatelessWidget {
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
         _buildMenuItem('gac_pop_menu_info', 'Information'),
         _buildMenuItem('gac_pop_menu_rules', 'Game Rules'),        
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(String value, String text) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Text(
+        text,
+        style: gBuildArcadeTextStyle(
+          (GlobalAppDisplay.safeWidth * 0.012).clamp(11.0, 18.0),
+        ),
+      ),
+    );
+  }
+}
+
+class GlobalGameBuildUpPopupMenu extends StatelessWidget {
+  final GlobalGameType enuGameType;
+
+  const GlobalGameBuildUpPopupMenu({super.key, required this.enuGameType});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      color: Colors.grey.shade700,
+      iconColor: Colors.white,
+      onSelected: (String value) {
+        switch (value) {
+          case 'gbu_pop_menu_rules':
+            gShowGameRulesDialog(context, enuGameType);
+            break;
+          case 'gbu_pop_menu_info':
+            gShowInformationDialog(context);
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMenuItem('gbu_pop_menu_info', 'Information'),
+        _buildMenuItem('gbu_pop_menu_rules', 'Game Rules'),        
       ],
     );
   }

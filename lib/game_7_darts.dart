@@ -229,7 +229,7 @@ class _Game7DartsScreenState extends State<Game7DartsScreen>
       gameTeams: _gameTeams
     );
 
-    gshowStandingsDialog(
+    gShowStandingsDialog(
       context: context,
       gameConfig: _gameConfig,
       finalResults: finalResults,

@@ -281,7 +281,7 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
       gameTeams: _gameTeams
     );
 
-    gshowStandingsDialog(
+    gShowStandingsDialog(
       context: context,
       gameConfig: _gameConfig,
       finalResults: finalResults,

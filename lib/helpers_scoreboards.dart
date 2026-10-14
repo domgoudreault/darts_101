@@ -1001,6 +1001,95 @@ void gShowGameAroundClockScoreboardDialog({
   );
 }
 
+void gShowGameBuildUpScoreboardDialog({
+  required BuildContext context,
+  required TblGame gameConfig,
+  required Box<TblGameScore> gamesScoresBox,
+  required TblGameOptions gameOptions,
+  // Players of each lane; originalIndex is the seat inside the lane
+  required List<List<({int originalIndex, TblPlayer player, Color playerColor})>>
+  lanes,
+  required double responsiveTile,
+  required double responsiveFontSize,
+}) {
+  gClearAllArcadeOverlays();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      MediaQuery.sizeOf(context);
+
+      return AlertDialog(
+        backgroundColor: Colors.grey.shade800,
+        title: Text(
+          "Players Full Scoreboard",
+          style: gBuildArcadeTextStyle(
+            responsiveFontSize,
+            gFontWeight: FontWeight.bold,
+            gTextColor: Colors.amber,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: SizedBox(
+          width: GlobalAppDisplay.safeWidth * 0.95,
+          height: GlobalAppDisplay.safeHeight * 0.8,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (int lane = 0; lane < lanes.length; lane++) ...[
+                if (lane > 0) SizedBox(width: responsiveTile * 0.01),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'LANE ${lane + 1}',
+                        textAlign: TextAlign.center,
+                        style: gBuildArcadeTextStyle(
+                          responsiveFontSize * 0.8,
+                          gFontWeight: FontWeight.bold,
+                          gTextColor: Colors.amber,
+                        ),
+                      ),
+                      SizedBox(height: responsiveTile * 0.006),
+                      Expanded(
+                        child: buildGameAroundClockScoreboardTable(
+                          gameConfig: gameConfig,
+                          gameOptions: gameOptions,
+                          gamesScoresBox: gamesScoresBox,
+                          gamePlayers: lanes[lane],
+                          gameTeams: const [],
+                          isPlayerMode: true,
+                          responsiveTile: responsiveTile,
+                          responsiveFontSize: responsiveFontSize,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.grey.shade900),
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              "Close",
+              style: gBuildArcadeTextStyle(
+                responsiveFontSize * 0.8,
+                gFontWeight: FontWeight.bold,
+                gTextColor: Colors.amber,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 Widget _buildAroundClockSkippedTargetPill({
   required double responsiveTile,
   required double responsiveFontSize,

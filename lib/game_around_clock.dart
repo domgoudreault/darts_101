@@ -319,7 +319,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       gameTeams: _gameTeams
     );
 
-    gshowStandingsDialog(
+    gShowStandingsDialog(
       context: context,
       gameConfig: _gameConfig,
       finalResults: finalResults,
@@ -558,9 +558,6 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
                     bottom: _safeHeight * 0.006,
                   ),
                   height: (_safeHeight - _toolbarHeight),
-                  //color: Colors.grey.shade900,
-
-                  // Main Row containing 3 main Columns (Left SideBar, Center Screen (2 Rows, 3 Columns each), Right Sidebar)
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.stretch,

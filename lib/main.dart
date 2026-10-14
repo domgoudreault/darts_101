@@ -293,7 +293,13 @@ class _MainScreenState extends State<MainScreen> {
     
     switch (_activeSection) {
       case MainScreenSection.section05Games:
-        activeTiles.addAll(GlobalGameType.values);
+        activeTiles.add(GlobalGameType.halfIt);
+        activeTiles.add(GlobalGameType.sevenDarts);
+        activeTiles.add(GlobalGameType.aroundClock);
+        activeTiles.add(GlobalGameType.buildUp);
+        activeTiles.add(GlobalGameType.allFives);
+        activeTiles.add(GlobalGameType.suddenDeath);
+        activeTiles.add(GlobalGameType.killers);
         break;
       case MainScreenSection.section10Settings:
         activeTiles.addAll(GlobalSettingType.values);

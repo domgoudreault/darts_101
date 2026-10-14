@@ -62,6 +62,21 @@ final List<({int value, String label})> gTargets7Darts = [
   (value: 25, label: 'BULL'),
 ];
 
+final List<({int value, String label})> gTargetsBuildUp = [
+  (value: 10, label: '10'),
+  (value: 11, label: '11'),
+  (value: 12, label: '12'),
+  (value: 13, label: '13'),
+  (value: 14, label: '14'),
+  (value: 15, label: '15'),
+  (value: 16, label: '16'),
+  (value: 17, label: '17'),
+  (value: 18, label: '18'),
+  (value: 19, label: '19'),
+  (value: 20, label: '20'),
+  (value: 25, label: 'BULL'),
+];
+
 final List<({int value, String label})> gTargetsACClassic = [
   (value: 1, label: '1'),
   (value: 2, label: '2'),
@@ -442,7 +457,6 @@ bool? gAcIsGoingDown(TblGame game, int targetIdx) {
 List<({int value, String label})> gGetTargetsForGame(TblGame game) {
   switch (game.fldGameType) {
     case GlobalGameType.halfIt:
-    case GlobalGameType.buildUp:
       return gTargetsHalf;
     case GlobalGameType.sevenDarts:
       return gTargets7Darts;
@@ -457,6 +471,8 @@ List<({int value, String label})> gGetTargetsForGame(TblGame game) {
       else if (game.getACModeNbrStartEndBulls == 1 && game.getACModeNbrMiddleBulls == 2) {return gTargetsACUpDown2Start;}
       else if (game.getACModeNbrStartEndBulls == 2 && game.getACModeNbrMiddleBulls == 2) {return gTargetsACUpDown2Start2;}
       else {return gTargets;}
+    case GlobalGameType.buildUp: 
+      return gTargetsBuildUp;
     default:
       return gTargets;
   }
@@ -930,6 +946,175 @@ GameProgressStateAC gStepGameStateAC({
   }
 
   currentState.nextSeatIdx = (currentState.activeSeatIdx + 1) % totalPlayers;
+
+  return currentState;
+}
+
+// ---------------------------------------------------------------------------
+// BUILD UP: two independent lanes playing simultaneously.
+// Each lane has its own progress state. In the score records, fldLaneIndex
+// is the lane (0 = left, 1 = right) and fldSeatIndex is the position of the
+// player inside his lane. Both are fixed for the whole game.
+// ---------------------------------------------------------------------------
+class GameProgressStateBU {
+  int activeSeatIdx;
+  int nextSeatIdx;
+  int activeDartIdx;
+  int activeRoundIdx;
+  int activeTargetIdx;
+  int nextTargetIdx;
+  bool endGame;
+
+  GameProgressStateBU({
+    this.activeSeatIdx = 0,
+    this.nextSeatIdx = 1,
+    this.activeDartIdx = 0,
+    this.activeRoundIdx = 0,
+    this.activeTargetIdx = 0,
+    this.nextTargetIdx = 1,
+    this.endGame = false,
+  });
+}
+
+// Real throws (baseline records excluded) of one lane, in chronological order.
+List<TblGameScore> gBuLaneRecords(
+  TblGame gameConfig,
+  Box<TblGameScore> gamesScoresBox,
+  int laneIndex,
+) {
+  return gamesScoresBox.values
+      .where(
+        (s) =>
+            s.fldGame == gameConfig &&
+            s.fldLaneIndex == laneIndex &&
+            s.fldRound >= 0,
+      )
+      .toList();
+}
+
+// Target a seat of a lane resumes from.
+int _gBuResumeTargetIdx(
+  TblGame gameConfig,
+  Box<TblGameScore> gamesScoresBox,
+  int laneIndex,
+  int seatIdx,
+) {
+  final last = gBuLaneRecords(gameConfig, gamesScoresBox, laneIndex)
+      .where((s) => s.fldSeatIndex == seatIdx)
+      .lastOrNull;
+  if (last == null) return 0;
+  final idx = last.fldNextTargetIndex ?? last.fldTargetIndex;
+  return idx < 0 ? 0 : idx;
+}
+
+void _gBuSetNextTarget(GameProgressStateBU state, int targetsCount) {
+  state.nextTargetIdx = state.activeTargetIdx < targetsCount - 1
+      ? state.activeTargetIdx + 1
+      : targetsCount - 1;
+}
+
+GameProgressStateBU gStepGameStateBU({
+  required GameProgressStateBU currentState,
+  required GlobalGameState gameState,
+  required TblGame gameConfig,
+  required Box<TblGameScore> gamesScoresBox,
+  required int laneIndex,
+  required int lanePlayers,
+  required List<dynamic> targetsList,
+  int? hits,
+}) {
+  if (gameState == GlobalGameState.forwardState) {
+    currentState.activeDartIdx++;
+
+    final advanceSteps = hits ?? 1;
+
+    // BULL can't be skipped: only a real hit on it ends the game. Hits that
+    // would go past it on an earlier target stop on BULL.
+    final lastIdx = targetsList.length - 1;
+    if (currentState.activeTargetIdx == lastIdx && advanceSteps > 0) {
+      currentState.nextTargetIdx = lastIdx;
+      currentState.endGame = true;
+      return currentState;
+    }
+
+    currentState.activeTargetIdx = (currentState.activeTargetIdx + advanceSteps)
+        .clamp(0, lastIdx);
+    _gBuSetNextTarget(currentState, targetsList.length);
+
+    // A turn is 3 darts. A miss in those 3 darts passes the turn to the next
+    // player of the lane; 3 hits in a row means he takes his darts back.
+    if (currentState.activeDartIdx % 3 == 0) {
+      final lastThree = gBuLaneRecords(gameConfig, gamesScoresBox, laneIndex)
+          .where((s) => s.fldSeatIndex == currentState.activeSeatIdx)
+          .toList();
+      final turnDarts = lastThree.length >= 3
+          ? lastThree.sublist(lastThree.length - 3)
+          : lastThree;
+
+      if (turnDarts.any((record) => record.fldHits == 0)) {
+        currentState.activeSeatIdx =
+            (currentState.activeSeatIdx + 1) % lanePlayers;
+
+        if (currentState.activeSeatIdx == 0) {
+          currentState.activeRoundIdx++;
+        }
+
+        currentState.activeTargetIdx = _gBuResumeTargetIdx(
+          gameConfig,
+          gamesScoresBox,
+          laneIndex,
+          currentState.activeSeatIdx,
+        );
+        _gBuSetNextTarget(currentState, targetsList.length);
+      }
+    }
+  } else {
+    // BACKWARD / RESUME ENGINE (rebuilds the lane state from its records)
+    final laneRecords = gBuLaneRecords(gameConfig, gamesScoresBox, laneIndex);
+
+    if (laneRecords.isEmpty) {
+      return GameProgressStateBU();
+    }
+
+    currentState.endGame = false;
+
+    final lastRec = laneRecords.last;
+    currentState.activeDartIdx = lastRec.fldDartIndex + 1;
+
+    final seatRound = laneRecords
+        .where(
+          (s) =>
+              s.fldSeatIndex == lastRec.fldSeatIndex &&
+              s.fldRound == lastRec.fldRound,
+        )
+        .toList();
+    final lastThree = seatRound.length >= 3
+        ? seatRound.sublist(seatRound.length - 3)
+        : seatRound;
+
+    final turnCompleted = currentState.activeDartIdx % 3 == 0;
+    final hasMissed = lastThree.any((r) => r.fldHits == 0);
+
+    if (turnCompleted && hasMissed) {
+      currentState.activeSeatIdx = (lastRec.fldSeatIndex + 1) % lanePlayers;
+      currentState.activeRoundIdx = currentState.activeSeatIdx == 0
+          ? lastRec.fldRound + 1
+          : lastRec.fldRound;
+    } else {
+      currentState.activeSeatIdx = lastRec.fldSeatIndex;
+      currentState.activeRoundIdx = lastRec.fldRound;
+    }
+
+    currentState.activeTargetIdx = _gBuResumeTargetIdx(
+      gameConfig,
+      gamesScoresBox,
+      laneIndex,
+      currentState.activeSeatIdx,
+    );
+    _gBuSetNextTarget(currentState, targetsList.length);
+  }
+
+  currentState.nextSeatIdx = (currentState.activeSeatIdx + 1) % lanePlayers;
 
   return currentState;
 }

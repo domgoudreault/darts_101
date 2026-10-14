@@ -1,5 +1,6 @@
 // Flutter basics
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:gif_view/gif_view.dart';
 
@@ -20,6 +21,7 @@ import 'package:darts_101/helpers_database.dart';
 import 'package:darts_101/game_half_it.dart';
 import 'package:darts_101/game_7_darts.dart';
 import 'package:darts_101/game_around_clock.dart';
+import 'package:darts_101/game_build_up.dart';
 
 class RostersSelection extends StatefulWidget {
   // Define variables to hold the data passed from the previous screen
@@ -73,9 +75,24 @@ class _RostersSelectionState extends State<RostersSelection> {
   }
 
   Future<void> _startGame() async {
+    // Build Up only: number of players in lane 0 (the others play in lane 1)
+    int buildUpLane0Count = 0;
+
     List<TblPlayer> resolveGamePlayers() {
       if (_isPlayersSelection) {
-        return List<TblPlayer>.from(_selectedPlayers);
+        if (widget.enuGameType == GlobalGameType.buildUp) {
+          // Lane resolution: players are shuffled and returned ordered
+          // [lane 0 players..., lane 1 players...]. With an odd number of
+          // players, the extra player lands in a random lane.
+          final shuffled = List<TblPlayer>.from(_selectedPlayers)..shuffle();
+          final half = shuffled.length ~/ 2;
+          buildUpLane0Count = (shuffled.length.isOdd && Random().nextBool())
+              ? half + 1
+              : half;
+          return shuffled;
+        } else {
+          return List<TblPlayer>.from(_selectedPlayers);
+        }
       }
 
       // Team mode resolution
@@ -138,6 +155,13 @@ class _RostersSelectionState extends State<RostersSelection> {
     final gamesBox = Hive.box<TblGame>('gamesBox');
     await gamesBox.add(newGame);
 
+    if (widget.enuGameType == GlobalGameType.buildUp) {
+      await gInitBuildUpStartingScores(
+        game: newGame,
+        lane0Count: buildUpLane0Count,
+      );
+    }
+
     // Guard against any async gaps if needed
     if (!mounted) return;
 
@@ -145,6 +169,7 @@ class _RostersSelectionState extends State<RostersSelection> {
       case GlobalGameType.halfIt:
       case GlobalGameType.sevenDarts:
       case GlobalGameType.aroundClock:
+      case GlobalGameType.buildUp:
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -180,6 +205,7 @@ class _RostersSelectionState extends State<RostersSelection> {
       case GlobalGameType.halfIt:
       case GlobalGameType.sevenDarts:
       case GlobalGameType.aroundClock:
+      case GlobalGameType.buildUp:
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -1947,6 +1973,13 @@ class _GameMatchupScreenState extends State<GameMatchupScreen> {
             game: widget.game, 
             resumeMode: widget.resumeMode
           );
+          break;
+        case GlobalGameType.buildUp:
+          gameScreen = GameBuildUpScreen(
+            game: widget.game,
+            resumeMode: widget.resumeMode,
+          );
+          break;
         default:
           return;
       }
@@ -2000,11 +2033,18 @@ class _GameMatchupScreenState extends State<GameMatchupScreen> {
         );
       });
 
+      final buildUpLanes = widget.game.fldGameType == GlobalGameType.buildUp
+          ? gBuildUpPlayerLanes(widget.game)
+          : null;
       final leftPlayers = pairedPlayers
-          .where((item) => item.originalIndex.isEven)
+          .where((item) => buildUpLanes != null
+              ? buildUpLanes[item.player] == 0
+              : item.originalIndex.isEven)
           .toList();
       final rightPlayers = pairedPlayers
-          .where((item) => item.originalIndex.isOdd)
+          .where((item) => buildUpLanes != null
+              ? buildUpLanes[item.player] == 1
+              : item.originalIndex.isOdd)
           .toList();
 
       leftWidgets = leftPlayers.map((item) {
