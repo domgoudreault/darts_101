@@ -38,8 +38,13 @@ class GameAroundClockScreen extends StatefulWidget {
 class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     with TickerProviderStateMixin {
   // Define all responsive height and width of the rosters selection UI
-  double get _safeHeight => GlobalAppDisplay.safeHeight;
-  double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
+  // Real height of the body area, measured by the layout; falls back to the computed value.
+  double? _bodyHeight;
+  double get _toolbarHeight =>
+      (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+  double get _safeHeight => _bodyHeight == null
+      ? GlobalAppDisplay.safeHeight
+      : _bodyHeight! + _toolbarHeight;
   double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 6);
   double get _heightBoostPlayerPanel =>
       (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.595;
@@ -128,21 +133,25 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
         )
         .fldScorePlayerSnapshot;
   }
+
   String get _activePlayerActiveTargetLabel {
     if (_hasGameStarted) {
       // Use where().lastOrNull to safely return null if no matching score is found
-      final scoresBox = gamesScoresBox.values.where(
-        (gamesScores) =>
-            gamesScores.fldGame == _gameConfig &&
-            gamesScores.fldPlayer == _activePlayer &&
-            gamesScores.fldSeatIndex == _progress.activeSeatIdx,
-      ).lastOrNull;
+      final scoresBox = gamesScoresBox.values
+          .where(
+            (gamesScores) =>
+                gamesScores.fldGame == _gameConfig &&
+                gamesScores.fldPlayer == _activePlayer &&
+                gamesScores.fldSeatIndex == _progress.activeSeatIdx,
+          )
+          .lastOrNull;
 
       if (scoresBox == null) {
         return _activeTargetLabel;
       }
 
-      final targetIndex = scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
+      final targetIndex =
+          scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
       final targets = gGetTargetsForGame(_gameConfig);
 
       // Ensure the index is within bounds of the targets list
@@ -150,7 +159,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
         return targets[targetIndex].label;
       }
     }
-    
+
     return _activeTargetLabel;
   }
 
@@ -163,26 +172,29 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   String get _previousPlayerActiveTargetLabel {
     if (_hasGameStarted) {
       // Use where().lastOrNull to safely return null if no matching score is found
-      final scoresBox = gamesScoresBox.values.where(
-        (gamesScores) =>
-            gamesScores.fldGame == _gameConfig &&
-            gamesScores.fldPlayer == _previousPlayer &&
-            gamesScores.fldSeatIndex == _progress.previousSeatIdx,
-      ).lastOrNull;
+      final scoresBox = gamesScoresBox.values
+          .where(
+            (gamesScores) =>
+                gamesScores.fldGame == _gameConfig &&
+                gamesScores.fldPlayer == _previousPlayer &&
+                gamesScores.fldSeatIndex == _progress.previousSeatIdx,
+          )
+          .lastOrNull;
 
       if (scoresBox == null) {
         return '-';
       }
 
-      final targetIndex = scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
+      final targetIndex =
+          scoresBox.fldNextTargetIndex ?? scoresBox.fldTargetIndex;
       final targets = gGetTargetsForGame(_gameConfig);
-      
+
       // Ensure the index is within bounds of the targets list as well
       if (targetIndex >= 0 && targetIndex < targets.length) {
         return targets[targetIndex].label;
       }
     }
-    
+
     return '-';
   }
 
@@ -257,7 +269,8 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   Color get _nextTeamColor =>
       _gameTeams[_progress.nextSeatIdx % _gameTeams.length].teamColor;
 
-  int get _activeTargetValue => gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
+  int get _activeTargetValue =>
+      gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].value;
   String get _activeTargetLabel =>
       gGetTargetsForGame(_gameConfig)[_progress.activeTargetIdx].label;
   //int get _nextTargetValue => gGetTargetsForGame(_gameConfig)[_progress.nextTargetIdx].value;
@@ -290,7 +303,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
   void initState() {
     super.initState();
     gamesScoresBox = Hive.box<TblGameScore>('gamesScoresBox');
-    
+
     _initGameStartingScores();
 
     // Handle resume mode vs fresh game initialization using the helper
@@ -316,14 +329,16 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     List<GameResultRecord> finalResults = gComputeGameResults(
       gameConfig: _gameConfig,
       gamePlayers: _gamePlayers,
-      gameTeams: _gameTeams
+      gameTeams: _gameTeams,
     );
 
     gShowStandingsDialog(
       context: context,
       gameConfig: _gameConfig,
       finalResults: finalResults,
-      onUndoLastThrow: () {_undoLastThrow();},
+      onUndoLastThrow: () {
+        _undoLastThrow();
+      },
       responsiveTile: _responsiveTile,
       responsiveFontSize: _responsiveFontSize,
       avatarHeight: _avatarHeight,
@@ -334,7 +349,7 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       cardWidth: _cardWidth,
       cardWidthOuterSize: _cardWidthOuterSize,
       cardSlicedHeight: _cardSlicedHeight,
-      cardSlicedHeightOuterSize: _cardSlicedHeightOuterSize
+      cardSlicedHeightOuterSize: _cardSlicedHeightOuterSize,
     );
   }
 
@@ -377,12 +392,16 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
     ); */
 
     return gamesScoresBox.values.any(
-      (s) => s.fldGame == _gameConfig && s.fldSeatIndex != _progress.activeSeatIdx && s.fldRound >= 0,
+      (s) =>
+          s.fldGame == _gameConfig &&
+          s.fldSeatIndex != _progress.activeSeatIdx &&
+          s.fldRound >= 0,
     );
   }
 
   bool get _hasGameNextPlayer {
-    final isLastRound = _progress.activeRoundIdx >= gGetTargetsForGame(_gameConfig).length - 1;
+    final isLastRound =
+        _progress.activeRoundIdx >= gGetTargetsForGame(_gameConfig).length - 1;
     final isLastPlayer = _progress.activeSeatIdx >= _gamePlayers.length - 1;
 
     // There is no next player if we are on the final player of the final round
@@ -468,12 +487,18 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
       fldRound: _progress.activeRoundIdx,
       fldTargetIndex: _progress.activeTargetIdx,
       fldTargetValue: _activeTargetValue,
-      fldNextTargetIndex: (_progress.activeTargetIdx + hits > gGetTargetsForGame(_gameConfig).length - 1)
-        ? null
-        : _progress.activeTargetIdx + hits,
-      fldNextTargetValue: (_progress.activeTargetIdx + hits > gGetTargetsForGame(_gameConfig).length - 1)
-        ? null
-        : gGetTargetsForGame(_gameConfig)[(_progress.activeTargetIdx + hits)].value,
+      fldNextTargetIndex:
+          (_progress.activeTargetIdx + hits >
+              gGetTargetsForGame(_gameConfig).length - 1)
+          ? null
+          : _progress.activeTargetIdx + hits,
+      fldNextTargetValue:
+          (_progress.activeTargetIdx + hits >
+              gGetTargetsForGame(_gameConfig).length - 1)
+          ? null
+          : gGetTargetsForGame(
+              _gameConfig,
+            )[(_progress.activeTargetIdx + hits)].value,
       fldIsSingle: isSingle,
       fldIsDouble: isDouble,
       fldIsTriple: isTriple,
@@ -526,176 +551,56 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
         gAppBarColorBg: _gameConfig.fldGameType.tileColor,
         gCallFromMainScreen: false,
         gOnPressed: null,
-        gRightPopupMenu: GlobalGameAroundClockPopupMenu(enuGameType: _gameConfig.fldGameType),
+        gRightPopupMenu: GlobalGameAroundClockPopupMenu(
+          enuGameType: _gameConfig.fldGameType,
+        ),
       ),
 
       body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              top: 0,
-              child: Opacity(
-                opacity: 0.15,
-                child: Image.asset(
-                  'assets/png/tiles/${_gameConfig.fldGameType.tileType}_${_gameConfig.fldGameType.tileCode}.png',
-                  //gameTileImageConfig.assetPath,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                ),
-              ),
-            ),
-
-            // Main Area for Game (Takes (GlobalAppDisplay.safeHeight - toolbarHeight) of screen free space)
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            _bodyHeight = constraints.maxHeight;
+            return Stack(
+              fit: StackFit.expand,
               children: [
-                Container(
-                  padding: EdgeInsets.only(
-                    left: GlobalAppDisplay.safeWidth * 0.004,
-                    right: GlobalAppDisplay.safeWidth * 0.006,
-                    top: GlobalAppDisplay.safeWidth * 0.006,
-                    bottom: _safeHeight * 0.006,
+                Positioned.fill(
+                  top: 0,
+                  child: Opacity(
+                    opacity: 0.15,
+                    child: Image.asset(
+                      'assets/png/tiles/${_gameConfig.fldGameType.tileType}_${_gameConfig.fldGameType.tileCode}.png',
+                      //gameTileImageConfig.assetPath,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    ),
                   ),
-                  height: (_safeHeight - _toolbarHeight),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // COLUMN 1: Left Sidebar (Previous Team or player)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Stack(
-                            children: [
-                              _isPlayerMode
-                                  ? gBuildSlicedPlayerAvatarVPanel(
-                                      player: _previousPlayer,
-                                      avatarHeight: _avatarHeight,
-                                      avatarHeightOuterSize:
-                                          _avatarHeightOuterSize,
-                                      avatarSlicedWidth: _avatarSlicedWidth,
-                                      avatarSlicedWidthOuterSize:
-                                          _avatarSlicedWidthOuterSize,
-                                      slotBgColor: _previousPlayerColor,
-                                      playerPosition: _previousPlayerIndex,
-                                      responsiveTile: _responsiveTile,
-                                      heightBoost: _heightBoostPlayerPanel,
-                                      isEmptyPanel: !_hasGamePreviousPlayer,
-                                      isPreviousPlayer: true,
-                                    )
-                                  : gBuildSlicedTeamCardVPanel(
-                                      team: _previousTeam,
-                                      cardHeight: _cardHeight,
-                                      cardWidth: _cardWidth,
-                                      cardWidthOuterSize: _cardWidthOuterSize,
-                                      cardSlicedHeight: _cardSlicedHeight,
-                                      cardSlicedHeightOuterSize:
-                                          _cardSlicedHeightOuterSize,
-                                      slotBgColor: _previousTeamColor,
-                                      teamPosition: _previousTeamIndex,
-                                      responsiveTile: _responsiveTile,
-                                      heightBoost: _heightBoostTeamPanel,
-                                      focusPlayer: _hasGamePreviousPlayer
-                                          ? _previousPlayer
-                                          : null,
-                                      focusPlayerFirst:
-                                          _progress.previousSeatIdx <
-                                          (_gamePlayers.length / 2),
-                                      isEmptyPanel: !_hasGamePreviousPlayer,
-                                      isPreviousPlayer: true,
-                                    ),
+                ),
 
-                              // Floating Score Table for all players button
-                              Positioned(
-                                bottom: _responsiveTile * 0.01,
-                                left: 0,
-                                right: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: _responsiveTile * 0.16,
-                                    height: _responsiveTile * 0.16,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: () =>
-                                          _showFullDebugSpreadsheet(context),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius:
-                                                          _responsiveTile *
-                                                          0.015,
-                                                      offset: Offset(
-                                                        _responsiveTile * 0.003,
-                                                        _responsiveTile * 0.003,
-                                                      ), // Casts shadow upward onto the screen content
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-
-                                            Image.asset(
-                                              'assets/png/mechanics/database.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                // Main Area for Game (Takes (GlobalAppDisplay.safeHeight - toolbarHeight) of screen free space)
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.only(
+                        left: GlobalAppDisplay.safeWidth * 0.004,
+                        right: GlobalAppDisplay.safeWidth * 0.006,
+                        top: GlobalAppDisplay.safeWidth * 0.006,
+                        bottom: _safeHeight * 0.006,
                       ),
-
-                      SizedBox(width: _responsiveTile * 0.008),
-
-                      // COLUMN 2: Center-Top / Header Area
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Row TOP BANNER
-                            Container(
-                              decoration: BoxDecoration(
-                                color:
-                                    (_isPlayerMode
-                                            ? _activePlayerColor
-                                            : _activeTeamColor)
-                                        .withAlpha(
-                                          150,
-                                        ), // Choose your background color here!
-                                borderRadius: BorderRadius.circular(
-                                  _avatarSlicedWidthOuterSize * 0.15,
-                                ), // Optional: rounds the corners nicely
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                      height: (_safeHeight - _toolbarHeight),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // COLUMN 1: Left Sidebar (Previous Team or player)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
                                 children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Previous player
-                                      if (_isPlayerMode) ...[
-                                        gBuildSlicedPlayerAvatarH(
+                                  _isPlayerMode
+                                      ? gBuildSlicedPlayerAvatarVPanel(
                                           player: _previousPlayer,
                                           avatarHeight: _avatarHeight,
                                           avatarHeightOuterSize:
@@ -706,158 +611,856 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
                                           slotBgColor: _previousPlayerColor,
                                           playerPosition: _previousPlayerIndex,
                                           responsiveTile: _responsiveTile,
-                                          isTagNickNameLeft: true,
+                                          heightBoost: _heightBoostPlayerPanel,
                                           isEmptyPanel: !_hasGamePreviousPlayer,
-                                        ),
-                                      ] else ...[
-                                        gBuildSlicedPlayerAvatarH(
-                                          player: _previousPlayer,
-                                          avatarHeight: _avatarHeight,
-                                          avatarHeightOuterSize:
-                                              _avatarHeightOuterSize,
-                                          avatarSlicedWidth: _avatarSlicedWidth,
-                                          avatarSlicedWidthOuterSize:
-                                              _avatarSlicedWidthOuterSize,
+                                          isPreviousPlayer: true,
+                                        )
+                                      : gBuildSlicedTeamCardVPanel(
+                                          team: _previousTeam,
+                                          cardHeight: _cardHeight,
+                                          cardWidth: _cardWidth,
+                                          cardWidthOuterSize:
+                                              _cardWidthOuterSize,
+                                          cardSlicedHeight: _cardSlicedHeight,
+                                          cardSlicedHeightOuterSize:
+                                              _cardSlicedHeightOuterSize,
                                           slotBgColor: _previousTeamColor,
-                                          playerPosition: _previousPlayerIndex,
+                                          teamPosition: _previousTeamIndex,
                                           responsiveTile: _responsiveTile,
-                                          isTagNickNameLeft: true,
+                                          heightBoost: _heightBoostTeamPanel,
+                                          focusPlayer: _hasGamePreviousPlayer
+                                              ? _previousPlayer
+                                              : null,
+                                          focusPlayerFirst:
+                                              _progress.previousSeatIdx <
+                                              (_gamePlayers.length / 2),
                                           isEmptyPanel: !_hasGamePreviousPlayer,
+                                          isPreviousPlayer: true,
                                         ),
-                                      ],
-                                    ],
-                                  ),
 
-                                  SizedBox(width: _responsiveTile * 0.004),
-
-                                  // Previous player
-                                  SizedBox(
-                                    width: _responsiveTile * 0.18,
-                                    height: _responsiveTile * 0.18,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: () =>
-                                        gShowGameAroundClockScoreboardDialog(
-                                          context: context,
-                                          gameConfig: _gameConfig,
-                                          gamesScoresBox: gamesScoresBox,
-                                          gameOptions: _gameOptions,
-                                          gamePlayers: _gamePlayers,
-                                          gameTeams: _gameTeams,
-                                          isPlayerMode: _isPlayerMode,
-                                          responsiveTile: _responsiveTile,
-                                          responsiveFontSize: _responsiveFontSize,
-                                        ),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius:
-                                                          _responsiveTile *
-                                                          0.015,
-                                                      offset: Offset(
-                                                        _responsiveTile * 0.003,
-                                                        _responsiveTile * 0.003,
-                                                      ), // Casts shadow upward onto the screen content
-                                                    ),
-                                                  ],
-                                                ),
+                                  // Floating Score Table for all players button
+                                  Positioned(
+                                    bottom: _responsiveTile * 0.01,
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: _responsiveTile * 0.16,
+                                        height: _responsiveTile * 0.16,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: () =>
+                                              _showFullDebugSpreadsheet(
+                                                context,
                                               ),
-                                            ),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
 
-                                            Image.asset(
-                                              'assets/png/mechanics/scoreboard.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
+                                                Image.asset(
+                                                  'assets/png/mechanics/database.png',
+                                                  fit: BoxFit.contain,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ],
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
+                                ],
+                              ),
+                            ],
+                          ),
 
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            Container(
-                                              color: Colors.transparent,
-                                              width: double.infinity,
-                                              height:
+                          SizedBox(width: _responsiveTile * 0.008),
+
+                          // COLUMN 2: Center-Top / Header Area
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Row TOP BANNER
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        (_isPlayerMode
+                                                ? _activePlayerColor
+                                                : _activeTeamColor)
+                                            .withAlpha(
+                                              150,
+                                            ), // Choose your background color here!
+                                    borderRadius: BorderRadius.circular(
+                                      _avatarSlicedWidthOuterSize * 0.15,
+                                    ), // Optional: rounds the corners nicely
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Previous player
+                                          if (_isPlayerMode) ...[
+                                            gBuildSlicedPlayerAvatarH(
+                                              player: _previousPlayer,
+                                              avatarHeight: _avatarHeight,
+                                              avatarHeightOuterSize:
+                                                  _avatarHeightOuterSize,
+                                              avatarSlicedWidth:
+                                                  _avatarSlicedWidth,
+                                              avatarSlicedWidthOuterSize:
                                                   _avatarSlicedWidthOuterSize,
+                                              slotBgColor: _previousPlayerColor,
+                                              playerPosition:
+                                                  _previousPlayerIndex,
+                                              responsiveTile: _responsiveTile,
+                                              isTagNickNameLeft: true,
+                                              isEmptyPanel:
+                                                  !_hasGamePreviousPlayer,
                                             ),
+                                          ] else ...[
+                                            gBuildSlicedPlayerAvatarH(
+                                              player: _previousPlayer,
+                                              avatarHeight: _avatarHeight,
+                                              avatarHeightOuterSize:
+                                                  _avatarHeightOuterSize,
+                                              avatarSlicedWidth:
+                                                  _avatarSlicedWidth,
+                                              avatarSlicedWidthOuterSize:
+                                                  _avatarSlicedWidthOuterSize,
+                                              slotBgColor: _previousTeamColor,
+                                              playerPosition:
+                                                  _previousPlayerIndex,
+                                              responsiveTile: _responsiveTile,
+                                              isTagNickNameLeft: true,
+                                              isEmptyPanel:
+                                                  !_hasGamePreviousPlayer,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
 
-                                            // Centered Undo button
-                                            SizedBox(
-                                              width: _responsiveTile * 0.2,
-                                              height: _responsiveTile * 0.2,
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                  padding: EdgeInsets.zero,
-                                                  elevation: 4,
+                                      SizedBox(width: _responsiveTile * 0.004),
+
+                                      // Previous player
+                                      SizedBox(
+                                        width: _responsiveTile * 0.18,
+                                        height: _responsiveTile * 0.18,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: () =>
+                                              gShowGameAroundClockScoreboardDialog(
+                                                context: context,
+                                                gameConfig: _gameConfig,
+                                                gamesScoresBox: gamesScoresBox,
+                                                gameOptions: _gameOptions,
+                                                gamePlayers: _gamePlayers,
+                                                gameTeams: _gameTeams,
+                                                isPlayerMode: _isPlayerMode,
+                                                responsiveTile: _responsiveTile,
+                                                responsiveFontSize:
+                                                    _responsiveFontSize,
+                                              ),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
                                                 ),
-                                                onPressed: _hasGameStarted
-                                                    ? () => _undoLastThrow()
-                                                    : null,
-                                                child: AnimatedOpacity(
-                                                  opacity: _hasGameStarted
+
+                                                Image.asset(
+                                                  'assets/png/mechanics/scoreboard.png',
+                                                  fit: BoxFit.contain,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                Container(
+                                                  color: Colors.transparent,
+                                                  width: double.infinity,
+                                                  height:
+                                                      _avatarSlicedWidthOuterSize,
+                                                ),
+
+                                                // Centered Undo button
+                                                SizedBox(
+                                                  width: _responsiveTile * 0.2,
+                                                  height: _responsiveTile * 0.2,
+                                                  child: ElevatedButton(
+                                                    style:
+                                                        ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors
+                                                                  .transparent,
+                                                          padding:
+                                                              EdgeInsets.zero,
+                                                          elevation: 4,
+                                                        ),
+                                                    onPressed: _hasGameStarted
+                                                        ? () => _undoLastThrow()
+                                                        : null,
+                                                    child: AnimatedOpacity(
+                                                      opacity: _hasGameStarted
+                                                          ? 1.0
+                                                          : 0.3,
+                                                      duration: const Duration(
+                                                        milliseconds: 200,
+                                                      ),
+                                                      child: Image.asset(
+                                                        'assets/png/mechanics/undo.png',
+                                                        fit: BoxFit.contain,
+                                                        filterQuality:
+                                                            FilterQuality.high,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      SizedBox(
+                                        width: _responsiveTile * 0.16,
+                                        height: _responsiveTile * 0.16,
+                                        child: GifView.asset(
+                                          'assets/png/mechanics/arrow_right.png',
+                                          height: _responsiveTile * 0.08,
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.high,
+                                        ),
+                                      ),
+
+                                      SizedBox(width: _responsiveTile * 0.012),
+
+                                      // Active player
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          if (_isPlayerMode) ...[
+                                            gBuildSlicedPlayerAvatarH(
+                                              player: _activePlayer,
+                                              avatarHeight: _avatarHeight,
+                                              avatarHeightOuterSize:
+                                                  _avatarHeightOuterSize,
+                                              avatarSlicedWidth:
+                                                  _avatarSlicedWidth,
+                                              avatarSlicedWidthOuterSize:
+                                                  _avatarSlicedWidthOuterSize,
+                                              slotBgColor: _activePlayerColor,
+                                              playerPosition:
+                                                  _activePlayerIndex,
+                                              responsiveTile: _responsiveTile,
+                                              isTagNickNameLeft: false,
+                                            ),
+                                          ] else ...[
+                                            gBuildSlicedPlayerAvatarH(
+                                              player: _activePlayer,
+                                              avatarHeight: _avatarHeight,
+                                              avatarHeightOuterSize:
+                                                  _avatarHeightOuterSize,
+                                              avatarSlicedWidth:
+                                                  _avatarSlicedWidth,
+                                              avatarSlicedWidthOuterSize:
+                                                  _avatarSlicedWidthOuterSize,
+                                              slotBgColor: _activeTeamColor,
+                                              playerPosition:
+                                                  _activePlayerIndex,
+                                              responsiveTile: _responsiveTile,
+                                              isTagNickNameLeft: false,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Row HITS && SCORES
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: _responsiveTile * 0.015,
+                                    horizontal: _responsiveTile * 0.004,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors
+                                        .transparent, // Choose your background color here!
+                                    borderRadius: BorderRadius.circular(
+                                      _avatarSlicedWidthOuterSize * 0.15,
+                                    ), // Optional: rounds the corners nicely
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      // Previous player Score
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              gBuildArcadeOverlayHitsBadge(
+                                                gHitsText:
+                                                    _hasGamePreviousPlayer
+                                                    ? '$_previousPlayerLastRoundHits'
+                                                    : '-',
+                                                gTextColor: Color.fromARGB(
+                                                  255,
+                                                  207,
+                                                  20,
+                                                  17,
+                                                ),
+                                                gResponsiveTile:
+                                                    _responsiveTile,
+                                                gResponsiveFontSize:
+                                                    _responsiveFontSize,
+                                                gForceAnimate:
+                                                    _previousHitsBadgeAnime,
+                                              ),
+
+                                              SizedBox(
+                                                width: _responsiveTile * 0.008,
+                                              ),
+
+                                              _buildScoreContainer(
+                                                avatarHeightOuterSize:
+                                                    _avatarHeightOuterSize,
+                                                containerColor: _isPlayerMode
+                                                    ? _previousPlayerColor
+                                                    : _previousTeamColor,
+                                                isPreviousPlayer: true,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+
+                                      SizedBox(width: _responsiveTile * 0.004),
+
+                                      // Previous player Stats
+                                      SizedBox(
+                                        width: _responsiveTile * 0.18,
+                                        height: _responsiveTile * 0.18,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: _hasGamePreviousPlayer
+                                              ? () =>
+                                                    gShowPlayerStatsGameAroundClockDialog(
+                                                      context: context,
+                                                      player: _previousPlayer,
+                                                      isActivePlayer: false,
+                                                      playerColor: _isPlayerMode
+                                                          ? _previousPlayerColor
+                                                          : _previousTeamColor,
+                                                      seatIndex: _progress
+                                                          .previousSeatIdx,
+                                                      responsiveTile:
+                                                          _responsiveTile,
+                                                      responsiveFontSize:
+                                                          _responsiveFontSize,
+                                                      gameConfig: _gameConfig,
+                                                      gamesScoresBox:
+                                                          gamesScoresBox,
+                                                      gameOptions: _gameOptions,
+                                                    )
+                                              : null,
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 200,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withValues(
+                                                                alpha:
+                                                                    _hasGamePreviousPlayer
+                                                                    ? 1.0
+                                                                    : 0.3,
+                                                              ),
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                AnimatedOpacity(
+                                                  opacity:
+                                                      _hasGamePreviousPlayer
                                                       ? 1.0
                                                       : 0.3,
                                                   duration: const Duration(
                                                     milliseconds: 200,
                                                   ),
                                                   child: Image.asset(
-                                                    'assets/png/mechanics/undo.png',
+                                                    'assets/png/mechanics/stats.png',
                                                     fit: BoxFit.contain,
                                                     filterQuality:
                                                         FilterQuality.high,
                                                   ),
                                                 ),
-                                              ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            gBuildArcadeActiveTarget(
+                                              currentTarget:
+                                                  _activeTargetValue, // or your active target variable
+                                              responsiveTile: _responsiveTile,
+                                              targetBgColor: _gameConfig
+                                                  .fldGameType
+                                                  .tileColor,
                                             ),
                                           ],
+                                        ),
+                                      ),
+
+                                      // Active player Stats
+                                      SizedBox(
+                                        width: _responsiveTile * 0.18,
+                                        height: _responsiveTile * 0.18,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: () =>
+                                              gShowPlayerStatsGameAroundClockDialog(
+                                                context: context,
+                                                player: _activePlayer,
+                                                isActivePlayer: true,
+                                                playerColor: _isPlayerMode
+                                                    ? _activePlayerColor
+                                                    : _activeTeamColor,
+                                                seatIndex:
+                                                    _progress.activeSeatIdx,
+                                                responsiveTile: _responsiveTile,
+                                                responsiveFontSize:
+                                                    _responsiveFontSize,
+                                                gameConfig: _gameConfig,
+                                                gamesScoresBox: gamesScoresBox,
+                                                gameOptions: _gameOptions,
+                                              ),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Image.asset(
+                                                  'assets/png/mechanics/stats.png',
+                                                  fit: BoxFit.contain,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(width: _responsiveTile * 0.004),
+
+                                      // Active player Score
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              _buildScoreContainer(
+                                                avatarHeightOuterSize:
+                                                    _avatarHeightOuterSize,
+                                                containerColor: _isPlayerMode
+                                                    ? _activePlayerColor
+                                                    : _activeTeamColor,
+                                                isPreviousPlayer: false,
+                                              ),
+
+                                              SizedBox(
+                                                width: _responsiveTile * 0.008,
+                                              ),
+
+                                              gBuildArcadeOverlayHitsBadge(
+                                                gHitsText:
+                                                    _activePlayerCurrentRoundHits
+                                                        .toString(),
+                                                gTextColor: Color.fromARGB(
+                                                  255,
+                                                  207,
+                                                  20,
+                                                  17,
+                                                ),
+                                                gResponsiveTile:
+                                                    _responsiveTile,
+                                                gResponsiveFontSize:
+                                                    _responsiveFontSize,
+                                                gForceAnimate:
+                                                    _activeHitsBadgeAnime,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Row Rankings and Interactive Dartboard)
+                                Expanded(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: _responsiveTile * 0.004,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        // Rankings
+                                        Expanded(
+                                          flex: 4,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              // Header label right above the players ranking table
+                                              Container(
+                                                alignment: Alignment.center,
+                                                padding: EdgeInsets.only(
+                                                  top: _responsiveTile * 0.010,
+                                                  bottom:
+                                                      _responsiveTile * 0.004,
+                                                  left: _responsiveTile * 0.008,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade800
+                                                      .withAlpha(200),
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(
+                                                              _responsiveTile *
+                                                                  0.03,
+                                                            ),
+                                                        topRight:
+                                                            Radius.circular(
+                                                              _responsiveTile *
+                                                                  0.03,
+                                                            ),
+                                                      ),
+                                                ),
+                                                child: Text(
+                                                  _isPlayerMode
+                                                      ? "PLAYERS RANKING"
+                                                      : "TEAMS RANKING",
+                                                  style: gBuildArcadeTextStyle(
+                                                    _responsiveFontSize * 1.1,
+                                                    gFontWeight:
+                                                        FontWeight.bold,
+                                                    gTextColor: Colors.amber,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Expanded(
+                                                      child: SizedBox(
+                                                        width: double.infinity,
+                                                        child: gBuildGameAroundClockRankingWidget(
+                                                          gameConfig:
+                                                              _gameConfig,
+                                                          gamesScoresBox:
+                                                              gamesScoresBox,
+                                                          gameOptions:
+                                                              _gameOptions,
+                                                          gamePlayers:
+                                                              _gamePlayers,
+                                                          gameTeams: _gameTeams,
+                                                          isPlayerMode:
+                                                              _isPlayerMode,
+                                                          responsiveTile:
+                                                              _responsiveTile,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              SizedBox(
+                                                height: _responsiveTile * 0.017,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        Expanded(
+                                          flex: 6,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                              left: _responsiveTile * 0.010,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                Expanded(
+                                                  child:
+                                                      gBuildDartboardInputZone(
+                                                        gActiveTargetIdx:
+                                                            _progress
+                                                                .activeTargetIdx,
+                                                        gGame: _gameConfig,
+                                                        gOnTap: (leap) {
+                                                          _processThrow(leap);
+                                                        },
+                                                      ),
+                                                ),
+
+                                                Container(
+                                                  alignment: Alignment.center,
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical:
+                                                        _responsiveTile * 0.004,
+                                                    horizontal:
+                                                        _responsiveTile * 0.008,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey.shade800
+                                                        .withAlpha(200),
+                                                    border: BoxBorder.all(
+                                                      color:
+                                                          Colors.yellowAccent,
+                                                      width:
+                                                          _responsiveTile *
+                                                          0.006,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          _responsiveTile *
+                                                              0.03,
+                                                        ),
+                                                  ),
+                                                  child: FittedBox(
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        ..."DARTS"
+                                                            .split('')
+                                                            .map(
+                                                              (letter) => Text(
+                                                                letter,
+                                                                style: gBuildArcadeTextStyle(
+                                                                  _responsiveFontSize *
+                                                                      1.2,
+                                                                  gFontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  gTextColor:
+                                                                      Colors
+                                                                          .white,
+                                                                ),
+                                                              ),
+                                                            ),
+
+                                                        SizedBox(
+                                                          height:
+                                                              _responsiveTile *
+                                                              0.03,
+                                                        ),
+
+                                                        // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
+                                                        ...List.generate(3, (
+                                                          dIdx,
+                                                        ) {
+                                                          bool isThrown =
+                                                              dIdx <
+                                                              (_progress
+                                                                      .activeDartIdx %
+                                                                  3);
+                                                          return Padding(
+                                                            padding:
+                                                                EdgeInsets.symmetric(
+                                                                  horizontal:
+                                                                      _responsiveTile *
+                                                                      0.004,
+                                                                ),
+                                                            child: Icon(
+                                                              Icons.circle,
+                                                              size:
+                                                                  _responsiveFontSize *
+                                                                  2.5,
+                                                              color: isThrown
+                                                                  ? Colors
+                                                                        .yellowAccent
+                                                                  : Colors
+                                                                        .grey
+                                                                        .shade900,
+                                                            ),
+                                                          );
+                                                        }),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
+                                ),
 
-                                  SizedBox(
-                                    width: _responsiveTile * 0.16,
-                                    height: _responsiveTile * 0.16,
-                                    child: GifView.asset(
-                                      'assets/png/mechanics/arrow_right.png',
-                                      height: _responsiveTile * 0.08,
-                                      fit: BoxFit.contain,
-                                      filterQuality: FilterQuality.high,
-                                    ),
-                                  ),
+                                SizedBox(height: _responsiveTile * 0.017),
+                              ],
+                            ),
+                          ),
 
-                                  SizedBox(width: _responsiveTile * 0.012),
+                          SizedBox(width: _responsiveTile * 0.008),
 
-                                  // Active player
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      if (_isPlayerMode) ...[
-                                        gBuildSlicedPlayerAvatarH(
+                          // COLUMN 3: Right Sidebar (Active Team or player)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Stack(
+                                children: [
+                                  _isPlayerMode
+                                      ? gBuildSlicedPlayerAvatarVPanel(
                                           player: _activePlayer,
                                           avatarHeight: _avatarHeight,
                                           avatarHeightOuterSize:
@@ -868,890 +1471,418 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
                                           slotBgColor: _activePlayerColor,
                                           playerPosition: _activePlayerIndex,
                                           responsiveTile: _responsiveTile,
-                                          isTagNickNameLeft: false,
+                                          heightBoost: _heightBoostPlayerPanel,
+                                        )
+                                      : gBuildSlicedTeamCardVPanel(
+                                          team: _activeTeam,
+                                          cardHeight: _cardHeight,
+                                          cardWidth: _cardWidth,
+                                          cardWidthOuterSize:
+                                              _cardWidthOuterSize,
+                                          cardSlicedHeight: _cardSlicedHeight,
+                                          cardSlicedHeightOuterSize:
+                                              _cardSlicedHeightOuterSize,
+                                          slotBgColor: _activeTeamColor,
+                                          teamPosition: _activeTeamIndex,
+                                          responsiveTile: _responsiveTile,
+                                          heightBoost: _heightBoostTeamPanel,
+                                          focusPlayer: _activePlayer,
+                                          focusPlayerFirst:
+                                              _progress.activeSeatIdx <
+                                              (_gamePlayers.length / 2),
                                         ),
-                                      ] else ...[
-                                        gBuildSlicedPlayerAvatarH(
-                                          player: _activePlayer,
+
+                                  // Floating MISS button
+                                  Positioned(
+                                    bottom: _responsiveTile * 0.505,
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: _responsiveTile * 0.16,
+                                        height: _responsiveTile * 0.16,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: () => _processThrow(0),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Image.asset(
+                                                  'assets/png/mechanics/target_miss.png',
+                                                  fit: BoxFit.contain,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Floating Single button
+                                  Positioned(
+                                    bottom: _responsiveTile * 0.34,
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: _responsiveTile * 0.16,
+                                        height: _responsiveTile * 0.16,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: () => _processThrow(1),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Image.asset(
+                                                  'assets/png/mechanics/target_single.png',
+                                                  fit: BoxFit.contain,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Floating Double button
+                                  Positioned(
+                                    bottom: _responsiveTile * 0.175,
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: _responsiveTile * 0.16,
+                                        height: _responsiveTile * 0.16,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: () => _processThrow(2),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                Image.asset(
+                                                  'assets/png/mechanics/target_double.png',
+                                                  fit: BoxFit.contain,
+                                                  filterQuality:
+                                                      FilterQuality.high,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Floating Triple button
+                                  Positioned(
+                                    bottom: _responsiveTile * 0.01,
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: _responsiveTile * 0.16,
+                                        height: _responsiveTile * 0.16,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
+                                          ),
+                                          onPressed: isBullTarget
+                                              ? null
+                                              : () => _processThrow(3),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 200,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withValues(
+                                                                alpha:
+                                                                    isBullTarget
+                                                                    ? 0.3
+                                                                    : 1.0,
+                                                              ),
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
+                                                            _responsiveTile *
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                AnimatedOpacity(
+                                                  opacity: isBullTarget
+                                                      ? 0.3
+                                                      : 1.0,
+                                                  duration: const Duration(
+                                                    milliseconds: 200,
+                                                  ),
+                                                  child: Image.asset(
+                                                    'assets/png/mechanics/target_triple.png',
+                                                    fit: BoxFit.contain,
+                                                    filterQuality:
+                                                        FilterQuality.high,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(width: _responsiveTile * 0.008),
+
+                          // COLUMN 4: Next Player Sidebar (Next Team or player)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Stack(
+                                children: [
+                                  _isPlayerMode
+                                      ? gBuildSlicedPlayerAvatarVPanel(
+                                          player: _nextPlayer,
                                           avatarHeight: _avatarHeight,
                                           avatarHeightOuterSize:
                                               _avatarHeightOuterSize,
                                           avatarSlicedWidth: _avatarSlicedWidth,
                                           avatarSlicedWidthOuterSize:
                                               _avatarSlicedWidthOuterSize,
-                                          slotBgColor: _activeTeamColor,
-                                          playerPosition: _activePlayerIndex,
+                                          slotBgColor: _nextPlayerColor,
+                                          playerPosition: _nextPlayerIndex,
                                           responsiveTile: _responsiveTile,
-                                          isTagNickNameLeft: false,
+                                          heightBoost: _heightBoostPlayerPanel,
+                                          isEmptyPanel: !_hasGameNextPlayer,
+                                          isNextPlayer: true,
+                                        )
+                                      : gBuildSlicedTeamCardVPanel(
+                                          team: _nextTeam,
+                                          cardHeight: _cardHeight,
+                                          cardWidth: _cardWidth,
+                                          cardWidthOuterSize:
+                                              _cardWidthOuterSize,
+                                          cardSlicedHeight: _cardSlicedHeight,
+                                          cardSlicedHeightOuterSize:
+                                              _cardSlicedHeightOuterSize,
+                                          slotBgColor: _nextTeamColor,
+                                          teamPosition: _nextTeamIndex,
+                                          responsiveTile: _responsiveTile,
+                                          heightBoost: _heightBoostTeamPanel,
+                                          focusPlayer: _hasGameNextPlayer
+                                              ? _nextPlayer
+                                              : null,
+                                          focusPlayerFirst:
+                                              _progress.nextSeatIdx <
+                                              (_gamePlayers.length / 2),
+                                          isEmptyPanel: !_hasGameNextPlayer,
+                                          isNextPlayer: true,
                                         ),
-                                      ],
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
 
-                            // Row HITS && SCORES
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: _responsiveTile * 0.015,
-                                horizontal: _responsiveTile * 0.004,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors
-                                    .transparent, // Choose your background color here!
-                                borderRadius: BorderRadius.circular(
-                                  _avatarSlicedWidthOuterSize * 0.15,
-                                ), // Optional: rounds the corners nicely
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  // Previous player Score
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          gBuildArcadeOverlayHitsBadge(
-                                            gHitsText: _hasGamePreviousPlayer
-                                                ? '$_previousPlayerLastRoundHits'
-                                                : '-',
-                                            gTextColor: Color.fromARGB(
-                                              255,
-                                              207,
-                                              20,
-                                              17,
-                                            ),
-                                            gResponsiveTile: _responsiveTile,
-                                            gResponsiveFontSize:
-                                                _responsiveFontSize,
-                                            gForceAnimate:
-                                                _previousHitsBadgeAnime,
+                                  // Floating Stats button
+                                  Positioned(
+                                    bottom: _responsiveTile * 0.005,
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: _responsiveTile * 0.18,
+                                        height: _responsiveTile * 0.18,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            padding: EdgeInsets.zero,
+                                            elevation: 4,
                                           ),
-
-                                          SizedBox(
-                                            width: _responsiveTile * 0.008,
-                                          ),
-
-                                          _buildScoreContainer(
-                                            avatarHeightOuterSize:
-                                                _avatarHeightOuterSize,
-                                            containerColor: _isPlayerMode
-                                                ? _previousPlayerColor
-                                                : _previousTeamColor,
-                                            isPreviousPlayer: true,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-
-                                  SizedBox(width: _responsiveTile * 0.004),
-
-                                  // Previous player Stats
-                                  SizedBox(
-                                    width: _responsiveTile * 0.18,
-                                    height: _responsiveTile * 0.18,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: _hasGamePreviousPlayer
-                                          ? () => gShowPlayerStatsGameAroundClockDialog(
-                                              context: context,
-                                              player: _previousPlayer, 
-                                              isActivePlayer: false,
-                                              playerColor: _isPlayerMode
-                                                ? _previousPlayerColor
-                                                : _previousTeamColor, 
-                                              seatIndex: _progress.previousSeatIdx, 
-                                              responsiveTile: _responsiveTile, 
-                                              responsiveFontSize: _responsiveFontSize, 
-                                              gameConfig: _gameConfig, 
-                                              gamesScoresBox: gamesScoresBox, 
-                                              gameOptions: _gameOptions,
-                                            )
-                                          : null,
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: AnimatedOpacity(
-                                                opacity: _hasGamePreviousPlayer
-                                                    ? 1.0
-                                                    : 0.3,
-                                                duration: const Duration(
-                                                  milliseconds: 200,
-                                                ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius:
+                                          onPressed: _hasGameNextPlayer
+                                              ? () =>
+                                                    gShowPlayerStatsGameAroundClockDialog(
+                                                      context: context,
+                                                      player: _nextPlayer,
+                                                      isActivePlayer: false,
+                                                      playerColor: _isPlayerMode
+                                                          ? _nextPlayerColor
+                                                          : _nextTeamColor,
+                                                      seatIndex:
+                                                          _progress.nextSeatIdx,
+                                                      responsiveTile:
+                                                          _responsiveTile,
+                                                      responsiveFontSize:
+                                                          _responsiveFontSize,
+                                                      gameConfig: _gameConfig,
+                                                      gamesScoresBox:
+                                                          gamesScoresBox,
+                                                      gameOptions: _gameOptions,
+                                                    )
+                                              : null,
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                Positioned.fill(
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 200,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withValues(
+                                                                alpha:
+                                                                    _hasGameNextPlayer
+                                                                    ? 1.0
+                                                                    : 0.3,
+                                                              ),
+                                                          blurRadius:
+                                                              _responsiveTile *
+                                                              0.015,
+                                                          offset: Offset(
                                                             _responsiveTile *
-                                                            0.015,
-                                                        offset: Offset(
-                                                          _responsiveTile *
-                                                              0.003,
-                                                          _responsiveTile *
-                                                              0.003,
-                                                        ), // Casts shadow upward onto the screen content
-                                                      ),
-                                                    ],
+                                                                0.003,
+                                                            _responsiveTile *
+                                                                0.003,
+                                                          ), // Casts shadow upward onto the screen content
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ),
 
-                                            AnimatedOpacity(
-                                              opacity: _hasGamePreviousPlayer
-                                                  ? 1.0
-                                                  : 0.3,
-                                              duration: const Duration(
-                                                milliseconds: 200,
-                                              ),
-                                              child: Image.asset(
-                                                'assets/png/mechanics/stats.png',
-                                                fit: BoxFit.contain,
-                                                filterQuality:
-                                                    FilterQuality.high,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        gBuildArcadeActiveTarget(
-                                          currentTarget:
-                                              _activeTargetValue, // or your active target variable
-                                          responsiveTile: _responsiveTile,
-                                          targetBgColor:
-                                              _gameConfig.fldGameType.tileColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Active player Stats
-                                  SizedBox(
-                                    width: _responsiveTile * 0.18,
-                                    height: _responsiveTile * 0.18,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: () => gShowPlayerStatsGameAroundClockDialog(
-                                        context: context,
-                                        player: _activePlayer, 
-                                        isActivePlayer: true,
-                                        playerColor: _isPlayerMode
-                                          ? _activePlayerColor
-                                          : _activeTeamColor, 
-                                        seatIndex: _progress.activeSeatIdx, 
-                                        responsiveTile: _responsiveTile, 
-                                        responsiveFontSize: _responsiveFontSize, 
-                                        gameConfig: _gameConfig, 
-                                        gamesScoresBox: gamesScoresBox, 
-                                        gameOptions: _gameOptions,
-                                      ),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius:
-                                                          _responsiveTile *
-                                                          0.015,
-                                                      offset: Offset(
-                                                        _responsiveTile * 0.003,
-                                                        _responsiveTile * 0.003,
-                                                      ), // Casts shadow upward onto the screen content
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-
-                                            Image.asset(
-                                              'assets/png/mechanics/stats.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  SizedBox(width: _responsiveTile * 0.004),
-
-                                  // Active player Score
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          _buildScoreContainer(
-                                            avatarHeightOuterSize:
-                                                _avatarHeightOuterSize,
-                                            containerColor: _isPlayerMode
-                                                ? _activePlayerColor
-                                                : _activeTeamColor,
-                                            isPreviousPlayer: false,
-                                          ),
-
-                                          SizedBox(
-                                            width: _responsiveTile * 0.008,
-                                          ),
-
-                                          gBuildArcadeOverlayHitsBadge(
-                                            gHitsText:
-                                                _activePlayerCurrentRoundHits
-                                                    .toString(),
-                                            gTextColor: Color.fromARGB(
-                                              255,
-                                              207,
-                                              20,
-                                              17,
-                                            ),
-                                            gResponsiveTile: _responsiveTile,
-                                            gResponsiveFontSize:
-                                                _responsiveFontSize,
-                                            gForceAnimate:
-                                                _activeHitsBadgeAnime,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Row Rankings and Interactive Dartboard)
-                            Expanded(
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: _responsiveTile * 0.004,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    // Rankings
-                                    Expanded(
-                                      flex: 4,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Header label right above the players ranking table
-                                          Container(
-                                            alignment: Alignment.center,
-                                            padding: EdgeInsets.only(
-                                              top: _responsiveTile * 0.010,
-                                              bottom: _responsiveTile * 0.004,
-                                              left: _responsiveTile * 0.008,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade800
-                                                  .withAlpha(200),
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(
-                                                  _responsiveTile * 0.03,
-                                                ),
-                                                topRight: Radius.circular(
-                                                  _responsiveTile * 0.03,
-                                                ),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              _isPlayerMode
-                                                  ? "PLAYERS RANKING"
-                                                  : "TEAMS RANKING",
-                                              style: gBuildArcadeTextStyle(
-                                                _responsiveFontSize * 1.1,
-                                                gFontWeight: FontWeight.bold,
-                                                gTextColor: Colors.amber,
-                                              ),
-                                            ),
-                                          ),
-
-                                          Expanded(
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Expanded(
-                                                  child: SizedBox(
-                                                    width: double.infinity,
-                                                    child:
-                                                      gBuildGameAroundClockRankingWidget(
-                                                        gameConfig: _gameConfig,
-                                                        gamesScoresBox: gamesScoresBox,
-                                                        gameOptions: _gameOptions,
-                                                        gamePlayers: _gamePlayers,
-                                                        gameTeams: _gameTeams,
-                                                        isPlayerMode: _isPlayerMode,
-                                                        responsiveTile: _responsiveTile,
-                                                      ),
+                                                AnimatedOpacity(
+                                                  opacity: _hasGameNextPlayer
+                                                      ? 1.0
+                                                      : 0.3,
+                                                  duration: const Duration(
+                                                    milliseconds: 200,
+                                                  ),
+                                                  child: Image.asset(
+                                                    'assets/png/mechanics/stats.png',
+                                                    fit: BoxFit.contain,
+                                                    filterQuality:
+                                                        FilterQuality.high,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-
-                                          SizedBox(
-                                            height: _responsiveTile * 0.017,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    Expanded(
-                                      flex: 6,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(
-                                          left: _responsiveTile * 0.010,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Expanded(
-                                              child: gBuildDartboardInputZone(
-                                                gActiveTargetIdx:
-                                                    _progress.activeTargetIdx,
-                                                gGame:
-                                                    _gameConfig,
-                                                gOnTap: (leap) {
-                                                  _processThrow(leap);
-                                                },
-                                              ),
-                                            ),
-
-                                            Container(
-                                              alignment: Alignment.center,
-                                              padding: EdgeInsets.symmetric(
-                                                vertical:
-                                                    _responsiveTile * 0.004,
-                                                horizontal:
-                                                    _responsiveTile * 0.008,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade800
-                                                    .withAlpha(200),
-                                                border: BoxBorder.all(
-                                                  color: Colors.yellowAccent,
-                                                  width:
-                                                      _responsiveTile * 0.006,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      _responsiveTile * 0.03,
-                                                    ),
-                                              ),
-                                              child: FittedBox(
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    ..."DARTS"
-                                                        .split('')
-                                                        .map(
-                                                          (letter) => Text(
-                                                            letter,
-                                                            style: gBuildArcadeTextStyle(
-                                                              _responsiveFontSize *
-                                                                  1.2,
-                                                              gFontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              gTextColor:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                        ),
-
-                                                    SizedBox(
-                                                      height:
-                                                          _responsiveTile *
-                                                          0.03,
-                                                    ),
-
-                                                    // --- 3-DART INDICATOR ROW PLACED ABOVE THE DARTBOARD ---
-                                                    ...List.generate(3, (dIdx) {
-                                                      bool isThrown = dIdx < (_progress.activeDartIdx % 3);
-                                                      return Padding(
-                                                        padding:
-                                                            EdgeInsets.symmetric(
-                                                              horizontal: _responsiveTile * 0.004,
-                                                            ),
-                                                        child: Icon(
-                                                          Icons.circle,
-                                                          size: _responsiveFontSize * 2.5,
-                                                          color: isThrown
-                                                              ? Colors
-                                                                    .yellowAccent
-                                                              : Colors
-                                                                    .grey
-                                                                    .shade900,
-                                                        ),
-                                                      );
-                                                    }),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(height: _responsiveTile * 0.017),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(width: _responsiveTile * 0.008),
-
-                      // COLUMN 3: Right Sidebar (Active Team or player)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Stack(
-                            children: [
-                              _isPlayerMode
-                                  ? gBuildSlicedPlayerAvatarVPanel(
-                                      player: _activePlayer,
-                                      avatarHeight: _avatarHeight,
-                                      avatarHeightOuterSize:
-                                          _avatarHeightOuterSize,
-                                      avatarSlicedWidth: _avatarSlicedWidth,
-                                      avatarSlicedWidthOuterSize:
-                                          _avatarSlicedWidthOuterSize,
-                                      slotBgColor: _activePlayerColor,
-                                      playerPosition: _activePlayerIndex,
-                                      responsiveTile: _responsiveTile,
-                                      heightBoost: _heightBoostPlayerPanel,
-                                    )
-                                  : gBuildSlicedTeamCardVPanel(
-                                      team: _activeTeam,
-                                      cardHeight: _cardHeight,
-                                      cardWidth: _cardWidth,
-                                      cardWidthOuterSize: _cardWidthOuterSize,
-                                      cardSlicedHeight: _cardSlicedHeight,
-                                      cardSlicedHeightOuterSize:
-                                          _cardSlicedHeightOuterSize,
-                                      slotBgColor: _activeTeamColor,
-                                      teamPosition: _activeTeamIndex,
-                                      responsiveTile: _responsiveTile,
-                                      heightBoost: _heightBoostTeamPanel,
-                                      focusPlayer: _activePlayer,
-                                      focusPlayerFirst:
-                                          _progress.activeSeatIdx <
-                                          (_gamePlayers.length / 2),
-                                    ),
-
-                              // Floating MISS button
-                              Positioned(
-                                bottom: _responsiveTile * 0.505,
-                                left: 0,
-                                right: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: _responsiveTile * 0.16,
-                                    height: _responsiveTile * 0.16,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: () => _processThrow(0),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius:
-                                                          _responsiveTile *
-                                                          0.015,
-                                                      offset: Offset(
-                                                        _responsiveTile * 0.003,
-                                                        _responsiveTile * 0.003,
-                                                      ), // Casts shadow upward onto the screen content
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-
-                                            Image.asset(
-                                              'assets/png/mechanics/target_miss.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
-                                            ),
-                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-
-                              // Floating Single button
-                              Positioned(
-                                bottom: _responsiveTile * 0.34,
-                                left: 0,
-                                right: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: _responsiveTile * 0.16,
-                                    height: _responsiveTile * 0.16,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: () => _processThrow(1),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius:
-                                                          _responsiveTile *
-                                                          0.015,
-                                                      offset: Offset(
-                                                        _responsiveTile * 0.003,
-                                                        _responsiveTile * 0.003,
-                                                      ), // Casts shadow upward onto the screen content
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-
-                                            Image.asset(
-                                              'assets/png/mechanics/target_single.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // Floating Double button
-                              Positioned(
-                                bottom: _responsiveTile * 0.175,
-                                left: 0,
-                                right: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: _responsiveTile * 0.16,
-                                    height: _responsiveTile * 0.16,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: () => _processThrow(2),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius:
-                                                          _responsiveTile *
-                                                          0.015,
-                                                      offset: Offset(
-                                                        _responsiveTile * 0.003,
-                                                        _responsiveTile * 0.003,
-                                                      ), // Casts shadow upward onto the screen content
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-
-                                            Image.asset(
-                                              'assets/png/mechanics/target_double.png',
-                                              fit: BoxFit.contain,
-                                              filterQuality: FilterQuality.high,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // Floating Triple button
-                              Positioned(
-                                bottom: _responsiveTile * 0.01,
-                                left: 0,
-                                right: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: _responsiveTile * 0.16,
-                                    height: _responsiveTile * 0.16,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                        onPressed: isBullTarget
-                                          ? null
-                                          : () => _processThrow(3),
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: AnimatedOpacity(
-                                                opacity: isBullTarget
-                                                    ? 0.3
-                                                    : 1.0,
-                                                duration: const Duration(
-                                                  milliseconds: 200,
-                                                ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius:
-                                                            _responsiveTile *
-                                                            0.015,
-                                                        offset: Offset(
-                                                          _responsiveTile *
-                                                              0.003,
-                                                          _responsiveTile *
-                                                              0.003,
-                                                        ), // Casts shadow upward onto the screen content
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-
-                                            AnimatedOpacity(
-                                              opacity: isBullTarget ? 0.3 : 1.0,
-                                              duration: const Duration(
-                                                milliseconds: 200,
-                                              ),
-                                              child: Image.asset(
-                                                'assets/png/mechanics/target_triple.png',
-                                                fit: BoxFit.contain,
-                                                filterQuality: FilterQuality.high,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                ],
                               ),
                             ],
                           ),
                         ],
                       ),
-
-                      SizedBox(width: _responsiveTile * 0.008),
-
-                      // COLUMN 4: Next Player Sidebar (Next Team or player)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Stack(
-                            children: [
-                              _isPlayerMode
-                                  ? gBuildSlicedPlayerAvatarVPanel(
-                                      player: _nextPlayer,
-                                      avatarHeight: _avatarHeight,
-                                      avatarHeightOuterSize:
-                                          _avatarHeightOuterSize,
-                                      avatarSlicedWidth: _avatarSlicedWidth,
-                                      avatarSlicedWidthOuterSize:
-                                          _avatarSlicedWidthOuterSize,
-                                      slotBgColor: _nextPlayerColor,
-                                      playerPosition: _nextPlayerIndex,
-                                      responsiveTile: _responsiveTile,
-                                      heightBoost: _heightBoostPlayerPanel,
-                                      isEmptyPanel: !_hasGameNextPlayer,
-                                      isNextPlayer: true,
-                                    )
-                                  : gBuildSlicedTeamCardVPanel(
-                                      team: _nextTeam,
-                                      cardHeight: _cardHeight,
-                                      cardWidth: _cardWidth,
-                                      cardWidthOuterSize: _cardWidthOuterSize,
-                                      cardSlicedHeight: _cardSlicedHeight,
-                                      cardSlicedHeightOuterSize:
-                                          _cardSlicedHeightOuterSize,
-                                      slotBgColor: _nextTeamColor,
-                                      teamPosition: _nextTeamIndex,
-                                      responsiveTile: _responsiveTile,
-                                      heightBoost: _heightBoostTeamPanel,
-                                      focusPlayer: _hasGameNextPlayer
-                                          ? _nextPlayer
-                                          : null,
-                                      focusPlayerFirst:
-                                          _progress.nextSeatIdx <
-                                          (_gamePlayers.length / 2),
-                                      isEmptyPanel: !_hasGameNextPlayer,
-                                      isNextPlayer: true,
-                                    ),
-
-                              // Floating Stats button
-                              Positioned(
-                                bottom: _responsiveTile * 0.005,
-                                left: 0,
-                                right: 0,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: _responsiveTile * 0.18,
-                                    height: _responsiveTile * 0.18,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        padding: EdgeInsets.zero,
-                                        elevation: 4,
-                                      ),
-                                      onPressed: _hasGameNextPlayer
-                                          ? () => gShowPlayerStatsGameAroundClockDialog(
-                                              context: context,
-                                              player: _nextPlayer, 
-                                              isActivePlayer: false,
-                                              playerColor: _isPlayerMode
-                                                ? _nextPlayerColor
-                                                : _nextTeamColor, 
-                                              seatIndex: _progress.nextSeatIdx, 
-                                              responsiveTile: _responsiveTile, 
-                                              responsiveFontSize: _responsiveFontSize, 
-                                              gameConfig: _gameConfig, 
-                                              gamesScoresBox: gamesScoresBox, 
-                                              gameOptions: _gameOptions,
-                                            )
-                                          : null,
-                                      child: Center(
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: AnimatedOpacity(
-                                                opacity: _hasGameNextPlayer
-                                                    ? 1.0
-                                                    : 0.3,
-                                                duration: const Duration(
-                                                  milliseconds: 200,
-                                                ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius:
-                                                            _responsiveTile *
-                                                            0.015,
-                                                        offset: Offset(
-                                                          _responsiveTile *
-                                                              0.003,
-                                                          _responsiveTile *
-                                                              0.003,
-                                                        ), // Casts shadow upward onto the screen content
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-
-                                            AnimatedOpacity(
-                                              opacity: _hasGameNextPlayer
-                                                  ? 1.0
-                                                  : 0.3,
-                                              duration: const Duration(
-                                                milliseconds: 200,
-                                              ),
-                                              child: Image.asset(
-                                                'assets/png/mechanics/stats.png',
-                                                fit: BoxFit.contain,
-                                                filterQuality:
-                                                    FilterQuality.high,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -1918,21 +2049,22 @@ class _GameAroundClockScreenState extends State<GameAroundClockScreen>
                         )!
                         ? Icons.arrow_downward
                         : Icons.arrow_upward,
-                    color: gAcIsGoingDown(
-                              _gameConfig,
-                              _seatTargetIdx(
-                                isPreviousPlayer
-                                    ? _progress.previousSeatIdx
-                                    : _progress.activeSeatIdx,
-                              ),
-                            )!
-                            ? Colors.red.shade700
-                            : Colors.green.shade700,
-                    
+                    color:
+                        gAcIsGoingDown(
+                          _gameConfig,
+                          _seatTargetIdx(
+                            isPreviousPlayer
+                                ? _progress.previousSeatIdx
+                                : _progress.activeSeatIdx,
+                          ),
+                        )!
+                        ? Colors.red.shade700
+                        : Colors.green.shade700,
+
                     size: _responsiveFontSize * 2.2,
                   ),
                 ),
-                SizedBox(width: _responsiveTile * 0.02),
+              SizedBox(width: _responsiveTile * 0.02),
               Text(
                 isPreviousPlayer
                     ? _hasGamePreviousPlayer

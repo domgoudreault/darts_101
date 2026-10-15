@@ -19,7 +19,11 @@ import 'package:darts_101/helpers_rankings.dart';
 import 'package:darts_101/helpers_stats.dart';
 import 'package:darts_101/helpers_scoreboards.dart';
 
-typedef _BuildUpSeat = ({TblPlayer player, int originalIndex, Color playerColor});
+typedef _BuildUpSeat = ({
+  TblPlayer player,
+  int originalIndex,
+  Color playerColor,
+});
 
 // Creates the baseline records (round -1) of a Build Up game. They also store,
 // for the whole game, the lane (fldLaneIndex) and the position in that lane
@@ -80,8 +84,13 @@ class GameBuildUpScreen extends StatefulWidget {
 
 class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   // Define all responsive height and width of the game UI
-  double get _safeHeight => GlobalAppDisplay.safeHeight;
-  double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
+  // Real height of the body area, measured by the layout; falls back to the computed value.
+  double? _bodyHeight;
+  double get _toolbarHeight =>
+      (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+  double get _safeHeight => _bodyHeight == null
+      ? GlobalAppDisplay.safeHeight
+      : _bodyHeight! + _toolbarHeight;
   double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 7);
   double get _heightBoostPlayerPanel =>
       (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.645;
@@ -147,15 +156,16 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
     final colors = _playersSlotColors;
     final lanes = <List<_BuildUpSeat>>[[], []];
 
-    final baselines = gamesScoresBox.values
-        .where(
-          (s) =>
-              s.fldGame == _gameConfig &&
-              s.fldRound == -1 &&
-              s.fldLaneIndex != null,
-        )
-        .toList()
-      ..sort((a, b) => a.fldSeatIndex.compareTo(b.fldSeatIndex));
+    final baselines =
+        gamesScoresBox.values
+            .where(
+              (s) =>
+                  s.fldGame == _gameConfig &&
+                  s.fldRound == -1 &&
+                  s.fldLaneIndex != null,
+            )
+            .toList()
+          ..sort((a, b) => a.fldSeatIndex.compareTo(b.fldSeatIndex));
 
     for (final s in baselines) {
       final index = _gameConfig.fldPlayers.indexOf(s.fldPlayer);
@@ -210,9 +220,11 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
   // Throw that hit BULL in a lane (the lane is frozen from then on)
   TblGameScore? _laneFinish(int lane) {
     final lastIdx = _targets.length - 1;
-    return gBuLaneRecords(_gameConfig, gamesScoresBox, lane)
-        .where((s) => s.fldTargetIndex == lastIdx && s.fldHits > 0)
-        .firstOrNull;
+    return gBuLaneRecords(
+      _gameConfig,
+      gamesScoresBox,
+      lane,
+    ).where((s) => s.fldTargetIndex == lastIdx && s.fldHits > 0).firstOrNull;
   }
 
   bool _isLaneFrozen(int lane) =>
@@ -312,7 +324,9 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
           children: [
             for (final p in [p0, p1])
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: _responsiveTile * 0.01),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _responsiveTile * 0.01,
+                ),
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
@@ -533,92 +547,105 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         gAppBarColorBg: _gameConfig.fldGameType.tileColor,
         gCallFromMainScreen: false,
         gOnPressed: null,
-        gRightPopupMenu: GlobalGameBuildUpPopupMenu(enuGameType: _gameConfig.fldGameType),
+        gRightPopupMenu: GlobalGameBuildUpPopupMenu(
+          enuGameType: _gameConfig.fldGameType,
+        ),
       ),
 
       body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.15,
-                child: Image.asset(
-                  'assets/png/tiles/${_gameConfig.fldGameType.tileType}_${_gameConfig.fldGameType.tileCode}.png',
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            _bodyHeight = constraints.maxHeight;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.15,
+                    child: Image.asset(
+                      'assets/png/tiles/${_gameConfig.fldGameType.tileType}_${_gameConfig.fldGameType.tileCode}.png',
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            Container(
-              padding: EdgeInsets.only(
-                left: GlobalAppDisplay.safeWidth * 0.004,
-                right: GlobalAppDisplay.safeWidth * 0.004,
-                top: GlobalAppDisplay.safeWidth * 0.006,
-                bottom: _safeHeight * 0.006,
-              ),
-              height: (_safeHeight - _toolbarHeight),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  _rankingWidth = _rankingWidthFor(constraints.maxWidth);
-                  return Stack(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                Container(
+                  padding: EdgeInsets.only(
+                    left: GlobalAppDisplay.safeWidth * 0.004,
+                    right: GlobalAppDisplay.safeWidth * 0.004,
+                    top: GlobalAppDisplay.safeWidth * 0.006,
+                    bottom: _safeHeight * 0.006,
+                  ),
+                  height: (_safeHeight - _toolbarHeight),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      _rankingWidth = _rankingWidthFor(constraints.maxWidth);
+                      return Stack(
                         children: [
-                          Expanded(child: _buildLane(0)),
-                          Expanded(child: _buildLane(1)),
-                        ],
-                      ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(child: _buildLane(0)),
+                              Expanded(child: _buildLane(1)),
+                            ],
+                          ),
 
-                      // Scoreboard between the two undo buttons
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: _avatarSlicedWidthOuterSize,
-                        child: Center(
-                          child: _imageButton(
-                            asset: 'scoreboard',
-                            size: _responsiveTile * 0.16,
-                            onPressed: () => gShowGameBuildUpScoreboardDialog(
-                              context: context,
-                              gameConfig: _gameConfig,
-                              gamesScoresBox: gamesScoresBox,
-                              gameOptions: _gameOptions,
-                              lanes: [
-                                for (final lane in _lanes)
-                                  [
-                                    for (int i = 0; i < lane.length; i++)
-                                      (
-                                        originalIndex: i,
-                                        player: lane[i].player,
-                                        playerColor: lane[i].playerColor,
-                                      ),
-                                  ],
-                              ],
-                              responsiveTile: _responsiveTile,
-                              responsiveFontSize: _responsiveFontSize,
+                          // Scoreboard between the two undo buttons
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: _avatarSlicedWidthOuterSize,
+                            child: Center(
+                              child: _imageButton(
+                                asset: 'scoreboard',
+                                size: _responsiveTile * 0.16,
+                                onPressed: () =>
+                                    gShowGameBuildUpScoreboardDialog(
+                                      context: context,
+                                      gameConfig: _gameConfig,
+                                      gamesScoresBox: gamesScoresBox,
+                                      gameOptions: _gameOptions,
+                                      lanes: [
+                                        for (final lane in _lanes)
+                                          [
+                                            for (
+                                              int i = 0;
+                                              i < lane.length;
+                                              i++
+                                            )
+                                              (
+                                                originalIndex: i,
+                                                player: lane[i].player,
+                                                playerColor:
+                                                    lane[i].playerColor,
+                                              ),
+                                          ],
+                                      ],
+                                      responsiveTile: _responsiveTile,
+                                      responsiveFontSize: _responsiveFontSize,
+                                    ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
 
-                      // Ranking runs from the target row down between the boards
-                      Positioned(
-                        top: _avatarSlicedWidthOuterSize + _rowGap,
-                        bottom: _responsiveTile * 0.017,
-                        left: (constraints.maxWidth - _rankingWidth) / 2,
-                        width: _rankingWidth,
-                        child: _buildRanking(),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+                          // Ranking runs from the target row down between the boards
+                          Positioned(
+                            top: _avatarSlicedWidthOuterSize + _rowGap,
+                            bottom: _responsiveTile * 0.017,
+                            left: (constraints.maxWidth - _rankingWidth) / 2,
+                            width: _rankingWidth,
+                            child: _buildRanking(),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -640,7 +667,10 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         2 * _responsiveTile * 0.008;
     final width =
         2 *
-        (gameAreaWidth - _avatarHeightOuterSize - _statsButtonSize - 2 * _rowGap);
+        (gameAreaWidth -
+            _avatarHeightOuterSize -
+            _statsButtonSize -
+            2 * _rowGap);
     return width.clamp(0.0, totalWidth);
   }
 
@@ -806,37 +836,37 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         SizedBox(
           height: _avatarSlicedWidthOuterSize,
           child: Row(
-          textDirection: _laneDirection(lane),
-          children: [
-            const Spacer(),
-            Expanded(
-              child: Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: _imageButton(
-                    asset: 'undo',
-                    size: _responsiveTile * 0.2,
-                    onPressed: _hasLaneStarted(lane) && _winnerLane == null
-                        ? () => _undoLastThrow(lane)
-                        : null,
+            textDirection: _laneDirection(lane),
+            children: [
+              const Spacer(),
+              Expanded(
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: _imageButton(
+                      asset: 'undo',
+                      size: _responsiveTile * 0.2,
+                      onPressed: _hasLaneStarted(lane) && _winnerLane == null
+                          ? () => _undoLastThrow(lane)
+                          : null,
+                    ),
                   ),
                 ),
               ),
-            ),
-            
-            gBuildSlicedPlayerAvatarH(
-              player: active.player,
-              avatarHeight: _avatarHeight,
-              avatarHeightOuterSize: _avatarHeightOuterSize,
-              avatarSlicedWidth: _avatarSlicedWidth,
-              avatarSlicedWidthOuterSize: _avatarSlicedWidthOuterSize,
-              slotBgColor: active.playerColor,
-              playerPosition: active.originalIndex,
-              responsiveTile: _responsiveTile,
-              isTagNickNameLeft: lane == 0,
-            ),
-          ],
-        ),
+
+              gBuildSlicedPlayerAvatarH(
+                player: active.player,
+                avatarHeight: _avatarHeight,
+                avatarHeightOuterSize: _avatarHeightOuterSize,
+                avatarSlicedWidth: _avatarSlicedWidth,
+                avatarSlicedWidthOuterSize: _avatarSlicedWidthOuterSize,
+                slotBgColor: active.playerColor,
+                playerPosition: active.originalIndex,
+                responsiveTile: _responsiveTile,
+                isTagNickNameLeft: lane == 0,
+              ),
+            ],
+          ),
         ),
 
         SizedBox(height: _rowGap),
@@ -919,7 +949,9 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
         child: Icon(
           Icons.circle,
           size: _responsiveFontSize * 2.5,
-          color: dIdx < dartsThrown ? Colors.yellowAccent : Colors.grey.shade900,
+          color: dIdx < dartsThrown
+              ? Colors.yellowAccent
+              : Colors.grey.shade900,
         ),
       );
     });
@@ -1053,22 +1085,20 @@ class _GameBuildUpScreenState extends State<GameBuildUpScreen> {
           child: Stack(
             children: [
               Positioned.fill(
-                child: AnimatedOpacity(
-                  opacity: opacity,
+                child: AnimatedContainer(
                   duration: fade,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: _responsiveTile * 0.015,
-                          offset: Offset(
-                            _responsiveTile * 0.003,
-                            _responsiveTile * 0.003,
-                          ),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: opacity),
+                        blurRadius: _responsiveTile * 0.015,
+                        offset: Offset(
+                          _responsiveTile * 0.003,
+                          _responsiveTile * 0.003,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),

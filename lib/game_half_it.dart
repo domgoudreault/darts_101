@@ -40,8 +40,13 @@ class GameHalfItScreen extends StatefulWidget {
 class _GameHalfItScreenState extends State<GameHalfItScreen>
     with TickerProviderStateMixin {
   // Define all responsive height and width of the rosters selection UI
-  double get _safeHeight => GlobalAppDisplay.safeHeight;
-  double get _toolbarHeight => (_safeHeight * 0.10).clamp(56.0, 142.0);
+  // Real height of the body area, measured by the layout; falls back to the computed value.
+  double? _bodyHeight;
+  double get _toolbarHeight =>
+      (GlobalAppDisplay.safeHeight * 0.10).clamp(56.0, 142.0);
+  double get _safeHeight => _bodyHeight == null
+      ? GlobalAppDisplay.safeHeight
+      : _bodyHeight! + _toolbarHeight;
   double get _headerHeight => (_safeHeight - _toolbarHeight) * (1 / 6);
   double get _heightBoostPlayerPanel =>
       (_safeHeight - _toolbarHeight - (_headerHeight * 0.006 * 2)) * 0.595;
@@ -510,7 +515,10 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
       ),
 
       body: SafeArea(
-        child: Stack(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            _bodyHeight = constraints.maxHeight;
+            return Stack(
           fit: StackFit.expand,
           children: [
             Positioned.fill(
@@ -964,30 +972,22 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                                         child: Stack(
                                           children: [
                                             Positioned.fill(
-                                              child: AnimatedOpacity(
-                                                opacity: _hasGamePreviousPlayer
-                                                    ? 1.0
-                                                    : 0.3,
+                                              child: AnimatedContainer(
                                                 duration: const Duration(
                                                   milliseconds: 200,
                                                 ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius:
-                                                            _responsiveTile *
-                                                            0.015,
-                                                        offset: Offset(
-                                                          _responsiveTile *
-                                                              0.003,
-                                                          _responsiveTile *
-                                                              0.003,
-                                                        ), // Casts shadow upward onto the screen content
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withValues(alpha: _hasGamePreviousPlayer ? 1.0 : 0.3),
+                                                      blurRadius: _responsiveTile * 0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
                                                       ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ),
@@ -1550,30 +1550,22 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                                         child: Stack(
                                           children: [
                                             Positioned.fill(
-                                              child: AnimatedOpacity(
-                                                opacity: isBullTarget
-                                                    ? 0.3
-                                                    : 1.0,
+                                              child: AnimatedContainer(
                                                 duration: const Duration(
                                                   milliseconds: 200,
                                                 ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius:
-                                                            _responsiveTile *
-                                                            0.015,
-                                                        offset: Offset(
-                                                          _responsiveTile *
-                                                              0.003,
-                                                          _responsiveTile *
-                                                              0.003,
-                                                        ), // Casts shadow upward onto the screen content
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withValues(alpha: isBullTarget ? 0.3 : 1.0),
+                                                      blurRadius: _responsiveTile * 0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
                                                       ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ),
@@ -1683,30 +1675,22 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                                         child: Stack(
                                           children: [
                                             Positioned.fill(
-                                              child: AnimatedOpacity(
-                                                opacity: _hasGameNextPlayer
-                                                    ? 1.0
-                                                    : 0.3,
+                                              child: AnimatedContainer(
                                                 duration: const Duration(
                                                   milliseconds: 200,
                                                 ),
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        blurRadius:
-                                                            _responsiveTile *
-                                                            0.015,
-                                                        offset: Offset(
-                                                          _responsiveTile *
-                                                              0.003,
-                                                          _responsiveTile *
-                                                              0.003,
-                                                        ), // Casts shadow upward onto the screen content
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withValues(alpha: _hasGameNextPlayer ? 1.0 : 0.3),
+                                                      blurRadius: _responsiveTile * 0.015,
+                                                      offset: Offset(
+                                                        _responsiveTile * 0.003,
+                                                        _responsiveTile * 0.003,
                                                       ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ),
@@ -1763,6 +1747,8 @@ class _GameHalfItScreenState extends State<GameHalfItScreen>
                 ),
               ),
           ],
+        );
+          },
         ),
       ),
     );
