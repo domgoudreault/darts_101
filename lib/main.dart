@@ -356,29 +356,42 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: (contentHeight * (25 / 32)) * activeTiles.length,
-                  child: CarouselView(
-                    itemExtent: contentHeight * (25 / 32),
-                    shrinkExtent: contentHeight * 0.15,
-                    backgroundColor: Colors.transparent,
-                    overlayColor: WidgetStateProperty.all(Colors.transparent),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Tiles are square, so the item width must equal the real available height
+                  final tileSize = constraints.maxHeight;
+
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: tileSize * activeTiles.length,
+                      child: CarouselView(
+                        itemExtent: tileSize,
+                        shrinkExtent: tileSize * 0.5,
+                        padding: EdgeInsets.zero,
+                        backgroundColor: Colors.transparent,
+                        overlayColor: WidgetStateProperty.all(
+                          Colors.transparent,
+                        ),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        onTap: (int index) {
+                          _onTileTapped(context, activeTiles[index]);
+                        },
+                        children: activeTiles
+                            .map(
+                              (tile) => _buildMainScreenTile(
+                                context,
+                                tile,
+                                safeWidth,
+                              ),
+                            )
+                            .toList(),
+                      ),
                     ),
-                    onTap: (int index) {
-                      _onTileTapped(context, activeTiles[index]);
-                    },
-                    children: activeTiles
-                        .map(
-                          (tile) =>
-                              _buildMainScreenTile(context, tile, safeWidth),
-                        )
-                        .toList(),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ],

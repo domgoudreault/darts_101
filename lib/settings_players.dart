@@ -27,6 +27,7 @@ class SettingsPlayers extends StatefulWidget {
 
 class _SettingsPlayersState extends State<SettingsPlayers> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   String _searchQuery = '';
 
   final CarouselController _carouselController = CarouselController();
@@ -49,6 +50,7 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _carouselController.dispose();
     super.dispose();
   }
@@ -84,7 +86,13 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
   }
 
   // Fonctions de navigation when a button is pressed
+  void _dropSearchFocus() {
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
   void _addPlayer(BuildContext context, double cardWidth) async {
+    _dropSearchFocus();
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -95,6 +103,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         ),
       ),
     );
+
+    if (mounted) _dropSearchFocus();
 
     if (result == true && mounted) {
       if (_searchQuery.isNotEmpty) {
@@ -115,8 +125,9 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
     }
   }
 
-  void _onPlayerTapped(BuildContext context, TblPlayer player) {
-    Navigator.push(
+  void _onPlayerTapped(BuildContext context, TblPlayer player) async {
+    _dropSearchFocus();
+    await Navigator.push(
       context,
       MaterialPageRoute(
         // The add_player.dart page will be created and shown
@@ -127,6 +138,8 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
         ),
       ),
     );
+
+    if (mounted) _dropSearchFocus();
   }
 
   void _checkAndPromptPlayerSeeding() {
@@ -260,9 +273,9 @@ class _SettingsPlayersState extends State<SettingsPlayers> {
                         child: SizedBox(
                           height: GlobalAppDisplay.safeHeight * 0.075,
                           child: FocusScope(
-                            node: FocusScopeNode(),
                             child: TextField(
                               controller: _searchController,
+                              focusNode: _searchFocusNode,
                               style: gBuildArcadeTextStyle(safeHeight * 0.0195),
                               decoration: InputDecoration(
                                 hintText: 'Search player name or nickname...',

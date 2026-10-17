@@ -259,9 +259,9 @@ class _ModifyAddPlayerFormState extends State<ModifyAddPlayerForm> {
         return SafeArea(
           child: Container(
             width: GlobalAppDisplay.safeWidth * 0.775,
-            height: _responsiveTile * 0.645,
             padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   width: double.infinity,

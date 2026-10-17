@@ -26,6 +26,7 @@ class SettingsTeams extends StatefulWidget {
 
 class _SettingsTeamsState extends State<SettingsTeams> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final CarouselController _carouselController = CarouselController();
 
   String _searchQuery = '';
@@ -49,6 +50,7 @@ class _SettingsTeamsState extends State<SettingsTeams> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _carouselController.dispose();
     super.dispose();
   }
@@ -64,7 +66,13 @@ class _SettingsTeamsState extends State<SettingsTeams> {
   }
 
   // Fonctions de navigation when a button is pressed
+  void _dropSearchFocus() {
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
   void _addTeam(BuildContext context, double cardWidth) async {
+    _dropSearchFocus();
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -75,6 +83,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         ),
       ),
     );
+
+    if (mounted) _dropSearchFocus();
 
     if (result == true && mounted) {
       if (_searchQuery.isNotEmpty) {
@@ -95,8 +105,9 @@ class _SettingsTeamsState extends State<SettingsTeams> {
     }
   }
 
-  void _onTeamTapped(BuildContext context, TblTeam team) {
-    Navigator.push(
+  void _onTeamTapped(BuildContext context, TblTeam team) async {
+    _dropSearchFocus();
+    await Navigator.push(
       context,
       MaterialPageRoute(
         // The modify_add_team.dart page will be created and shown
@@ -107,6 +118,8 @@ class _SettingsTeamsState extends State<SettingsTeams> {
         ),
       ),
     );
+
+    if (mounted) _dropSearchFocus();
   }
 
   void _checkAndPromptTeamSeeding() {
@@ -333,9 +346,9 @@ class _SettingsTeamsState extends State<SettingsTeams> {
                         child: SizedBox(
                           height: safeHeight * 0.075,
                           child: FocusScope(
-                            node: FocusScopeNode(),
                             child: TextField(
                               controller: _searchController,
+                              focusNode: _searchFocusNode,
                               style: gBuildArcadeTextStyle(safeHeight * 0.0195),
                               decoration: InputDecoration(
                                 hintText:

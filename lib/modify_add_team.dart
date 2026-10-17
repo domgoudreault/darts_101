@@ -275,9 +275,9 @@ class _ModifyAddTeamFormState extends State<ModifyAddTeamForm> {
         return SafeArea(
           child: Container(
             width: GlobalAppDisplay.safeWidth * 0.775,
-            height: _responsiveTile * 0.645,
             padding: EdgeInsets.symmetric(vertical: _responsiveTile * 0.006),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   width: double.infinity,
